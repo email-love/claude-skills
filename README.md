@@ -22,7 +22,33 @@ Claude builds real, export-ready emails inside your Figma file, assembled from y
 2. In Claude, open **Settings → Capabilities → Skills** and upload the file.
 3. Ask Claude to build an email in your Figma file.
 
-### Claude Code
+### Claude Code (recommended: plugin marketplace)
+
+This repo is a Claude Code plugin marketplace. Inside Claude Code, run:
+
+```
+/plugin marketplace add email-love/claude-skills
+/plugin install emaillove-figma-builder@email-love
+```
+
+Updates flow automatically when we release new versions.
+
+**Team setup:** add this to your project's `.claude/settings.json` so teammates get the plugin on workspace trust:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "email-love": {
+      "source": { "source": "github", "repo": "email-love/claude-skills" }
+    }
+  },
+  "enabledPlugins": {
+    "emaillove-figma-builder@email-love": true
+  }
+}
+```
+
+**Manual alternative:**
 
 ```bash
 git clone https://github.com/email-love/claude-skills.git
