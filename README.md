@@ -24,14 +24,18 @@ Claude builds real, export-ready emails inside your Figma file, assembled from y
 
 ### Claude Code (recommended: plugin marketplace)
 
-This repo is a Claude Code plugin marketplace. Inside Claude Code, run:
+This repo is a Claude Code plugin marketplace. Install once and the plugin loads across all your Claude Code surfaces, with automatic updates.
 
-```
-/plugin marketplace add email-love/claude-skills
-/plugin install emaillove-figma-builder@email-love
+**From a terminal** (any shell, no interactive session needed):
+
+```bash
+claude plugin marketplace add email-love/claude-skills
+claude plugin install emaillove-figma-builder@email-love
 ```
 
-Updates flow automatically when we release new versions.
+Inside an interactive `claude` terminal session, the same two commands work as `/plugin` slash commands.
+
+**In the Claude Code desktop app:** `/plugin` is not available in chat. Click the **+** button next to the prompt box, then **Plugins**, to open the plugin browser, or run the terminal commands above once.
 
 **Team setup:** add this to your project's `.claude/settings.json` so teammates get the plugin on workspace trust:
 
