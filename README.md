@@ -33,7 +33,7 @@ Then ask Claude Code to build an email in your Figma file.
 
 ## Documentation
 
-Full walkthrough: [help.emaillove.com/plugin/ai/claude-skill](https://help.emaillove.com/plugin/ai/claude-skill)
+Full walkthrough: [help.emaillove.com/plugin/ai/agents-in-figma](https://help.emaillove.com/plugin/ai/agents-in-figma)
 
 Related guides:
 
