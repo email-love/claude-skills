@@ -1,7 +1,7 @@
 {
   "name": "emaillove-figma-builder",
   "displayName": "Email Love Figma Builder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Build export-ready marketing and lifecycle emails inside your Figma file from your Email Love design system",
   "author": {
     "name": "Email Love",
@@ -10,5 +10,11 @@
   "homepage": "https://help.emaillove.com/plugin/ai/agents-in-figma",
   "repository": "https://github.com/email-love/claude-skills",
   "license": "MIT",
-  "keywords": ["email", "figma", "email-design", "mjml", "esp"]
+  "keywords": [
+    "email",
+    "figma",
+    "email-design",
+    "mjml",
+    "esp"
+  ]
 }
