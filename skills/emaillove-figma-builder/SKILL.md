@@ -55,6 +55,7 @@ Do a real inventory before building, not a glance at whatever the nearest campai
 
 When the user wants to choose, use the strongest selection experience your environment supports, in this order:
 
+- **Clickable card gallery.** If a widget or visualization tool that renders inline HTML with a chat bridge (a `sendPrompt`-style function) is available, build the picker as cards: one card per candidate with the component's screenshot embedded as a data URI, the component name, a one-line note on fit, and a Recommended badge on your pick. Clicking a card sends the selection to chat (for example `sendPrompt('Use header 1 for the header section')`). Present one section at a time to keep payloads small, cap candidates at 3 or 4, and keep card order stable. This is the best experience where it works; capturing screenshots adds a little latency, which is worth it.
 - **Previews inside the question.** If your interactive question tool supports per-option preview content, ask one question per section with each candidate's screenshot attached as that option's preview, so focusing an option shows the component itself. Cap it at 3 or 4 candidates per section, lead with your recommendation as a label tag, and keep descriptions to one line on fit and trade-offs.
 - **Pick in Figma (offer it, many users prefer it).** The components already sit at full fidelity in the user's own file, and you can read their current selection through the Figma MCP. Lay out a temporary, clearly named frame ("Component menu, delete me") containing labeled instances of the candidates next to the build area, ask the user to click their choice for the current section and say "picked", read the selection, confirm what you saw, and move to the next section. Delete the menu frame when done. No thumbnails, no letter-mapping, and the user judges components at real size.
 - **Contact sheet fallback.** Where neither works, screenshot the candidates for the section types this email needs (not every page) into one numbered image plus a matching lettered list. The letters and ordering in the list must match the sheet exactly; mark your recommendation with a tag in its description rather than reordering.
@@ -124,3 +125,7 @@ Tell the user to:
 3. Export through the plugin to their ESP. Building on the canvas is free; exports are what count against the Free plan (5 per month, unlimited on paid plans).
 
 If the plugin says "Please select valid email template" on a frame you built, the root frame is missing the marker (see Step 4) or the plugin version predates shared-marker support: ask the user to update the plugin.
+
+## Staying current
+
+This is version 1.3.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
