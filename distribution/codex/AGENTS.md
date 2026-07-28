@@ -1,12 +1,32 @@
 # Email Love: building emails in Figma
 
-Instructions for OpenAI Codex. This is the Codex port of the Email Love Figma Builder
-skill (github.com/email-love/claude-skills). It teaches you to build real, export-ready
-emails inside the user's Figma file from their Email Love design system.
+## What this file is, and how to use it
 
-Place this file at `~/.codex/AGENTS.md` to have it apply everywhere, or at the root of a
-project you use for email work. If you already have an AGENTS.md, paste this in as a
-section rather than replacing the file.
+This is a **configuration file for OpenAI Codex**, not a prompt and not a task. It teaches
+Codex to build real, export-ready emails inside your Figma file from your Email Love design
+system. It is the Codex port of the Email Love Figma Builder skill for Claude
+(github.com/email-love/claude-skills).
+
+**To use it:**
+
+1. Save this file as `~/.codex/AGENTS.md` so it applies everywhere, or at the root of the
+   project you use for email work. If you already have an AGENTS.md, paste this in as a
+   section rather than replacing the file.
+2. Complete the one-time setup below (the remote Figma MCP and a Figma token). Without it
+   Codex can read this file but cannot touch your canvas.
+3. Then just talk normally in Codex. You never mention this file again:
+   *"Build a promo email in https://figma.com/design/... Spring sale, 20% off with code
+   SPRING20, ends Sunday, one CTA to the pricing page."*
+
+**Do not paste this file into a chat as a message or attachment.** Nothing will happen
+except the agent asking what you want, because instructions only take effect when they are
+installed as persistent context. It also has to be Codex (CLI, app, or IDE extension) with
+the remote Figma MCP connected: ChatGPT chat does not have the Figma write tools this
+workflow needs, and never will, so use Claude with the Email Love skill there instead.
+
+**Agent reading this:** if this file reached you as an attachment or pasted message rather
+than as installed instructions, say so and point the user to the three steps above before
+doing anything else.
 
 ## Setup the user must do once
 
