@@ -35,7 +35,7 @@ claude plugin install emaillove-figma-builder@email-love
 
 Inside an interactive `claude` terminal session, the same two commands work as `/plugin` slash commands.
 
-**In the Claude Code desktop app:** `/plugin` is not available in chat. Click the **+** button next to the prompt box, then **Plugins**, to open the plugin browser, or run the terminal commands above once.
+**In the Claude Code desktop app:** `/plugin` is not available in chat, and the plugin browser (**+** button next to the prompt box, then **Plugins**) can only install from marketplaces it already knows; it cannot add a new one. Run the two terminal commands above once (the plugin then loads in the desktop app automatically), or add the `extraKnownMarketplaces` snippet below to `~/.claude/settings.json` and restart the app, then install from the plugin browser.
 
 **Team setup:** add this to your project's `.claude/settings.json` so teammates get the plugin on workspace trust:
 
