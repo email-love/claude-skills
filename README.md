@@ -18,9 +18,12 @@ Claude builds real, export-ready emails inside your Figma file, assembled from y
 
 ### Claude.ai (web and desktop)
 
-1. Download `emaillove-figma-builder.skill` from the [latest release](https://github.com/email-love/claude-skills/releases/latest).
-2. In Claude, open **Settings → Capabilities → Skills** and upload the file.
-3. Ask Claude to build an email in your Figma file.
+Works on every plan, including Free (web and desktop, not mobile).
+
+1. Enable **code execution** under **Settings → Capabilities** (Team/Enterprise: an org owner must enable code execution and skills in Organization Settings first).
+2. Download `emaillove-figma-builder.skill` from the [latest release](https://github.com/email-love/claude-skills/releases/latest).
+3. Go to **Settings → Capabilities → Customize → Skills** and upload the file.
+4. Ask Claude to build an email in your Figma file.
 
 ### Claude Code (recommended: plugin marketplace)
 
