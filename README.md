@@ -64,6 +64,12 @@ cp -r claude-skills/skills/emaillove-figma-builder ~/.claude/skills/
 
 Then ask Claude Code to build an email in your Figma file.
 
+## Using Codex or ChatGPT instead?
+
+**OpenAI Codex** can run the same workflow, using an `AGENTS.md` instruction file instead of a skill: [email-love/codex-agents](https://github.com/email-love/codex-agents).
+
+**ChatGPT chat** cannot build emails in Figma. Its Figma app only creates FigJam diagrams, Slides, and Buzz assets, and cannot edit Figma Design files. See [`distribution/chatgpt-gpt-instructions.md`](distribution/chatgpt-gpt-instructions.md) for a companion GPT that plans emails and hands the build off to Claude or the plugin.
+
 ## Documentation
 
 Full walkthrough: [help.emaillove.com/plugin/ai/agents-in-figma](https://help.emaillove.com/plugin/ai/agents-in-figma)
