@@ -19,6 +19,11 @@ The customer's SOURCE Figma file is STRICTLY READ ONLY. All writes go to the
 target file only. Never use em dashes in any layer name, plugin data value,
 or text characters.
 
+**Read section 2 before you create anything.** This spec describes two different
+things: an EMAIL TEMPLATE and a DESIGN-SYSTEM MODULE. They share every rule
+except the root, and the root is where the difference is fatal. A migration
+batch builds modules.
+
 ---
 
 ## 0. Sizing: hug heights, deliberate widths (read this before you create a node)
@@ -87,8 +92,10 @@ is load bearing.
 
 FIXED width is correct for:
 
-1. **The root frame**, at the numeric `mj-body` width (usually 600). This is the
-   canvas the whole email is measured against.
+1. **The root node**, at the numeric `mj-body` width (usually 600). This is the
+   canvas the whole email is measured against. It applies to an email-template
+   root and to a module's own wrapper component alike (section 2): a module is
+   measured against the same body width as the emails it will live in.
 2. **Every column in a section that holds two or more columns**, unequal columns
    above all. The exported percentage is
    `column.width / (section.width - section horizontal padding) * 100`, so the
@@ -103,6 +110,12 @@ FIXED width is correct for:
 Anywhere else, a FIXED width is a latent bug: it stops tracking the section
 content box the moment a padding value changes, and the exported percentage
 drifts away from the design with no visible error.
+
+**And where a load-bearing FIXED width sits above text (cases 2 and 3, plus a
+FIXED button in 0.4), pin it with slack, never at Figma's hug width.** The pixel
+you measured is measured in the font Figma rendered; the email declares a
+different stack and a pinned column cannot grow. Section 3.3.1 has the rule, the
+numbers, and the failure signature.
 
 ### 0.4 Button width is a mobile behavior decision
 
@@ -229,12 +242,42 @@ Four things that keep padding honest:
 
 ---
 
-## 2. Root frame (one per MJML document)
+## 2. WHICH ARE YOU BUILDING? Email template or design-system module
 
-Create a top-level FRAME on the target page. When the thing you are building is
-a reusable design-system module rather than a one-off email, build the root as
-a COMPONENT instead and read section 7 first; everything below applies
-unchanged either way.
+**Answer this before you create a single node.** There are exactly two root
+shapes in an Email Love file. They are not variations on each other and they are
+not interchangeable. Building the wrong one does not produce a slightly-off
+file: it produces a module that uploads as a broken email, or an email the
+plugin refuses to open.
+
+| | **EMAIL TEMPLATE** | **DESIGN-SYSTEM MODULE** |
+| --- | --- | --- |
+| What it is | One sendable email | One reusable block that gets dropped into many emails |
+| Root node | FRAME (or COMPONENT) that carries NO `mj-*` tag | COMPONENT that **is** the `mj-wrapper` |
+| `nodeType` = `mainFrame` | **REQUIRED** on the root | **FORBIDDEN.** Nothing stops the upload: the marker makes the block archive as a whole email |
+| Shared `name` on the root | none (the root is untagged) | `mj-wrapper` |
+| Theme color keys | all eight, on the root, alongside the `nodeType` marker (2.1) | none by default (see 2.2) |
+| Root layer name | the email name | **the module name** (it becomes the saved component name and its storage path) |
+| What lives directly inside | `mj-wrapper` components, stacked | `mj-section` frames |
+| Component properties | rarely; a campaign email is a one-off | **yes, they live here** (section 8) |
+
+The one-line test: **is this a whole email someone will send, or one block
+someone will place into many emails?** Heroes, footers, copy blocks, 2-up
+product rows, banners: those are modules. Phase 3 of a migration builds
+**modules**, not emails.
+
+**A module is not a small email.** An email template root *contains* wrapper
+components; a module *is* one of those wrapper components. So a module has no
+wrapper inside it and no `mainFrame` above it. If your module root is a
+`mainFrame` containing an `mj-wrapper`, you have built a one-wrapper email and
+mislabelled it, and section 2.3 explains why the plugin will reject it.
+
+Sections 3 through 6 apply identically to both shapes. Only the root differs.
+
+### 2.1 EMAIL TEMPLATE root (one per MJML document)
+
+Create a top-level FRAME on the target page. It may be a COMPONENT instead
+(section 7) when the whole email is meant to be reused; nothing below changes.
 
 - **Geometry:** `resize(W, 100)` where `W` = numeric `mj-body` `width`
   (usually `600`), then `layoutMode = 'VERTICAL'` and immediately
@@ -244,9 +287,10 @@ unchanged either way.
   The `100` is a throwaway that gets the node onto the canvas; the root's real
   height is whatever its content hugs to, and it must never be left FIXED
   (section 0.1). The width is one of the four load-bearing FIXED widths (0.3).
-- **Layer name:** the module/email name (this becomes the component name and
-  S3 path if the frame is later promoted, so keep it clean, e.g.
-  `[Customer] / banner-bright`). Do NOT put a tag in the root layer name.
+- **Layer name:** the email name (this becomes the component name and S3 path
+  if the frame is later saved, so keep it clean). Do NOT put a tag in the root
+  layer name, and do NOT write a `name` key on it: the root is identified by
+  `nodeType`, not by a tag.
 - **Shared plugin data (namespace `emaillove`), all REQUIRED:**
 
   | key | value |
@@ -268,18 +312,123 @@ unchanged either way.
   first conversion pass. Where the values come from, in priority order:
   1. If the migration has an established design-system palette (a reviewed
      foundations phase, or theme colors the customer confirmed), use it on
-     EVERY module root, identically. Consistency across the system beats
-     per-module color matching; modules get restyled by the design system.
-  2. Only when no such palette exists yet, derive the keys from THIS module's
+     EVERY email root, identically. Consistency across the system beats
+     per-email color matching.
+  2. Only when no such palette exists yet, derive the keys from THIS email's
      own MJML colors as a stand-in, and flag them for design review.
 - Optional: `emailSubject`, `emailPreHeader` (plain strings).
 - Also give the root frame a visible SOLID fill of the body background so the
   canvas looks right.
-- Children: the `mj-wrapper` frames in document order. After appending each
-  wrapper set its `layoutSizingHorizontal = 'FILL'`.
+- Children: the `mj-wrapper` components in document order (section 3.1 builds
+  them). After appending each wrapper set its
+  `layoutSizingHorizontal = 'FILL'`.
 
 The `mjml`, `mj-head`, `mj-body` tags themselves produce NO Figma nodes; the
 exporter reconstructs them (body width comes from the root frame's width).
+
+### 2.2 DESIGN-SYSTEM MODULE root: the mj-wrapper IS the component
+
+There is no separate root. Create a COMPONENT and tag it `mj-wrapper`. That
+component is not a container that holds a wrapper; it **is** the wrapper, so
+section 3.1 describes this exact node, minus its "direct child of the root"
+line: in a module there is nothing above it.
+
+```js
+const moduleRoot = figma.createComponent()
+moduleRoot.name = 'Hero, text led'                                   // the module name
+moduleRoot.setSharedPluginData('emaillove', 'name', 'mj-wrapper')    // the ONLY required key
+// and NOT: setSharedPluginData('emaillove', 'nodeType', 'mainFrame')
+```
+
+- **Node:** COMPONENT (`figma.createComponent()`), a direct child of its
+  category page. Not a FRAME: `addComponentProperty` does not exist on a
+  FrameNode, so a frame module can never carry properties. Section 7 has the
+  four rules that keep a COMPONENT root working (page child, never inside a
+  COMPONENT_SET or a Figma SECTION, bind properties at the level that owns the
+  node, never write `isStandalone`).
+- **Shared `name` = `mj-wrapper`.** This single key is what makes the plugin
+  treat the selection as a saveable top-level block rather than a fragment. A
+  module tagged `mj-section` or left untagged is not a module.
+- **`nodeType`: never write it.** Not `mainFrame`, not anything else. This is
+  the rule the last conversion batch broke, and 2.3 is the evidence.
+- **Layer name = the module name**, clean and human, because it becomes both the
+  saved component name and its storage path, and there is no rename field in the
+  save dialog. `Hero, text led` and `Footer, legal + social` are good;
+  `EmailLove_clone`, `Frame 42`, and anything containing `mj-` are not. This is
+  the one place in the spec where the layer name is load bearing rather than
+  cosmetic.
+- **Geometry:** identical to an email root. `resize(W, 100)`, then
+  `layoutMode = 'VERTICAL'`, `layoutSizingVertical = 'HUG'`, horizontal FIXED at
+  `W` (the email width), `primaryAxisAlignItems = counterAxisAlignItems = 'MIN'`,
+  `itemSpacing = 0`. A module is measured against the same body width as the
+  emails it will live in.
+- **Paddings, fill, radius, `fullWidth`, `stackColumns` / `reverseStack`:** all
+  per section 3.1. They are wrapper attributes and this node is the wrapper.
+- **Children:** `mj-section` frames in order, each set to
+  `layoutSizingHorizontal = 'FILL'` after append. **No `mj-wrapper` inside a
+  module** (a wrapper inside a wrapper is not a shape the exporter maps), and no
+  `mainFrame` anywhere in the subtree.
+- **Component properties live here** (section 8). Every property a marketer will
+  touch is added to this component, because it is the component that directly
+  owns the section, column, and leaf nodes.
+- **Theme color keys: leave them off unless a designer asked for a dark-mode
+  treatment on this specific block.** They are not the email-level theme when
+  they sit on a wrapper; they are per-node dark-mode *overrides*. The plugin
+  writes `backgroundColor` / `contentColor` / `textColor` / `linkColor` onto
+  every wrapper component it creates (`UiParser.ts:1570`), so those four are
+  legitimate here, but they only ever mean "override the enclosing email for this
+  block". `buttonContentColor` and `buttonTextColor` are worse: the exporter
+  emits them unconditionally whenever they are non-empty, without comparing them
+  to the enclosing email, so a module carrying them ships its own dark-mode CSS
+  into every email it is placed in. A module inherits nothing and conflicts with
+  everything, so the safe default for a converted module is **no theme keys at
+  all**; the email root supplies them.
+
+### 2.3 The evidence, so this reads as ground truth rather than preference
+
+Read at `origin/main` of `email-love/Figma-plugin`. All citations are
+`path:line` under `src/`.
+
+1. **Every `mj-wrapper` the plugin builds is already a COMPONENT.**
+   `UiParser.ts:1519-1522`:
+   `if (tag === MjmlNodeType.Wrapper || isStandalone) frameNode = figma.createComponent(); else frameNode = figma.createFrame();`
+   So a wrapper-as-component is not an agent convention layered on top of the
+   plugin; it is what the plugin itself produces every time it renders MJML into
+   Figma. Purple wrapper components inside a plugin-built email are normal. Do
+   not "fix" them into frames, and do not wrap one in something else to make it
+   look like a root.
+2. **The two shapes go in through two different screens, and each one rejects
+   the other.** Custom Templates, Add New Template is the email-template route:
+   `AddTemplate.tsx:62` is the only caller of `select-component` and it always
+   sends `customType: 'customProperties'`, which lands in `code.ts:3226-3236` and
+   rejects any selection *without* the marker, with "Please select valid email
+   template". A module has no marker, so that dialog can never take one. The
+   module route is the **Assets sidebar Upload button**
+   (`AssetsComponent.tsx:610-632`), which needs a selected design system and
+   dispatches `syncTemplateUpload` (`code.ts:3861`), taking an array of node ids
+   when more than one node is selected, so a whole approved batch uploads at once.
+   (`select-component` also has a mirror-image module branch at
+   `code.ts:3280-3307` that rejects a selection carrying the marker. No UI reaches
+   it today; read it as intent, and read point 3 as the live mechanism.)
+3. **The design-system upload path keys off the `mj-wrapper` tag, not the marker.**
+   `code.ts:3892-3893`:
+   `const isTopLevel = getName(getMetaName(selectedNode)).tagName === 'mj-wrapper' || ...`
+   Only when `isTopLevel` is true does the plugin wrap a clone in its own
+   temporary `mainFrame` envelope and generate the MCP companion JSON
+   (`code.ts:3934`, whose own comment notes that bare sections and columns "would
+   emit a fragment the backend can't compile"). A module root that is not tagged
+   `mj-wrapper` is archived as if it were a whole email and gets **no MCP JSON at
+   all**.
+4. **Marking a node both ways is worse than either mistake.** In both
+   serializers the `mainFrame` branch is tested *before* any wrapper handling
+   (`nodeJsonExtractor.ts:282` versus the wrapper branch at `1587`;
+   `exportTemplate.ts:180` versus `285`). First match wins. So a node carrying
+   `name = mj-wrapper` **and** `nodeType = mainFrame` passes the `isTopLevel`
+   check, gets cloned into the temp envelope, and then still matches the
+   `mainFrame` branch inside that envelope, producing a nested `mjml` document
+   inside `mj-body` that nothing downstream can compile.
+
+**Strip `nodeType` from every module component. Non-negotiable.**
 
 ---
 
@@ -287,7 +436,15 @@ exporter reconstructs them (body width comes from the root frame's width).
 
 ### 3.1 mj-wrapper
 
-- Node: FRAME, direct child of the root.
+**In an email template** this is a node inside the root. **In a design-system
+module this node IS the root** (section 2.2): same tag, same attributes, same
+auto-layout, but created as a COMPONENT with no `mainFrame` above it and none on
+it. Everything below applies to both; only the "direct child of the root" line
+and the node type change.
+
+- Node: FRAME as a direct child of an email root; COMPONENT as a module root.
+  The plugin itself creates every wrapper as a COMPONENT
+  (`UiParser.ts:1519-1522`), so a COMPONENT here is normal in either shape.
 - Shared `name` = `mj-wrapper`.
 - Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG (never FIXED, section
   0.1), horizontal FILL (600 wide),
@@ -351,6 +508,78 @@ exporter reconstructs them (body width comes from the root frame's width).
   560 wide containing columns 280 + 280 exports 50%/50%.
 - Columns inside a group keep their elements side by side on mobile.
 
+#### 3.3.1 Pinned widths that carry text need slack
+
+**Never pin a text-bearing column at the width Figma hugged to.** Pinning the
+width is correct, and section 0.3 is right that the pixel IS the percentage.
+What the pixel is NOT is a safe measurement. It was taken in the font Figma
+rendered on canvas, the email declares a different one, and a pinned column
+cannot grow. Text that fit by a hair on canvas wraps at send time, in a font the
+canvas never showed you.
+
+Two independent sources of drift stack up:
+
+1. **Same family name, different binary.** Figma renders its own bundled Inter.
+   The exporter writes `font-family: Inter, Arial` and also emits an `mj-font`
+   link to `fonts.googleapis.com/css2?family=Inter`, so the email renders
+   Google's Inter build, not Figma's. Measured on a real string: "Lorem Ipsum
+   Dolor" at Inter Regular 16px fits inside a 143px content box on the Figma
+   canvas and measures 143.39px in Chromium against Google's Inter. An overflow
+   of 0.39px, 0.27 percent, is enough to wrap the row onto two lines.
+2. **The webfont may not load at all.** Any client that blocks or fails the
+   `mj-font` link falls back to the next entry in the stack, which is
+   `fallBackFontName` and defaults to `Arial`. Measured drift on real strings
+   against Figma's Inter runs as high as +11.5 percent, and it goes both ways:
+   do not assume the fallback is always narrower or always wider than what you
+   see.
+
+So take the text node's natural hug width in Figma, then pin the column at:
+
+```
+column width = max( ceil(hugWidth * 1.12), hugWidth + 8 ) + the column's horizontal padding
+```
+
+The 12 percent covers the worst measured fallback drift **for Arial and
+Helvetica**, which is what `fallBackFontName` resolves to unless someone changed
+it. The `+ 8px` floor stops short strings ("Sale", "New", "Just In") from ending
+up with one or two pixels of slack, which is no slack at all.
+
+**Use 25 percent instead when the fallback is a wide face.** `fallBackFontName`
+is a writable key, so a brand can set it to Verdana, Tahoma or Georgia. Those set
+much wider than Arial at the same size: measured against Figma's rendering across
+realistic label strings, Verdana reached +24.9 percent, Georgia +11.5 percent and
+Tahoma +9.8 percent, so a 12 percent allowance is not enough to hold them. Read
+the root's `fallBackFontName` before you pin anything, and if it names one of
+those three, widen by 1.25 rather than 1.12. A brand webfont paired with a wide
+fallback is a materially different risk from Inter paired with Arial, and should
+not share one number.
+
+Applying it: widen the FIXED columns only. Leave the group HUG and let Figma
+recompute its width, and leave every FILL child alone, they cascade through the
+layout engine on their own. Then re-derive the exported percentages by hand and
+confirm the inner ones still sum to 100. Worked example from the fix that
+produced this rule: a 66px badge column plus a 151px label column in a 217px
+group became 74 + 169 in a 243px group, exporting 30.4527% + 69.5473%, which is
+exactly 100.
+
+**Failure signature, so you recognize it next time:** it looks right on the
+Figma canvas and wraps in the plugin Preview, same machine, same session, same
+minute. Nothing is mis-tagged, no width is "wrong" in Figma terms, and a diff of
+the tree shows nothing at all. When a reviewer reports a line breaking that does
+not break on canvas, suspect a pinned width first, and measure the string
+against the **exported** font stack rather than trusting the canvas.
+
+**Where else this bites.** Anywhere a FIXED width sits above text:
+
+- Columns in a group (this section) and columns in a multi-column section
+  (0.3 case 2). Group columns are the worse of the two, because they never stack
+  on mobile, so the pinched width is what every reader gets.
+- An `mj-button` pinned to FIXED (0.4) with a label inside it.
+
+It does NOT apply to FILL columns or FILL buttons, which resolve against the
+content box at render time and adapt. Do not pad those; the extra width would be
+real design drift for no gain.
+
 ### 3.4 mj-column
 
 - Node: FRAME, child of `mj-section` or `mj-group`.
@@ -369,7 +598,10 @@ exporter reconstructs them (body width comes from the root frame's width).
   - **Two or more columns in one section, or any column inside an `mj-group`:
     FIXED at the worker `width` (e.g. 280, 200).** This is load bearing. The
     exported percentage is derived from the pixel number, so unequal splits and
-    group percentages only survive when every column is pinned.
+    group percentages only survive when every column is pinned. When you are
+    deriving the number from a Figma measurement rather than copying a worker
+    attr, and the column contains text, add slack per section 3.3.1 before you
+    pin it.
 - **Axis alignment rule (the trap):** set BOTH axes to the dominant
   horizontal alignment of the column's content:
   - content `align="left"` (or mixed/default): `MIN` / `MIN`
@@ -545,7 +777,9 @@ Level 2, FRAME `mj-button`:
     automatically makes it full width on mobile (`width: 100%`). Choose it when
     the source design shows an edge to edge CTA, and say so in your report.
   - `'FIXED'` exports an explicit `width` and also keeps that width on mobile.
-    Only when the design system pins a button width.
+    Only when the design system pins a button width, and when you do, give the
+    label slack per section 3.3.1: a pinned button cannot grow around a label
+    that sets wider in the exported font than it did on the Figma canvas.
 - `primaryAxisAlignItems` from `text-align` (default CENTER);
   `counterAxisAlignItems = 'CENTER'`.
 - `background-color` to one SOLID fill (a missing fill exports
@@ -754,10 +988,20 @@ Three ways this goes wrong:
    the layer name. Button icons are out of scope for this spec's leaf set
    (section 4.3), so the safe move is not to build them here.
 
-The root is the one node this spec gives no tag: it is identified by
-`nodeType = mainFrame`, and its layer name is the module or email name
-(section 2), which also becomes the component name when it is saved into the
-plugin. Keep that name clean and do not put a tag in it.
+The root is the one node whose naming depends on which shape you are building
+(section 2):
+
+- **An EMAIL TEMPLATE root gets no tag at all.** It is identified by
+  `nodeType = mainFrame`, and its layer name is the email name. Do not put a tag
+  in it and do not write a `name` key on it.
+- **A DESIGN-SYSTEM MODULE root is tagged `mj-wrapper`** like any other wrapper,
+  and this is the one node where the friendly-name rule inverts: its layer name
+  is not the display string `Wrapper (Groups rows and sets the background for
+  this section )` but **the module name**, because that name becomes the saved
+  component name and its storage path.
+
+Either way the root layer name is the thing a human sees in the plugin's picker,
+so keep it clean and never put a tag in it.
 
 ### 6.1 Display names by tag
 
@@ -808,42 +1052,59 @@ comma form there, since `Label, (mjml:mj-text)` is the parsed tag syntax and a
 comma reads as the start of one. Never prepend anything that looks like a tag,
 and never let the qualifier replace the display name.
 
+**The tags below the transcription set.** `mj-hero`, `mj-social`, `mj-navbar`,
+`mj-table`, and their children are real plugin node types, which is why they
+appear in the table above and in the skill's visual-pattern mapping. This spec's
+detailed attribute mapping covers the core set only (sections 3 and 4). When the
+worker returns one of the others, compose the row from mapped primitives instead
+(the visual-pattern mapping in the skill's transcription step), and reserve
+`mj-hero` for the case where a design genuinely needs live text over a
+full-bleed background image.
+
 ---
 
 ## 7. Components: when a node is a COMPONENT instead of a FRAME
 
 **Make it a COMPONENT when it is meant to be reused**: a converted design-system
-module, a section you built to fill a gap and intend to save into the library,
-a foundations button or badge that other modules instance. Keep it a FRAME when
-it is a one-off campaign email that nobody will instance.
+module (always), a section you built to fill a gap and intend to save into the
+library, a foundations button or badge that other modules instance. Keep it a
+FRAME when it is a one-off campaign email that nobody will instance.
 
 This is safe. Confirmed against the plugin source:
 
 - **Export accepts a COMPONENT everywhere it accepts a FRAME.** The export
   gate whitelists `FRAME`, `INSTANCE`, `COMPONENT` at the root and at every
-  container level, and the root branch is `nodeType === 'mainFrame'` plus that
-  whitelist. The HTML export path has no node-type check on the root at all.
+  container level, and the email-root branch is `nodeType === 'mainFrame'` plus
+  that whitelist. The HTML export path has no node-type check on the root at all.
 - **Add New Template accepts a COMPONENT.** The whole-email branch tests plugin
-  data only (`nodeType === 'mainFrame'`), never `node.type`. The save-a-module
-  branch clones your selection into a temporary frame it creates itself, which
-  is the plugin's own established move.
+  data only (`nodeType === 'mainFrame'`), never `node.type`.
 - **The plugin already does this.** Every `mj-wrapper` the plugin renders is
-  created as a COMPONENT, not a FRAME. Purple components inside a plugin-built
-  email are normal. Do not "fix" them into frames.
+  created as a COMPONENT, not a FRAME (`UiParser.ts:1519-1522`). Purple
+  components inside a plugin-built email are normal. Do not "fix" them into
+  frames.
 - **Instances work.** `INSTANCE` is in the same whitelist and an instance
   surfaces the main component's plugin data, so a customer who places an
   instance of a componentized module still exports correctly.
 
-The calls, either at creation or by promoting a finished frame:
+The calls, either at creation or by promoting a finished frame. **Which plugin
+data you write depends entirely on section 2**, and the two sets are mutually
+exclusive:
 
 ```js
 // build it as a component from the start...
-const moduleRoot = figma.createComponent()      // instead of figma.createFrame()
+const root = figma.createComponent()          // instead of figma.createFrame()
 // ...or promote the frame you already finished:
-const moduleRoot = figma.createComponentFromNode(frame)
+const root = figma.createComponentFromNode(frame)
 
-moduleRoot.name = 'Hero, text led'              // becomes the saved component name
-moduleRoot.setSharedPluginData('emaillove', 'nodeType', 'mainFrame')
+// A DESIGN-SYSTEM MODULE (section 2.2): the component IS the mj-wrapper.
+root.name = 'Hero, text led'                                // the saved component name
+root.setSharedPluginData('emaillove', 'name', 'mj-wrapper')
+// no nodeType key. Writing 'mainFrame' here breaks the module upload (2.3).
+
+// A REUSABLE WHOLE EMAIL (section 2.1): the component is the untagged root.
+root.name = 'Welcome email'
+root.setSharedPluginData('emaillove', 'nodeType', 'mainFrame')
+// plus the eight theme keys. No 'name' key on this node.
 ```
 
 Everything else in this spec applies unchanged: a ComponentNode supports the
@@ -863,11 +1124,14 @@ Four rules keep a COMPONENT root working:
    elsewhere, so an instance of a template root also reads as a template. If you
    need to show a module in use, place it inside an email root, not loose on the
    library page.
-3. **Properties go on the component that owns the node** (section 8). Because
-   every `mj-wrapper` is itself a COMPONENT, a root component cannot bind a
-   property to anything inside its wrapper components: Figma rejects
-   `componentPropertyReferences` on an instance sublayer. Bind at the level that
-   directly owns the node.
+3. **Properties go on the component that owns the node** (section 8), which is
+   the MODULE, never the email root. Because every `mj-wrapper` is itself a
+   COMPONENT, an email root cannot bind a property to anything inside its wrapper
+   components: Figma rejects `componentPropertyReferences` on an instance
+   sublayer. That is the structural reason properties belong on the wrapper-level
+   module component (section 2.2) and one more reason a module must not be built
+   as a `mainFrame` wrapping a wrapper: the properties would have nowhere valid
+   to live. Bind at the level that directly owns the node.
 4. **Do not write `isStandalone`.** The shipped plugin build ignores that key
    entirely (it is behind a compile-time flag that is off), so a "standalone"
    section or hero sitting directly under the root gets no wrapper-level
@@ -993,13 +1257,22 @@ the node.
 
 ## 9. Post-build checklist (run per module before handing off)
 
-1. Root has shared `nodeType = mainFrame` plus ALL theme color keys and
-   `lightThemeBackgroundColor`.
+1. **The root matches the shape you meant to build** (section 2), and only one
+   of these two lines is true of it:
+   - **EMAIL TEMPLATE:** shared `nodeType = mainFrame`, ALL theme color keys
+     plus `lightThemeBackgroundColor` and `fallBackFontName`, no `name` key, and
+     its direct children are `mj-wrapper` components.
+   - **DESIGN-SYSTEM MODULE:** shared `name = mj-wrapper`, **no `nodeType` key
+     anywhere in the tree**, no theme keys unless a designer asked for a
+     dark-mode treatment on this block, layer name is the module name, and its
+     direct children are `mj-section` frames. Read `nodeType` back off the root
+     and confirm it is empty; a leftover `mainFrame` uploads as a whole email.
 2. Every FRAME/RECT/LINE/TEXT you created has shared `name` set to exactly
    one known tag; zero untagged frames anywhere in the tree. No node is
    relying on the layer-name fallback.
 3. Every node's layer name is the display name for its tag (section 6.1), and
-   no friendly string was written into the plugin data `name` key.
+   no friendly string was written into the plugin data `name` key. The one
+   exception is a module root, whose layer name is the module name (section 6).
 4. Every leaf is a complete pair; every `mj-button` has a direct TEXT child;
    no empty wrapper frames.
 5. `primaryAxisAlignItems === counterAxisAlignItems` on every auto-layout
@@ -1014,21 +1287,29 @@ the node.
 8. **Every FIXED width is one of the four load-bearing cases** (root, columns
    in a multi-column section, columns in a group, the image rectangle). Lone
    columns are FILL, groups and buttons are HUG (section 0.3).
-9. **Every button's width sizing was a decision.** HUG unless the design calls
-   for a full-width CTA, in which case FILL, which is also what makes it full
-   width on mobile (section 0.4). Buttons are at least 44px tall, from
-   `inner-padding` rather than a set height.
-10. All vertical spacing is padding: no gaps produced by a taller frame, by
+9. **Every pinned-width column that contains text has slack, and every pinned
+   string was sanity-checked against the exported font, not the canvas font**
+   (section 3.3.1). Columns in a group above all, since those never stack on
+   mobile. `max(ceil(hug * 1.12), hug + 8)` plus horizontal padding, and the
+   inner group percentages still sum to 100. A label that fits exactly on the
+   Figma canvas is a wrap in the plugin Preview, because the canvas font and the
+   font the email loads are different binaries. FILL columns are exempt.
+10. **Every button's width sizing was a decision.** HUG unless the design calls
+    for a full-width CTA, in which case FILL, which is also what makes it full
+    width on mobile (section 0.4). Buttons are at least 44px tall, from
+    `inner-padding` rather than a set height.
+11. All vertical spacing is padding: no gaps produced by a taller frame, by
     `itemSpacing`, or by a manually positioned node (which exports as nothing).
-11. Root width equals the mj-body width; column px widths equal the worker
+12. Root width equals the mj-body width; column px widths equal the worker
     attrs; section paddings equal the worker attrs.
-12. If the module is reusable: the root is a COMPONENT, a direct child of the
-    page, not inside a COMPONENT_SET or a Figma SECTION, with no stray instances
-    of it left on the page.
-13. Every component property you added was re-read back off the node to confirm
+13. If it is a module: the root is a COMPONENT tagged `mj-wrapper`, a direct
+    child of its category page, not inside a COMPONENT_SET or a Figma SECTION,
+    with no stray instances of it left on the page, and there is no second
+    `mj-wrapper` nested inside it.
+14. Every component property you added was re-read back off the node to confirm
     the binding landed, and each one has a reason you can state in the report.
-14. No em dashes in any layer name, plugin data value, or text characters.
-15. Compare a fresh screenshot of the frame against the source screenshot you
+15. No em dashes in any layer name, plugin data value, or text characters.
+16. Compare a fresh screenshot of the frame against the source screenshot you
     converted from, for spacing, alignment, and color parity. Small color and
     font-metric differences are acceptable; missing content, zero-height
     sections, clipped text, and alignment flips are not.

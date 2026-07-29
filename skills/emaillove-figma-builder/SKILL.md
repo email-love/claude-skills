@@ -212,9 +212,11 @@ In order:
    component you did not find, on a page you did not check.
 3. Only if they confirm nothing exists: build that one section through **Path B** (generate and
    transcribe, not freehand), then offer to save it into their design system so it exists next
-   time (see B6). A gap-fill section is a design-system asset by definition, so build it the
-   way B6 says: friendly layer names, a COMPONENT root, and properties for the parts that will
-   change. It should be indistinguishable from the components around it.
+   time (see B6). A gap-fill section is a design-system asset by definition, which means it is a
+   **module**, not a tiny email: build it as an `mj-wrapper` COMPONENT with **no**
+   `nodeType = 'mainFrame'` marker, friendly layer names inside, the module name on the
+   component itself, and properties for the parts that will change (render spec section 2.2).
+   It should be indistinguishable from the components around it.
 
 Never assemble the section by hand, and never flatten it to an image to make the problem go
 away. An image in place of a section is a decision for the customer to make, not for you.
@@ -332,6 +334,9 @@ The worker returns structure, not a finished email. Four gaps, all observed repe
    with `mj-social-element` children. Anything that must stay side by side on mobile comes back
    as plain sibling columns, which will stack. Decide which rows must not stack (badge rows, icon
    rows, two-up cards) and rebuild those as an `mj-group` per section 3.3 of the render spec.
+   The columns inside that group are pinned to pixel widths, so pin them with slack rather than
+   at the width Figma hugged to (section 3.3.1: a pinned column cannot grow, and the email
+   renders a different font binary than the canvas does).
 3. **Every `src` is `"placeholder"`.** Place the customer's real logo and imagery yourself; use
    flat gray fills at the correct dimensions everywhere else and list them in your report.
 4. **Unpinned colors, radii, and fonts drift** by a few units between runs, and unpinned fonts
@@ -346,21 +351,42 @@ set the root frame's theme keys to the real brand values.
 
 Then offer to make it reusable. Saving into the plugin's design system is an authenticated
 plugin action on the user's current selection; you cannot push components into it. What you can
-do is set it up so the save is one click:
+do is set it up so the save is one click.
 
-- **Rename the frame first.** The raw Figma frame name becomes both the component name and its
-  storage path, and there is no rename field in the save dialog. A frame left at its import name
-  saves as a component literally called `EmailLove_clone`.
-- **Make anything meant for reuse a COMPONENT, with properties.** A one-off campaign email can
-  stay a frame. A block they will use again is a design-system asset: promote it with
-  `figma.createComponentFromNode`, then add the two to five properties a marketer will actually
-  change. Sections 7 and 8 of the render spec cover both, including why a COMPONENT root is safe
-  (the plugin's export path and Add New Template both accept one), the rules that keep it
-  working, and the exact per-element property bindings. A property whose binding is wrong is
-  worse than no property, so re-read each binding back off the node before you present.
-- Then: select the frame or component, make sure a design system is selected in the plugin, open
-  Custom Templates, click **Add New Template**, pick a category. The plugin generates the
-  thumbnail.
+**First decide what they are saving, because the two are different shapes and they go in
+through different screens** (render spec section 2):
+
+- **The whole email, as a starting template.** That is the `mainFrame` root you already built.
+  It stays exactly as it is; the marker is required.
+- **One block, as a reusable module.** That is the `mj-wrapper` inside the email, not the email
+  root. Uploading a `mainFrame` as a module does not fail, it archives as a whole email, so do
+  not "promote the email frame" when what they wanted was a hero. Copy the wrapper out to a
+  library page, make that copy a COMPONENT tagged `mj-wrapper`, and make sure it carries **no**
+  `nodeType` key. Section 2.2 has the exact calls and 2.3 the plugin evidence.
+
+Then, either way:
+
+- **Rename it first.** The raw Figma layer name becomes both the component name and its storage
+  path, and there is no rename field in the save dialog. A frame left at its import name saves
+  as a component literally called `EmailLove_clone`.
+- **Add properties to anything meant for reuse.** A one-off campaign email can stay a frame with
+  no properties. A module gets the two to five properties a marketer will actually change, added
+  to the wrapper component itself, since that is the component that directly owns the nodes.
+  Sections 7 and 8 of the render spec cover why a COMPONENT root is safe (the plugin builds every
+  wrapper as one), the rules that keep it working, and the exact per-element bindings. A property
+  whose binding is wrong is worse than no property, so re-read each binding back off the node
+  before you present.
+- **The upload route depends on which of the two shapes it is, so do not mix them up.** A whole
+  email template goes in through **Custom Templates**: select the `mainFrame` root, make sure a
+  design system is selected in the plugin, click **Add New Template**, pick a category. A
+  **module** goes in through the **Assets sidebar**: pick the design system, open the section it
+  belongs to (Header, Heroes, Single Column, Footer, and so on), select the `mj-wrapper`
+  component on the canvas, click **Upload**, confirm. Selecting several wrappers at once uploads
+  them as a single batch. **That Upload button only renders for a user on a paid plan**
+  (`AssetsComponent.tsx` gates the whole Assets header on the subscribed state), so a Free user
+  will not find it; say so rather than sending them hunting. Custom Templates refuses a module
+  with "Please select valid email template", because that path requires the `mainFrame` marker a
+  module must not carry.
 - Do not write `saveCategory` or `saveName` plugin data. The plugin reads neither key today.
 
 For a whole legacy library rather than one email, that is a migration, not a build: point the
@@ -411,6 +437,12 @@ as-an-image path, and an unrecognized frame takes its entire subtree with it. If
 shows images where you expected live text, that is the first thing to check.
 
 ## Root frame
+
+**This skill builds EMAILS, so everything here is the email-template shape**: a `mainFrame` root
+with `mj-wrapper` components stacked inside it. A reusable module is a different shape (the
+wrapper IS the component, no `mainFrame` marker), and it only comes up when you save a block
+into the design system in B6 or A5. Section 2 of the render spec has both side by side; do not
+mix them.
 
 Preferred: duplicate an existing Email Love email frame, which carries all of this already. When
 you create a root from scratch, it is a top-level vertical auto-layout frame with its width
@@ -516,7 +548,8 @@ Screenshot every email and inspect it: no clipped text, no overlapping elements,
 consistent with the file's real campaigns. Then check structure:
 
 - Root frame is a duplicated Email Love frame, or carries `nodeType = mainFrame` plus all nine
-  keys.
+  keys. It is an email, so the marker belongs there; the only nodes that must NOT carry it are
+  any reusable modules you split out in A5 or B6.
 - **Path A:** every section is a component instance (raw footer excepted), including inherited
   ones. No detached instances. No hand-built frames survived the donor vetting. No instance
   internals were restructured.
@@ -525,12 +558,15 @@ consistent with the file's real campaigns. Then check structure:
   auto-layout frame, all nodes visible, column widths matching the worker JSON. Plus the four B5
   repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4.
 - **Sizing, on both paths, for every frame you created:** vertical HUG everywhere, no fixed
-  height except an `mj-spacer`, no FIXED width outside the load-bearing cases, all spacing
-  expressed as padding, and every button's width chosen for how it should behave on mobile
-  (render spec section 0).
+  height except an `mj-spacer`, no FIXED width outside the load-bearing cases, every pinned
+  width that carries text given slack (render spec section 3.3.1), all spacing expressed as
+  padding, and every button's width chosen for how it should behave on mobile (render spec
+  section 0).
 - **Path B naming and components:** every node carries the display name for its tag and a real
   tag in plugin data, with no friendly string in the plugin data key. Anything built for reuse
-  is a COMPONENT, a direct child of its page, with every property binding re-read and confirmed.
+  is an `mj-wrapper` COMPONENT with **no `nodeType` key**, named for the module rather than the
+  wrapper display string, a direct child of its page, with every property binding re-read and
+  confirmed.
 - Every `mj-raw` frame contains its text child. Dark mode overrides intact. Exactly one visible
   CTA button per email unless the user asked otherwise.
 
@@ -557,11 +593,13 @@ Two reference files carry the ground truth this skill deliberately does not rest
 
 - **`render-spec.md`**, the complete MJML JSON to Figma mapping: sizing, which governs every
   frame you create (section 0: hug heights, padding for rhythm, when a width is FILL, HUG, or
-  FIXED, button width as a mobile decision, padding by level), then every tag, every attribute,
-  alignment, fills, fonts, column width math, layer naming (section 6, with the full tag to
-  display-name table), when a node is a COMPONENT rather than a FRAME (section 7), component
-  properties per element type (section 8), and the post-build checklist. Path B transcription
-  follows it exactly.
+  FIXED, button width as a mobile decision, padding by level), then **the two root shapes and
+  which one you are building** (section 2: an EMAIL TEMPLATE, which is what this skill produces,
+  versus a DESIGN-SYSTEM MODULE, which is what a saved block must be), then every tag, every
+  attribute, alignment, fills, fonts, column width math, layer naming (section 6, with the full
+  tag to display-name table), when a node is a COMPONENT rather than a FRAME (section 7),
+  component properties per element type (section 8), and the post-build checklist. Path B
+  transcription follows it exactly.
 - **`structure.md`**, the plugin's own conventions read out of its source: how a node is
   identified, the full node type list, the leaf pair rules, and every writable plugin data key.
 
@@ -584,7 +622,7 @@ rule in it applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.2.0 of this skill. If you have web access, check once per conversation
+This is version 2.3.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

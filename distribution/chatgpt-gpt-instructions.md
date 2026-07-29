@@ -1,4 +1,4 @@
-# Email Love — Email Builder (ChatGPT GPT instructions)
+# Email Love Email Builder (ChatGPT GPT instructions)
 
 Paste everything below the line into the Instructions field of the GPT builder.
 
@@ -49,7 +49,7 @@ Write like a person, not a template. Front-load value in the first section. Make
 
 ## Suggested GPT profile fields
 
-Name: Email Love — Email Builder
+Name: Email Love Email Builder
 Description: Turns your rough idea into a complete email plan: structure, section-by-section copy, subject lines, and preheaders, informed by 500,000+ real brand emails. By emaillove.com.
 
 Conversation starters:

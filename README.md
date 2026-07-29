@@ -1,17 +1,17 @@
 # Email Love Claude Skills
 
-Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.com) — install them to make Claude an expert at building emails with your Email Love design system.
+Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.com). Install them to make Claude an expert at building emails with your Email Love design system.
 
 ## Skills
 
 ### emaillove-figma-builder
 
-Claude builds real, export-ready emails inside your Figma file, assembled from your synced Email Love design system. It interviews you for a brief, inventories your component library, optionally pulls inspiration from Email Love's library of 500,000+ real brand emails, lets you pick components (or picks for you), and builds emails your team can review in Figma and export to your ESP through the [Email Love plugin](https://www.figma.com/community/plugin/1109792894837528369).
+Claude builds real, export-ready emails inside your Figma file, assembled from your synced Email Love design system. It interviews you for a brief, inventories your component library, optionally pulls inspiration from Email Love's library of 500,000+ real brand emails, lets you pick components (or picks for you), and builds emails your team can review in Figma and export to your ESP through the [Email Love plugin](https://www.figma.com/community/plugin/1109792894837528369). No design system yet? It generates the structure with Email Love AI Import instead and transcribes it, so the first email doubles as the first piece of your design system.
 
 **Requirements**
 
 - The [official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559) connected to Claude, with access to your file
-- The Email Love Figma plugin (latest version) and a synced design system in that file
+- The Email Love Figma plugin (latest version). A synced design system in that file for the design-system path; without one it takes the AI Import path
 - Optional but recommended: the free [Email Inspiration MCP](https://help.emaillove.com/plugin/ai/email-inspiration-mcp) for brand inspiration
 
 ### emaillove-migration-audit
@@ -31,7 +31,7 @@ Using **Codex**? Both migration phases ship as a project-scoped `AGENTS.md` at [
 
 ### emaillove-eds-converter
 
-The conversion engine. Takes a completed migration audit and rebuilds your legacy templates as a working Email Love design system in a new Figma file: foundations first (pages, type mapping on email-safe fallbacks, buttons, spacers, assets, a marked root template), then modules in batches through a full loop of rebuild, mobile merge, componentize and pre-tag, and side-by-side verification, with design review gating each batch. Your source file is treated as read-only throughout. Requires the audit report from emaillove-migration-audit.
+The conversion engine. Takes a completed migration audit and rebuilds your legacy templates as a working Email Love design system in a new Figma file: foundations first (pages, type mapping on email-safe fallbacks, buttons, spacers, assets, a marked root template), then modules in batches through a full loop of rebuild, mobile merge, componentize and add properties, and side-by-side verification, with design review gating each batch. Your source file is treated as read-only throughout. Requires the audit report from emaillove-migration-audit.
 
 Prefer it done for you, design review included? That is Email Love Enterprise onboarding: [hello@emaillove.com](mailto:hello@emaillove.com).
 

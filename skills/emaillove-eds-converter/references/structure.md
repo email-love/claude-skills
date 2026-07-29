@@ -16,7 +16,10 @@ Two consequences:
 - Writing `setSharedPluginData('emaillove', 'name', 'mj-section')` is the robust path, because
   `getPD` reads private data first and falls back to the shared `emaillove` namespace.
 
-The root frame is identified separately, by `nodeType === 'mainFrame'`.
+An **email template** root is identified separately, by `nodeType === 'mainFrame'`, and carries no
+tag. A **design-system module** root carries no `nodeType` at all and is identified by its tag,
+`mj-wrapper`, like any other wrapper. See "Promoting a frame" below: the two shapes are mutually
+exclusive, and they upload through two different screens.
 
 ## Alignment: the trap
 
@@ -102,6 +105,11 @@ but you do not write percentages: the exporter derives them from the pixel width
 (`nodeJsonExtractor.ts:1426`). A 560 wide group holding two 280 columns exports as 50% and 50%.
 Do not reach for FILL sizing or try to express a percentage in Figma.
 
+Those pinned pixels need **slack** when the column holds text: the width you measure on the Figma
+canvas is measured in a different font binary from the one the email loads, and a pinned column
+cannot grow, so a label that fits exactly on canvas wraps in Preview. Rule and numbers in
+`render-spec.md` section 3.3.1.
+
 To stop a whole section stacking without a group, set `stackColumns` = `'false'` on the section.
 Wrapper-level `stackColumns`/`reverseStack` propagate down to child sections that lack their own.
 
@@ -119,9 +127,9 @@ already set in **private** data always wins; agent values apply only where nothi
 
 | Key | On | Purpose |
 | --- | --- | --- |
-| `nodeType` = `mainFrame` | root frame | marks an email template |
-| `name` | any node | the MJML tag |
-| `backgroundColor`, `contentColor`, `textColor`, `linkColor`, `buttonTextColor`, `buttonContentColor` | root | theme colors. On a **child** node the same five (minus background) are per-node **dark mode** overrides |
+| `nodeType` = `mainFrame` | **email template root only** | marks an email template. **Never write it on a design-system module root**: the upload still runs and archives the block as a whole email |
+| `name` | any node, **including a module root** (`mj-wrapper`) | the MJML tag |
+| `backgroundColor`, `contentColor`, `textColor`, `linkColor`, `buttonTextColor`, `buttonContentColor` | email template root | theme colors. On a **child** node, including a module's own `mj-wrapper` component, the same keys are per-node **dark mode** overrides, not theme, and `buttonContentColor` / `buttonTextColor` export unconditionally rather than only when they differ from the enclosing email. Leave them off a module unless a designer asked for a dark-mode treatment on that block |
 | `href` | element frame | link (buttons, images, heroes) |
 | `altText` | image frame | alt text |
 | `emailSubject`, `emailPreHeader` | root | subject and preheader |
@@ -131,31 +139,98 @@ already set in **private** data always wins; agent values apply only where nothi
 | `stackColumns`, `reverseStack` | section/wrapper | mobile stacking |
 | `breakpoint` | root | when mobile styles switch on (defaults to frame width) |
 There is **no** plugin data key that saves a component into a plugin section. Do not write
-`saveName` or `saveCategory`; the plugin reads neither. See "Promoting a frame to a component".
+`saveName` or `saveCategory`; the plugin reads neither. See "Promoting a frame: an EMAIL
+TEMPLATE and a MODULE are different shapes".
 
 Empty theme colors on the root are **not neutral**: the exporter substitutes dark-theme
 defaults, so a light email exports with dark globals.
 
-## Promoting a frame to a component
+## Promoting a frame: an EMAIL TEMPLATE and a MODULE are different shapes
 
-Saving into a design system is **not** plugin data driven. It is an S3 upload, keyed by design
-system and category, driven entirely through the plugin UI:
+Saving into a design system is **not** plugin data driven in the sense of a "save me" key. It is
+an S3 upload driven through the plugin UI. But **what** you are allowed to select depends on
+which of two things you built, and the plugin enforces the distinction with mutually exclusive
+guards. This is the single most consequential structural decision in a conversion, so decide it
+before you build, not at save time.
+
+| | **EMAIL TEMPLATE** | **DESIGN-SYSTEM MODULE** |
+| --- | --- | --- |
+| What it is | one sendable email | one reusable block placed into many emails |
+| Root node | FRAME or COMPONENT carrying no `mj-*` tag | COMPONENT that **is** the `mj-wrapper` |
+| `nodeType` = `mainFrame` | **required** on the root | **must be absent.** With it the upload archives the block as a whole email |
+| Shared `name` on the root | none | `mj-wrapper` |
+| Theme color keys | all of them, on the root | per-node dark-mode overrides only; usually none |
+| Directly inside it | `mj-wrapper` components | `mj-section` frames |
+| Root layer name | the email name | the module name (becomes the component name and its S3 path) |
+
+**A module is not a small email.** An email root *contains* wrapper components; a module *is* one
+of those wrapper components. Every `mj-wrapper` the plugin itself renders is created as a
+COMPONENT, not a FRAME (`UiParser.ts:1519-1522`:
+`if (tag === MjmlNodeType.Wrapper || isStandalone) frameNode = figma.createComponent()`), so a
+wrapper-as-component is the plugin's own shape, not an agent convention.
+
+### The two guards, which are exact mirrors of each other
+
+`select-component` in `code.ts` has two branches and they reject opposite things:
+
+- **Email template** (`customType === 'customProperties'`, `code.ts:3226`): rejects any selection
+  **without** `nodeType = 'mainFrame'`, with "Please select valid email template". This is the
+  branch behind Custom Templates, Add New Template: `AddTemplate.tsx:62` is its only caller and
+  it always sends `customType: 'customProperties'`.
+- **Module** (the `else` branch, `code.ts:3297`): builds its own temporary frame, marks *that*
+  `nodeType = 'mainFrame'`, clones your selection into it, and then rejects the save if the
+  selected node itself carries `nodeType = 'mainFrame'`, with the same message. No UI reaches
+  this branch today, so read it as intent rather than as the live route.
+
+The live module route is the **Assets sidebar Upload button**
+(`AssetsComponent.tsx:610-632`), which dispatches `syncTemplateUpload` (`code.ts:3861`). It
+keys off the tag rather than the marker: `code.ts:3892` sets
+`isTopLevel = getName(getMetaName(selectedNode)).tagName === 'mj-wrapper'`, and only a top-level
+wrapper gets wrapped in the temp `mainFrame` envelope and gets the MCP companion JSON generated
+(`code.ts:3934`). A module root that is not tagged `mj-wrapper` is archived as if it were a whole
+email and produces no MCP JSON. Two more facts about that route: it refuses to start without a
+selected design system ("Please select a design system first!"), and it takes a **multi
+selection**, uploading every selected wrapper in one batch (`uploadParams.nodeId` is an array
+when more than one node is selected).
+
+Marking a node **both** ways is worse than either mistake: in both serializers the `mainFrame`
+branch is tested before any wrapper handling (`nodeJsonExtractor.ts:282` versus the wrapper branch
+at `1587`; `exportTemplate.ts:180` versus `285`), first match wins, so the output is a nested
+`mjml` document inside `mj-body` that nothing downstream can compile.
+
+### Saving an email template through the UI
 
 1. Select the top-level frame. It must carry `nodeType = 'mainFrame'` or the sandbox rejects it
-   with "Please select valid email template" (`code.ts:2699`).
+   with "Please select valid email template".
 2. A design system must already be selected, or you get "Please select a design system first!"
 3. In the Custom Templates panel, click **Add New Template**, pick a category, confirm.
 
 The S3 key is `ai-users/{licenseKey}/{figmaId}/customs/{brand}/{category}/{name}_{uuid}/...`
-(`awsS3Service.ts:657`), where `name` is **the raw Figma frame name**.
+(`awsS3Service.ts`), where `name` is **the raw Figma frame name**.
 
-Two consequences worth knowing:
+Two consequences worth knowing, and they apply to a module's component name just as much:
 
 - **Rename the frame before saving.** The frame name becomes both the component name and the S3
   path, so saving straight after an AI Import produces a component literally named
   `EmailLove_clone`. There is no rename field in the dialog.
 - **A promoted component carries no on-node record of where it went.** The source of truth is the
   S3 key. Nothing can be read back off the node.
+
+### Saving a module through the UI
+
+A different screen, and this is the one a conversion or a gap-fill block uses:
+
+1. Select the design system in the plugin. Without one the upload refuses to start with
+   "Please select a design system first!"
+2. Open the Assets sidebar section the module belongs to. The section you are looking at is the
+   category it uploads into, so there is no category picker at confirm time. The 13 predefined
+   sections are Pre-Header, Header, Heroes, Single Column, Two Column, Three Column, Four
+   Column, Buttons, Reviews, Images, Lists, Order Tables, Footer (`Assets.tsx`).
+3. Select the `mj-wrapper` component (or several of them) on the canvas, click **Upload**, and
+   confirm. A multi selection uploads as one batch.
+
+Do NOT send a module through Custom Templates, Add New Template: that path tests for
+`nodeType = 'mainFrame'` and rejects anything without it, which is every correctly built module.
 
 ## Frames created by AI Import
 

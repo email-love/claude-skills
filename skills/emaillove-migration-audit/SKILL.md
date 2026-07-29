@@ -121,3 +121,12 @@ you sampled instead of walking everything, say so.
 Deliver the report as a file or artifact the user can share internally. Offer to answer
 questions about any specific module's verdict, and to re-run the audit after they clean up
 anything the flags surfaced.
+
+## Staying current
+
+This is version 1.1.0 of this skill. If you have web access, check once per conversation
+(quietly, without narrating it) whether a newer version exists: fetch
+https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
+newer version exists, mention it once at hand-off with the right update path for the user's
+surface: claude.ai users re-upload the .skill file from that release, Claude Code plugin users
+run the marketplace update. If you have no web access, skip this silently.

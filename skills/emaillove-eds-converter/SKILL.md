@@ -50,16 +50,36 @@ Build the scaffold every later batch depends on:
 5. **Assets.** Export the logo and any recurring imagery from the source file
    (download_assets) and upload into the target file (upload_assets). Logos become images,
    never vectors.
-6. **Root template frame** on Campaigns at the customer's email width: vertical auto-layout,
-   width FIXED at that email width, height Hug, the shared marker, and the six theme colors
-   from the audit's proposal:
+6. **Root EMAIL TEMPLATE frame** on Campaigns at the customer's email width: vertical
+   auto-layout, width FIXED at that email width, height Hug, the shared marker, and the theme
+   colors from the audit's proposal:
    `setSharedPluginData('emaillove', 'nodeType', 'mainFrame')` plus backgroundColor,
-   contentColor, textColor, linkColor, buttonTextColor, buttonContentColor.
+   contentColor, textColor, linkColor, buttonTextColor, buttonContentColor,
+   lightThemeBackgroundColor, and fallBackFontName (section 2.1 of the render spec has all
+   nine keys and what each one is for). Empty theme keys are not neutral: the exporter
+   substitutes dark defaults.
+   **This is the only `mainFrame` foundations produces, and it is an email, not a module.**
+   It exists so batch 1 has somewhere to drop modules and see them in context. The modules
+   themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
+   each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker and no theme keys.
+   Do not copy this frame as a starting point for a module.
 7. **Report** what was built, what the audit proposed that you changed, and what needs the
    designer's eye before batch 1 (theme colors especially: they are a proposal until a human
    confirms).
 
 ## Phase 3: Module conversion (run per batch)
+
+**Phase 3 builds MODULES, not emails.** A module is one reusable block that gets dropped into
+many emails, so its shape is a **`mj-wrapper` COMPONENT**: the wrapper IS the component, it
+carries shared `name = 'mj-wrapper'`, its layer name is the module name, and it carries **no
+`nodeType = 'mainFrame'` marker anywhere in its tree**. The marker is not a harmless extra: the
+upload does not stop you, it archives the block as a whole email and emits no component JSON.
+An email template is the other shape (a `mainFrame` root with wrapper components stacked
+inside), and foundations built one of those in Phase 2 for context. Do not build a module as a
+small email.
+
+Section 2 of `references/render-spec.md` has both shapes side by side and the plugin evidence.
+Read it before the first module of a batch.
 
 For each module in the batch, in order:
 
@@ -98,17 +118,36 @@ preferred for migration batches because every node it writes is inspectable and 
 ### 2. Transcribe the MJML JSON into the target file
 
 Follow `references/render-spec.md` exactly: it maps every MJML tag and attribute to the
-Figma node, auto-layout, fill, and shared plugin data the plugin's exporter reads back,
-including the root frame's `nodeType = mainFrame` marker and theme color keys. While
-transcribing, build the module as a component with correct export structure:
+Figma node, auto-layout, fill, and shared plugin data the plugin's exporter reads back.
+**Start at its section 2 and build the MODULE shape**, not the email-template shape.
 
+The worker returns a whole MJML document, so its JSON has an `mjml` / `mj-body` envelope and
+one or more wrappers inside. You do not transcribe that envelope. Take the module's wrapper and
+make it the component:
+
+```js
+const moduleRoot = figma.createComponent()                          // the mj-wrapper itself
+moduleRoot.name = 'Hero, text led'                                  // the module name
+moduleRoot.setSharedPluginData('emaillove', 'name', 'mj-wrapper')
+// and nothing else: no nodeType, no theme colors
+```
+
+- **No `mainFrame`, no theme keys, no wrapper-inside-a-wrapper.** If the worker JSON returns
+  several wrappers for one source module, that is usually one module per wrapper: convert them
+  as separate modules, or, when they genuinely are one block, merge their sections under a
+  single wrapper component. Never nest one wrapper inside another to keep them together.
+- **The layer name is load bearing here**, unlike everywhere else in the file. It becomes the
+  saved component name and its storage path, and there is no rename field in the plugin's save
+  dialog, so name it the way it should appear in the customer's library.
 - **Every node gets two names.** The MJML tag goes in the `name` shared plugin data key;
   the Figma layer name gets the plugin's own friendly display name for that tag ("Row
   (Contains columns that sit side by side)", "Text Block", "Button Text"), so the layers
   panel reads like a plugin-built file rather than a wall of `mj-` strings. The exporter
-  never reads the layer name for dispatch, so this is free. Section 6 of the render spec
-  has the full tag to display-name table, the precedence rules, and the three ways this
-  goes wrong. Never rely on the layer-name fallback.
+  never reads the layer name for dispatch, so this is free. The module root is the one
+  exception: it is tagged `mj-wrapper` like any wrapper, but its layer name is the module
+  name rather than the wrapper display string. Section 6 of the render spec has the full tag
+  to display-name table, the precedence rules, and the three ways this goes wrong. Never rely
+  on the layer-name fallback.
 - **Content leaves are tagged PAIRS, wrapper plus inner node.** `mj-text-Frame` contains a
   text node tagged `mj-text`; `mj-image-Frame` contains the image rectangle tagged
   `mj-image`; `mj-button-Frame` contains a node tagged `mj-button` whose own direct child is
@@ -123,6 +162,7 @@ transcribing, build the module as a component with correct export structure:
   columns and `mj-group` percentage math, and a button sized FILL is what makes it full width on
   mobile. `mj-spacer` is the single node allowed a fixed height. Read section 0 before you
   transcribe, not after.
+
 **Start from the visual pattern, not the layer name.** Most conversion mistakes come from
 rebuilding what a design *looks like* instead of reaching for the primitive that produces it.
 This mapping covers almost everything you will meet:
@@ -148,13 +188,26 @@ This mapping covers almost everything you will meet:
   is the most common thing you must actively restructure rather than copy.
 - **A badge, pill, or icon sitting beside text is an `mj-group`, not a loose frame inside
   `mj-text-Frame`.** A loose frame there flattens to an image and detaches from the text.
-  Rebuild it as a group inside the section: `mj-group` containing one `mj-column` for the badge
-  (its pill styling becomes the column's background colour and corner radius, with live text
-  inside) and another `mj-column` for the adjoining text. Size those columns in **percentages,
-  not pixels**, and remember the group must be a child of the section, not of a column, so a
-  design that nests such a row inside a column needs the row lifted to section level. Only fall
-  back to treating the region as an editable image when the composition is genuinely
-  inseparable.
+  Rebuild it as a group inside the section: `mj-group` containing one `mj-column` that holds
+  the badge as an `mj-button` (the table row above: a pill is a button, never a radiused
+  column) and another `mj-column` for the adjoining text. Give those columns exact **fixed
+  pixel widths** and let the exporter derive the percentages (render spec section 3.3), pin
+  those widths with slack rather than at the width Figma hugged to (render spec section 3.3.1:
+  a pinned column cannot grow, and the email renders a different font binary than the canvas),
+  and remember the group must be a child of the section, not of a column, so a design that nests
+  such a row inside a column needs the row lifted to section level. Only fall back to treating
+  the region as an editable image when the composition is genuinely inseparable.
+- **The worker never emits `mj-group`,** so every side-by-side row that must not stack is
+  yours to rebuild. Its whole vocabulary is `mj-wrapper`, `mj-section`, `mj-column`,
+  `mj-text`, `mj-image`, `mj-button`, `mj-divider`, `mj-spacer`, and `mj-social` with
+  `mj-social-element` children. When it returns a tag the render spec does not map, in
+  practice a social icon row, do not invent a node and do not silently drop it: rebuild the
+  row from mapped primitives (for social icons, an `mj-group` of one-column `mj-image` pairs,
+  each with its own `href`). List every row you rebuilt this way in the module's report line.
+- **Every `src` comes back as `"placeholder"`.** Place the real assets you round-tripped in
+  foundations; use flat gray fills at the correct dimensions everywhere else and list them.
+- **Unpinned colors, radii, and fonts drift** between runs, and unpinned fonts flatten to
+  Arial. Correct them against the foundations rather than accepting what came back.
 - Map every text node to the type styles from foundations.
 - Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.
@@ -181,15 +234,24 @@ changes (padding scale, hidden elements, alignment shifts, reordered stacks). Wh
 difference cannot be expressed in these keys (different copy, different image crop), note it
 in the module's report line for the designer.
 
-### 4. Componentize, add properties, and pre-tag
+### 4. Confirm the component shape, add properties, and pick its category
 
-Make the finished module a COMPONENT on its category page. A module is a design-system
-asset, so it is a component, not a frame: the plugin accepts a COMPONENT root everywhere it
-accepts a FRAME, on both the export path and Add New Template, and component properties are
-impossible without one. Section 7 of the render spec has the calls, the confirmation, and
-the four rules that keep a component root working (keep it a direct page child, never
-combine template roots into a variant set, bind properties at the level that owns the node,
-do not write `isStandalone`).
+The module was built as a COMPONENT in step 2, because the `mj-wrapper` IS the component. Do
+not create a second component around it, and do not promote a `mainFrame` frame into one.
+Confirm before going further, by reading the values back off the root:
+
+- `node.type === 'COMPONENT'`
+- `getSharedPluginData('emaillove', 'name') === 'mj-wrapper'`
+- `getSharedPluginData('emaillove', 'nodeType') === ''` (empty, on the root and everywhere
+  below it)
+- the root is a direct child of its category page, and its layer name is the module name
+
+The plugin creates every wrapper as a COMPONENT itself (`UiParser.ts:1519-1522`), so this is
+its own shape, not a convention we invented, and component properties are impossible without
+it. Section 7 of the render spec has the calls and the four rules that keep a component root
+working (keep it a direct page child, never combine roots into a variant set, bind properties
+at the level that owns the node, do not write `isStandalone`); section 2.3 has the evidence
+for why the `mainFrame` marker must be absent.
 
 **Add component properties for the parts a marketer will change**, per section 8 of the
 render spec: TEXT bound to `characters` on the inner text node, BOOLEAN bound to `visible`
@@ -204,46 +266,46 @@ working range, and zero is a legitimate answer for a fixed block like a logo hea
 `componentPropertyReferences` back off each node to confirm the binding landed. Record the
 properties you added, and why, in the module's report line.
 
-Then tag it for saving into the plugin. **Use the customer's real category names**, which are
+Then decide its category for the upload. **Use the customer's real category names**, which are
 whatever sections already exist in their plugin, not names you invent. If the Email Love MCP is
-connected, `list_components` returns their categories; otherwise infer from their library page
-names or ask. Classify by what the component structurally is: **Hero** for a top-of-email
-feature block, **Single Column** for one full-width stack, **Multi-Column** for side-by-side
-columns, **Receipt** for line-item layouts, **Image** for image-only blocks. When nothing fits,
-choose the closest existing section and note it, rather than inventing one.
+connected, `list_components` returns their categories; otherwise read them off the plugin's
+Assets sidebar, which ships 13 predefined sections: Pre-Header, Header, Heroes, Single Column,
+Two Column, Three Column, Four Column, Buttons, Reviews, Images, Lists, Order Tables, Footer.
+Classify by what the component structurally is: **Heroes** for a top-of-email feature block,
+**Single Column** for one full-width stack, **Two Column** or **Three Column** for side-by-side
+columns, **Order Tables** for line-item layouts, **Images** for image-only blocks. When nothing
+fits, choose the closest existing section and note it, rather than inventing one.
 
-```js
-node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')
-node.setSharedPluginData('emaillove', 'saveName', 'Hero - text led, portrait')
-```
-
-**Know what these keys do today: nothing yet.** The current plugin does not read `saveCategory`
-or `saveName`; saving into a design system happens only through the plugin's Add New Template
-dialog, and the **Figma frame name** becomes the component name. So always set the frame's
-actual name to the intended component name too. Write the two keys anyway: they are the planned
-prefill contract for the plugin's upcoming bulk-save flow, and they cost nothing.
-
-Record the category you chose per module in the batch report, so a human can correct any
-misfits in one pass rather than hunting for them later.
+**Do not write `saveCategory` or `saveName` plugin data.** The plugin reads neither key. A
+module goes into a design system through the Assets sidebar Upload button, and the **Figma
+component name** becomes the component name, so the layer name you set in step 2 is the only
+thing that carries. Record the category you chose per module in the batch report, so a human
+can correct any misfits in one pass rather than hunting for them later.
 
 ### 5. Verify per module
 
 Verify against `references/structure.md` (the plugin's ground truth) and the post-build
 checklist at the end of `references/render-spec.md`:
 
+- **Shape, first and hardest:** the root is a COMPONENT tagged `mj-wrapper`, its layer name is
+  the module name, and `nodeType` is empty on the root **and on every node below it**. Read it
+  back; do not assume. A module carrying `mainFrame` uploads as a whole email, and a module
+  with a wrapper nested inside another wrapper is an email in disguise. No theme color keys
+  unless a designer asked for a dark-mode treatment on that block.
 - Structural checklist: the `name` plugin data key resolves to a real tag on every node
   (nothing relying on the layer-name fallback); every leaf is a complete tagged pair; both
   alignment axes match on every auto-layout frame; no detached instances; no unrecognized
   frames except intentional editable-image regions; `mj-column-inner`, if used, is literally
   `children[0]` of its column.
 - Sizing: walk the tree and confirm every frame is vertical HUG, the only fixed height is an
-  `mj-spacer`, every FIXED width is one of the load-bearing cases, and each button's width
-  sizing was chosen for its mobile behavior (render spec section 0).
+  `mj-spacer`, every FIXED width is one of the load-bearing cases, every pinned width that
+  carries text has slack (render spec section 3.3.1), and each button's width sizing was
+  chosen for its mobile behavior (render spec section 0).
 - Naming: every layer carries the display name for its tag, and no friendly string leaked
   into the plugin data `name` key.
-- Component: the module root is a COMPONENT, a direct child of its category page, not inside
-  a component set or a Figma section, with no stray instances of it left loose on the page.
-  Every property binding re-read and confirmed.
+- Component: the module root is a direct child of its category page, not inside a component
+  set or a Figma section, with no stray instances of it left loose on the page. Every property
+  binding re-read and confirmed.
 - Visual: screenshot the rebuild next to the source screenshot from step 1; flag
   divergences rather than silently accepting them.
 - Mobile: list the mobile keys you set per node.
@@ -252,12 +314,27 @@ checklist at the end of `references/render-spec.md`:
 
 One report per batch: per module, what was rebuilt, verdict honored or changed (with reason),
 mobile decisions, divergences flagged, component properties added and the evidence for each,
-save tags applied. End with the open questions for the design review. Do not start the next
-batch until the user says the review happened.
+the category you chose. End with the open questions for the design review. Do not start the
+next batch until the user says the review happened.
 
 ## Hand-off after the final batch
 
-The design system is on the canvas but not yet in the plugin. Walk the user through saving
-each pre-tagged component (or the bulk import, once the plugin ships it), then: sync check in
-the plugin, build one real sample email from the new components as proof, export it, and send
-a seed test. Building is free; exports count against plan limits.
+The design system is on the canvas but not yet in the plugin. Walk the user through the
+upload: pick the design system in the plugin, open the Assets section the batch belongs to,
+select the wrapper components on the canvas, click **Upload**, confirm. A multi-selection of
+wrappers uploads as one batch, so an approved batch goes in with one click rather than one
+component at a time. **The Upload button only renders for a user on a paid plan**
+(`AssetsComponent.tsx` gates that whole header on the subscribed state), so if the person
+doing the upload is on Free they will not see the button at all and the hand-off needs a seat
+on a paid plan first. Then: sync check in the plugin, build one real sample email from the
+new components as proof, export it, and send a test to a real inbox. Building is free;
+exports count against plan limits.
+
+## Staying current
+
+This is version 1.10.1 of this skill. If you have web access, check once per conversation
+(quietly, without narrating it) whether a newer version exists: fetch
+https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
+newer version exists, mention it once at hand-off with the right update path for the user's
+surface: claude.ai users re-upload the .skill file from that release, Claude Code plugin users
+run the marketplace update. If you have no web access, skip this silently.
