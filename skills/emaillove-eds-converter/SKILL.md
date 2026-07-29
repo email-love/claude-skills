@@ -73,8 +73,16 @@ module as a component with correct export structure:
   untagged inner content is not skipped, it is flattened into a hosted PNG by the exporter's
   unknown-node path, so buttons silently lose their text and links and image sections can
   export empty. After building each module, verify every leaf pair before moving on.
+- **Build the pair, do not style the wrapper.** The wrapper carries layout; the inner node
+  carries content. An image is an `mj-image-Frame` containing a rectangle whose fill is the
+  image, never a frame with an image fill on itself. A divider is an `mj-divider-Frame`
+  containing a line, never a frame with a solid fill. Childless wrappers export as empty
+  cells. Legacy designs almost always express images and rules as fills on a frame, so this
+  is the most common thing you must actively restructure rather than copy.
 - A badge, pill, or icon sitting beside text is its own element pair, not a loose frame
-  inside `mj-text-Frame`.
+  inside `mj-text-Frame`. If the source design puts a pill inline with text, either rebuild it
+  as its own element pair or, when it is genuinely decorative and inseparable, treat that whole
+  region as an editable image and say so.
 - Map every text node to the type styles from foundations.
 - Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.

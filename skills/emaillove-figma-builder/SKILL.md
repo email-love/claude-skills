@@ -123,6 +123,14 @@ column.** Button styles in a design system (for example "Blue Text White") are
 carry the `mj-button` tag itself. The same holds for text and images: tagged `mj-text` inside
 `mj-text-Frame`, tagged `mj-image` inside `mj-image-Frame`.
 
+**Build the pair, do not style the wrapper.** The wrapper frame carries layout (padding,
+alignment, sizing); the inner node carries the content. An image element is a
+`mj-image-Frame` **containing a rectangle** whose fill is the image, not a frame with an image
+fill on itself. A divider is a `mj-divider-Frame` **containing a line or thin rectangle**, not
+a frame with a solid fill. A wrapper with no children has nothing for the exporter to emit, so
+it exports as an empty cell no matter how right it looks on the canvas. When you catch yourself
+applying a fill directly to an `mj-*-Frame`, you are building the wrong shape.
+
 **Untagged content does not fail loudly. It gets flattened into a picture.** Anything the
 exporter does not recognize hits its "render the unknown as an image" path, which is the same
 mechanism that powers editable images. So a forgotten `mj-button` tag turns a live, linkable
@@ -349,4 +357,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.8.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.8.1 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
