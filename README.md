@@ -25,7 +25,9 @@ claude plugin marketplace add email-love/claude-skills
 claude plugin install emaillove-migration-audit@email-love
 ```
 
-On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead. Migration is Claude-only: Codex has no plugin system.
+On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
+
+Using **Codex**? Both migration phases ship as a project-scoped `AGENTS.md` at [email-love/codex-agents/migration](https://github.com/email-love/codex-agents/tree/main/migration).
 
 ### emaillove-eds-converter
 
