@@ -26,7 +26,7 @@ Two hard rules:
 1. The migration audit report (file or pasted).
 2. The source Figma file link (read-only).
 3. The target file: an existing one the team designates, or create one named
-   "[Customer] — Email Love Design System" via the Figma MCP.
+   "[Customer] - Email Love Design System" via the Figma MCP.
 4. Which batch to run: "foundations", or a named batch of modules ("batch 1: the 5 modules
    listed in the audit's recommended next step", or an explicit list).
 
@@ -59,10 +59,44 @@ Build the scaffold every later batch depends on:
 
 For each module in the batch, in order:
 
-### 1. Rebuild the desktop frame as Email Love structure
+### 1. Convert the source design to MJML JSON via the design-converter worker
 
-Work from the source design's structure and a screenshot. In the target file, build the
-module as a component with correct export structure:
+Do not rebuild by eye and do not run the plugin's Convert button for migration batches. The
+pipeline is: screenshot the source module (read-only), POST it to the design-converter
+worker, transcribe the returned MJML JSON into the target file, then verify.
+
+1. **Screenshot the source frame** from the customer's file (read-only; `get_screenshot`
+   or an export at 1x/2x). Keep the PNG; it is also your visual reference for verification.
+2. **POST to the worker** at `https://design-converter.andy-30d.workers.dev`:
+   - Headers: `Content-Type: application/json`, `Authorization: Bearer` with an EMPTY
+     token, and `X-Auth-Provider: gumroad`. The worker treats empty Bearer + gumroad as
+     an anonymous Free user, which is allowed; no license key is needed for this path.
+   - Body: `{ "screenshot": "<raw base64 PNG, no data: prefix>", "screenshotMime":
+     "image/png" }`. `layerTree` and `promptInputs` are optional plugin-sandbox extras;
+     screenshot alone works and is the normal agent path.
+   - Query params, all optional:
+     - `nocache=1` skips the cache read (results are cached by screenshot hash), for QA.
+     - `recache=1` skips the cache read AND forces a write, overwriting a poisoned cached
+       result. Use this when a previous conversion of the same screenshot was bad.
+     - `decomposeRasterized=1` asks the worker to OCR flat image-only regions into live
+       `mj-text`/`mj-button` elements instead of one `mj-image`. Use for source frames
+       that are a single baked screenshot with no live text.
+   - The response body is the MJML JSON. Response header `X-Cache` says HIT or MISS;
+     `X-Trivial-Response: true` means the result degenerated to a single image and you
+     should re-run with `recache=1` (and usually `decomposeRasterized=1`).
+3. **Save the MJML JSON to disk per module** so the transcription and later re-verification
+   work from a stable input.
+
+Fallback only: users without Figma MCP write access can select frames in the Figma plugin's
+AI Import screen and click Convert there; it calls this same worker. The agent path above is
+preferred for migration batches because every node it writes is inspectable and repairable.
+
+### 2. Transcribe the MJML JSON into the target file
+
+Follow `references/render-spec.md` exactly: it maps every MJML tag and attribute to the
+Figma node, auto-layout, fill, and shared plugin data the plugin's exporter reads back,
+including the root frame's `nodeType = mainFrame` marker and theme color keys. While
+transcribing, build the module as a component with correct export structure:
 
 - Structural frames named exactly (`mj-section`, `mj-column`) or carrying the tag in the
   `name` shared plugin data key with a human layer name.
@@ -114,7 +148,7 @@ This mapping covers almost everything you will meet:
   editable-image frame for the rich region.
 - Text over a single background photo is mj-hero territory, live text, not an image.
 
-### 2. Merge the mobile twin
+### 3. Merge the mobile twin
 
 Diff the source's mobile frame against its desktop sibling and express every intentional
 difference as Mobile Styles data on the rebuilt nodes, via shared plugin data:
@@ -131,7 +165,7 @@ changes (padding scale, hidden elements, alignment shifts, reordered stacks). Wh
 difference cannot be expressed in these keys (different copy, different image crop), note it
 in the module's report line for the designer.
 
-### 3. Componentize, add properties, and pre-tag
+### 4. Componentize, add properties, and pre-tag
 
 Make the finished module a COMPONENT on its category page.
 
@@ -160,22 +194,32 @@ choose the closest existing section and note it, rather than inventing one.
 
 ```js
 node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')
-node.setSharedPluginData('emaillove', 'saveName', 'Hero — text led, portrait')
+node.setSharedPluginData('emaillove', 'saveName', 'Hero - text led, portrait')
 ```
+
+**Know what these keys do today: nothing yet.** The current plugin does not read `saveCategory`
+or `saveName`; saving into a design system happens only through the plugin's Add New Template
+dialog, and the **Figma frame name** becomes the component name. So always set the frame's
+actual name to the intended component name too. Write the two keys anyway: they are the planned
+prefill contract for the plugin's upcoming bulk-save flow, and they cost nothing.
 
 Record the category you chose per module in the batch report, so a human can correct any
 misfits in one pass rather than hunting for them later.
 
-### 4. Verify per module
+### 5. Verify per module
 
-- Structural checklist: naming or metadata resolves on every structural frame; content in
-  element frames; no detached instances; no unrecognized frames except intentional
-  editable-image regions.
-- Visual: screenshot the rebuild next to a screenshot of the source design; flag divergences
-  rather than silently accepting them.
+Verify against `references/structure.md` (the plugin's ground truth) and the post-build
+checklist at the end of `references/render-spec.md`:
+
+- Structural checklist: naming or metadata resolves on every structural frame; every leaf
+  is a complete tagged pair; both alignment axes match on every auto-layout frame; no
+  detached instances; no unrecognized frames except intentional editable-image regions;
+  `mj-column-inner`, if used, is literally `children[0]` of its column.
+- Visual: screenshot the rebuild next to the source screenshot from step 1; flag
+  divergences rather than silently accepting them.
 - Mobile: list the mobile keys you set per node.
 
-### 5. Batch report and gate
+### 6. Batch report and gate
 
 One report per batch: per module, what was rebuilt, verdict honored or changed (with reason),
 mobile decisions, divergences flagged, save tags applied. End with the open questions for the
