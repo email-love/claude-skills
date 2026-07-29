@@ -191,6 +191,26 @@ change an existing link, say plainly that they need to change it in the plugin.
 Because you cannot verify which nodes already carry private values, treat every link you set as
 provisional: list them in your report so the user can spot any that did not take.
 
+### Mobile styles
+
+Mobile behavior is data too, and you can set it as you build (export-verified). The keys go on
+the element frame via shared plugin data, same pattern as links (write the frame and its
+first child when unsure):
+
+- Padding on mobile: `mobileStylesPaddingTop` / `Right` / `Bottom` / `Left` (inner variants:
+  `mobileStylesInnerPadding*`). Values are pixel numbers as strings.
+- Per-device visibility: `mobileStylesHideInMobileDevice` / `mobileStylesHideInDesktopDevice`
+  set to `'true'`. A desktop-only and mobile-only variant of a region is two sibling nodes,
+  one hidden each way.
+- Alignment on mobile: `mobileStylesTextAlign` (text) / `mobileStylesAlign`.
+- Column stacking on wrappers: `stackColumns`.
+
+Use these when the brief calls for mobile-specific behavior: tighter mobile padding, a
+mobile-only image swap, centering a headline on small screens. The same rule as links
+applies: values a person set by hand in the plugin's Mobile Styles panel live in private
+data and always win; yours apply only where nothing was set. List every mobile key you set
+in your report so the user can verify in the plugin's mobile preview.
+
 ### The full element vocabulary
 
 Beyond text, image, and button, the plugin has first-class element types. Use them rather than
@@ -305,4 +325,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.6.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.7.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
