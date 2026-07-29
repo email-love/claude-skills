@@ -10,8 +10,8 @@
     {
       "name": "emaillove-figma-builder",
       "source": "./skills/emaillove-figma-builder",
-      "description": "Build export-ready marketing and lifecycle emails inside your Figma file from your Email Love design system, with a guided brief, visual component picker, and inspiration from 500,000+ real brand emails",
-      "version": "1.12.0",
+      "description": "Build export-ready marketing and lifecycle emails inside your Figma file, with a guided brief, visual component picker, and inspiration from 500,000+ real brand emails. Two paths: instance your Email Love design system, or start from scratch with AI Import when you do not have one yet",
+      "version": "2.0.0",
       "author": {
         "name": "Email Love"
       }

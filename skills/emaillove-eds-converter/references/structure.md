@@ -95,9 +95,12 @@ as an empty cell. An image is `mj-image-Frame` *containing* a rectangle; a divid
 ## mj-group
 
 For elements that must stay side by side on mobile (columns otherwise stack). Contains
-`mj-column`s, and **must be a child of `mj-section`**, never of a column. MJML requires columns
-inside a group to be sized in **percentages, not pixels**; the plugin computes this from the
-Figma widths (`nodeJsonExtractor.ts:1426`).
+`mj-column`s, and **must be a child of `mj-section`**, never of a column.
+
+**In Figma, give those inner columns FIXED pixel widths.** The exported MJML needs percentages,
+but you do not write percentages: the exporter derives them from the pixel widths
+(`nodeJsonExtractor.ts:1426`). A 560 wide group holding two 280 columns exports as 50% and 50%.
+Do not reach for FILL sizing or try to express a percentage in Figma.
 
 To stop a whole section stacking without a group, set `stackColumns` = `'false'` on the section.
 Wrapper-level `stackColumns`/`reverseStack` propagate down to child sections that lack their own.
