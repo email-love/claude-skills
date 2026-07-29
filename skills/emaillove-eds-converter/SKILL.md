@@ -65,9 +65,16 @@ Work from the source design's structure and a screenshot. In the target file, bu
 module as a component with correct export structure:
 
 - Structural frames named exactly (`mj-section`, `mj-column`) or carrying the tag in the
-  `name` shared plugin data key with a human layer name. Content lives in leaf element
-  frames: `mj-text-Frame`, `mj-image-Frame`, `mj-button-Frame`, `mj-divider-Frame`,
-  `mj-spacer`. Never place a button style component directly in a column.
+  `name` shared plugin data key with a human layer name.
+- **Content leaves are tagged PAIRS, wrapper plus inner node.** `mj-text-Frame` contains a
+  text node tagged `mj-text`; `mj-image-Frame` contains the image rectangle tagged
+  `mj-image`; `mj-button-Frame` contains a node tagged `mj-button` whose own direct child is
+  a TEXT node. Tagging only the wrapper is the single most damaging mistake in a conversion:
+  untagged inner content is not skipped, it is flattened into a hosted PNG by the exporter's
+  unknown-node path, so buttons silently lose their text and links and image sections can
+  export empty. After building each module, verify every leaf pair before moving on.
+- A badge, pill, or icon sitting beside text is its own element pair, not a loose frame
+  inside `mj-text-Frame`.
 - Map every text node to the type styles from foundations.
 - Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.

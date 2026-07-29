@@ -80,12 +80,26 @@ mainFrame                          the root; carries the marker and theme colors
 └── section component instance     Header, Hero, Copy block: your library's sections
     └── mj-section
         └── mj-column
-            └── mj-text-Frame | mj-image-Frame | mj-button-Frame
-                └── the content: a TEXT node, an image RECTANGLE, or an
-                    instance of a button style component
+            ├── mj-text-Frame      wrapper
+            │     └── mj-text          the TEXT node itself, tagged
+            ├── mj-image-Frame     wrapper
+            │     └── mj-image         the RECTANGLE with the image fill, tagged
+            └── mj-button-Frame    wrapper
+                  └── mj-button        tagged; its own direct child is a TEXT node
 ```
 
 An `mj-wrapper` may sit above `mj-section` when a section needs a full-width background.
+
+**Every content leaf is a tagged pair: the wrapper frame AND the node inside it.** The plugin's
+own type list is explicit about this, splitting "content block frames (outer wrappers)" from
+"content blocks (inner nodes)". `mj-text-Frame` alone is not enough; the text node inside it
+must be tagged `mj-text`. Same for `mj-image` inside `mj-image-Frame`, and `mj-button` inside
+`mj-button-Frame` (the button extractor then looks for a TEXT node as that button's own direct
+child, so a button style component instance must itself carry the `mj-button` tag).
+
+This is easy to miss because the plugin writes those inner tags into its private plugin data,
+which you cannot read. A working email inspected from the outside looks like "a wrapper with an
+instance inside", and the tag that makes it work is invisible.
 
 **Rule 1: declare the tag, do not just name the layer after it.** There are two supported
 conventions, and you should prefer the first:
@@ -103,13 +117,23 @@ The trap sits between the two. `mj-section — Report CTA` with no `name` key fa
 entire string is read as the tag and matches nothing. Never append a suffix to a bare tag name;
 either set the metadata key or use the parenthesized form.
 
-**Rule 2: content lives in a leaf element frame, never directly in a column.** Button styles
-in a design system (for example "Blue Text White") are **sub-components, not sections**. They
-carry no email structure of their own, which is deliberate: the team updates the button style
-in one place and every email inherits it. A button instance must sit inside an
-`mj-button-Frame`, which is what the exporter recognizes. Dropping a button component straight
-into an `mj-column` exports nothing. The same holds for text and images, which belong in
-`mj-text-Frame` and `mj-image-Frame`.
+**Rule 2: content lives in a tagged leaf inside a leaf element frame, never loose in a
+column.** Button styles in a design system (for example "Blue Text White") are
+**sub-components, not sections**. A button instance must sit inside an `mj-button-Frame` AND
+carry the `mj-button` tag itself. The same holds for text and images: tagged `mj-text` inside
+`mj-text-Frame`, tagged `mj-image` inside `mj-image-Frame`.
+
+**Untagged content does not fail loudly. It gets flattened into a picture.** Anything the
+exporter does not recognize hits its "render the unknown as an image" path, which is the same
+mechanism that powers editable images. So a forgotten `mj-button` tag turns a live, linkable
+button into a flat PNG with no text and no link; a forgotten `mj-image` tag can produce an
+empty section. If your export contains images where you expected live text, a missing inner
+tag is the first thing to check.
+
+An `mj-text-Frame` should hold one tagged text node. If a design puts a badge or pill beside
+text on the same line, that badge is its own element (its own frame plus tagged inner node),
+not a stray frame parked inside the text wrapper: an untagged sibling gets flattened to an
+image and the text separates from it.
 
 Because both mistakes are invisible on the canvas, the safest path is to **not hand-build this
 scaffold at all**. Duplicate a section that already has the correct structure and replace its
@@ -325,4 +349,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.7.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.8.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
