@@ -1,11 +1,20 @@
 {
   "name": "emaillove-migration-audit",
   "displayName": "Email Love Migration Audit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Audit an existing Figma design system for migration to Email Love: read-only classification of every template plus brand foundations and effort estimate",
-  "author": { "name": "Email Love", "email": "hello@emaillove.com" },
+  "author": {
+    "name": "Email Love",
+    "email": "hello@emaillove.com"
+  },
   "homepage": "https://help.emaillove.com/plugin/ai/agents-in-figma",
   "repository": "https://github.com/email-love/claude-skills",
   "license": "MIT",
-  "keywords": ["email", "figma", "migration", "design-system", "audit"]
+  "keywords": [
+    "email",
+    "figma",
+    "migration",
+    "design-system",
+    "audit"
+  ]
 }

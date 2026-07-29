@@ -18,9 +18,12 @@ Email Love (hello@emaillove.com).
 ## Step 1: Scope the input
 
 You need the Figma file link. If several files hold the design system, audit each. Ask only
-two questions if not obvious: which frames or pages are the email templates (as opposed to
-web or app design), and whether there is an existing production email you can use as a
-reference for how their emails actually render today.
+three questions if not obvious: which frames or pages are the email templates (as opposed to
+web or app design); whether there is an existing production email you can use as a reference
+for how their emails actually render today; and whether the component masters live in this
+file or in a separate Figma library, and if separate, ask for that file too. A missing
+library file is the most common blocker an audit surfaces, and knowing up front saves the
+report from guessing about components it cannot see.
 
 ## Step 2: Survey the file
 
