@@ -66,6 +66,67 @@ Never design freehand. Everything you build must be instances of the library's c
 
 ## Step 4: Build
 
+### How the frame structure works
+
+The plugin resolves what each layer *is* from a plugin data key called `name`, and falls back
+to the Figma layer name when that key is absent. Getting this wrong produces a frame that
+looks perfect on the canvas and silently drops content on export, so it is worth understanding
+before you build anything.
+
+Every email nests in this order:
+
+```
+mainFrame                          the root; carries the marker and theme colors
+└── section component instance     Header, Hero, Copy block: your library's sections
+    └── mj-section
+        └── mj-column
+            └── mj-text-Frame | mj-image-Frame | mj-button-Frame
+                └── the content: a TEXT node, an image RECTANGLE, or an
+                    instance of a button style component
+```
+
+An `mj-wrapper` may sit above `mj-section` when a section needs a full-width background.
+
+**Rule 1: declare the tag, do not just name the layer after it.** There are two supported
+conventions, and you should prefer the first:
+
+- **Metadata (what the plugin itself uses, and the most robust).** Write the MJML tag into the
+  `name` key: `node.setSharedPluginData('emaillove', 'name', 'mj-section')`. The layer name is
+  then free, so you can label it anything a human will understand ("Report CTA row"). This is
+  why the design system's own sections have friendly names like "Hero — FARE Act" and still
+  export correctly, and why the docs say you can rename layers without breaking the export.
+- **Layer name (the fallback, used when no `name` key exists).** The layer name must resolve to
+  the tag on its own, either exactly (`mj-section`) or in the parenthesized form the plugin
+  parses (`Report CTA, (mjml:mj-section)`).
+
+The trap sits between the two. `mj-section — Report CTA` with no `name` key fails, because the
+entire string is read as the tag and matches nothing. Never append a suffix to a bare tag name;
+either set the metadata key or use the parenthesized form.
+
+**Rule 2: content lives in a leaf element frame, never directly in a column.** Button styles
+in a design system (for example "Blue Text White") are **sub-components, not sections**. They
+carry no email structure of their own, which is deliberate: the team updates the button style
+in one place and every email inherits it. A button instance must sit inside an
+`mj-button-Frame`, which is what the exporter recognizes. Dropping a button component straight
+into an `mj-column` exports nothing. The same holds for text and images, which belong in
+`mj-text-Frame` and `mj-image-Frame`.
+
+Because both mistakes are invisible on the canvas, the safest path is to **not hand-build this
+scaffold at all**. Duplicate a section that already has the correct structure and replace its
+content. Only assemble the hierarchy yourself when no existing section fits, and then copy the
+naming from a working section rather than inventing it.
+
+### Do not change the template's foundations
+
+Read these before building and preserve them exactly: the **email width** (the root frame's
+width, usually 600 or 640), the **breakpoint**, and the **fonts** already in use. These are
+brand decisions someone made, not defaults to improve on.
+
+Fonts deserve specific care. If a font in the file will not load in your environment, do not
+substitute a different one to get the edit through. Report that the font was unavailable and
+leave the layer as you found it, because a silent swap changes the brand's typography
+everywhere it lands and is easy to miss in review.
+
 ### Root frame: duplicate for settings, then treat the body as replaceable
 
 **Preferred: duplicate an existing Email Love email frame** to get a root that carries every plugin setting (structure markers, theme colors, subject/preheader slots). But the donor's value is its root settings, not its body. Duplicating also duplicates the donor's flaws, so vet what you inherited:
@@ -92,13 +153,57 @@ For a dark email, invert: backgroundColor '#000000', contentColor '#1f1f1f', tex
 ### Filling the email
 
 - **Instantiate from the library palette**, choosing section types that fit the content (Step 3). Do not settle for whatever sections the donor happened to contain.
-- **Include the mj-raw block.** If any email frame in the file carries a small frame holding ESP tokens like `{{Footer}}`, copy it into every email you build, even when your donor lacks one; it is how the ESP footer gets injected.
+- **Include the mj-raw block.** If any email frame in the file carries a small frame holding ESP tokens like `{{Footer}}`, copy it into every email you build, even when your donor lacks one; it is how the ESP footer gets injected. See "Custom code sections" below for how to build one from scratch.
 - **Never detach an instance.** Change its text instead. Detaching severs the structure the exporter reads.
 - **Load fonts before editing text.** Every text edit follows: load the node's current fonts, await, then mutate. Skipping the font load is the most common build failure. Get the current fonts from the text node itself rather than assuming.
 - **One visible CTA button per email** unless the user asks for more. If a component carries extra built-in buttons or text links that compete with the CTA, hide them via component properties.
 - **Imagery: use what the user gives you, placeholder the rest.** When the user supplies images (files, URLs, or points at assets in the file), place them as fills on the components' image blocks at their existing dimensions, at 2x resolution for crispness, watching crop and focal point. The Email Love plugin picks up image fills at export and handles hosting automatically. When no imagery was provided, set image blocks to flat gray fills at their existing dimensions and say so in the report; a human art-directs later. If the user explicitly asks for AI-generated imagery and the Email Love creation tools (`generate_image`, `upload_image`) are connected, generate on their prompt and place the result, noting that image generation is metered on the Free plan.
 - **Leave final CTA URLs alone.** Links are wired at export time in the plugin.
 - **Lay out multiple emails side by side** on the canvas, each in its own frame, so the team can review the sequence at a glance.
+
+### Custom code sections (mj-raw)
+
+Some content cannot be built from components: ESP-specific markup, Handlebars or merge-field
+blocks, dynamic listing or product cards, tracking snippets. For those, build an **mj-raw**
+section, which the plugin passes through to the export verbatim.
+
+The structure the exporter looks for is exact:
+
+- A **frame** whose name is `mj-raw`. (The plugin resolves the name from the `name` plugin
+  data key first and falls back to the layer name, so naming the layer `mj-raw` is enough.)
+- Containing **exactly one text node** as its first child, conventionally named `mj-raw-text`.
+- That text node's characters are the raw code, emitted as-is into the email.
+
+Two things that will bite you:
+
+- **The frame must contain that text child.** The exporter reads the first child without
+  checking it exists, so an empty `mj-raw` frame breaks the export rather than exporting
+  nothing. Never create the frame without its text node.
+- **mj-raw content is skipped in the plugin's preview but included in the export.** A raw
+  section that looks missing in Preview is usually working correctly. Tell the user this
+  when you build one, so they do not report it as a bug.
+
+Keep raw sections small and purposeful. Everything that can be a component should be a
+component, because raw blocks skip the plugin's structure handling, mobile styles, and dark
+mode entirely. When you add one, say in your report what it contains and that it needs
+testing in a real inbox, since hand-written markup is where cross-client rendering breaks.
+
+### Dark mode
+
+The plugin supports per-node dark mode overrides, and they live in the same five keys as the
+root frame's theme colors, set on the individual node rather than the root: `contentColor`,
+`textColor`, `linkColor`, `buttonContentColor`, `buttonTextColor`. A node carrying any of
+these has a deliberate dark mode treatment that someone chose.
+
+Treat existing dark mode settings as read-only. Never clear or overwrite these keys on nodes
+that already have them, and do not strip them when you duplicate a donor frame; they should
+ride along with the copy. When your build inherits nodes that carry dark mode overrides, say
+so in your report and name the sections, so the user knows what is already handled and what
+still needs a designer.
+
+If the user explicitly asks you to set dark mode on a section, write those keys on that
+node and tell them to verify in the plugin's dark mode preview, because dark mode rendering
+varies enough across clients that it warrants a human check.
 
 ### Writing the content
 
@@ -110,7 +215,9 @@ Screenshot every email you built and inspect it: no clipped text, no overlapping
 
 - Root frame is a duplicated Email Love frame, or carries the shared marker plus theme colors.
 - Every section is a component instance (mj-raw excepted). This includes inherited ones: no hand-built frames survived the donor vetting.
-- The mj-raw/footer block is present if any email in the file has one.
+- The mj-raw/footer block is present if any email in the file has one, and every mj-raw frame
+  you created contains its text child.
+- Dark mode overrides on inherited nodes are intact, not cleared.
 - No detached instances.
 - Exactly one visible CTA button per email, unless the user asked otherwise.
 
@@ -128,4 +235,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.3.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.4.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
