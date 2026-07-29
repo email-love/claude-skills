@@ -20,6 +20,12 @@ Already have a Figma design system or template library that was not built with E
 
 Install it the same ways as the builder (plugin: `emaillove-migration-audit@email-love`; claude.ai: the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases)). The conversion itself is done by Email Love as part of Enterprise onboarding: [hello@emaillove.com](mailto:hello@emaillove.com).
 
+### emaillove-eds-converter
+
+The conversion engine. Takes a completed migration audit and rebuilds your legacy templates as a working Email Love design system in a new Figma file: foundations first (pages, type mapping on email-safe fallbacks, buttons, spacers, assets, a marked root template), then modules in batches through a full loop of rebuild, mobile merge, componentize and pre-tag, and side-by-side verification, with design review gating each batch. Your source file is treated as read-only throughout. Requires the audit report from emaillove-migration-audit.
+
+Prefer it done for you, design review included? That is Email Love Enterprise onboarding: [hello@emaillove.com](mailto:hello@emaillove.com).
+
 ## Installation
 
 ### Claude.ai (web and desktop)
