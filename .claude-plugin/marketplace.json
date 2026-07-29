@@ -15,6 +15,15 @@
       "author": {
         "name": "Email Love"
       }
+    },
+    {
+      "name": "emaillove-migration-audit",
+      "source": "./skills/emaillove-migration-audit",
+      "description": "Read-only audit of an existing Figma design system for Email Love migration: classifies every template (live-text, editable-image, hybrid, not emailable), extracts brand foundations, estimates effort",
+      "version": "1.0.0",
+      "author": {
+        "name": "Email Love"
+      }
     }
   ]
 }
