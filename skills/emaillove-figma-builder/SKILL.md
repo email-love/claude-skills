@@ -254,6 +254,31 @@ varies enough across clients that it warrants a human check.
 
 Write like a person, not a template. Front-load the value in the first section, keep one primary CTA, make everything scannable. For sequences, each email must escalate or advance the story; if two emails in one recipient's path repeat the same theme, rewrite the later one to build on the first. Match the brand voice from existing copy in the file, informed by any Step 2 inspiration.
 
+### Saving components into the plugin's design system
+
+Users sometimes want a section you built (or a whole new component set) saved into the
+plugin's design system so it becomes reusable from the Customs tab and syncs to the AI
+backend. Know the boundary: **saving is an authenticated plugin action that runs on the
+user's current selection.** You cannot push components into the plugin's storage yourself.
+What you can do is make each save a single click:
+
+1. **Finish each component as a clean, standalone unit** with correct structure and naming,
+   placed on the appropriate library page (Heroes with heroes, and so on), spaced apart so
+   each is easy to select.
+2. **Pre-tag every finished component** with your proposed metadata, so the intent travels
+   with the node:
+   `node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')` and
+   `node.setSharedPluginData('emaillove', 'saveName', 'Hero — text led, portrait')`.
+   Today the plugin's save dialog does not read these; they document intent for the human and
+   are ready for the plugin's bulk-save to consume once it ships.
+3. **Drive the saves like pick-in-Figma in reverse.** Give the user a checklist ordered by
+   page, then walk it: "Select 'Hero — text led, portrait', open the plugin, Save Component,
+   category Hero, name as listed; say done and I'll queue the next." The plugin generates the
+   thumbnail automatically at save, so the user only selects, clicks, and picks the category
+   you specified.
+
+Report the full save checklist even if the user defers the saves; it is the hand-off artifact.
+
 ## Step 5: Verify
 
 Screenshot every email you built and inspect it: no clipped text, no overlapping elements, spacing consistent with the file's real campaigns. Then check structure:
@@ -280,4 +305,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.5.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.6.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
