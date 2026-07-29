@@ -79,10 +79,15 @@ module as a component with correct export structure:
   containing a line, never a frame with a solid fill. Childless wrappers export as empty
   cells. Legacy designs almost always express images and rules as fills on a frame, so this
   is the most common thing you must actively restructure rather than copy.
-- A badge, pill, or icon sitting beside text is its own element pair, not a loose frame
-  inside `mj-text-Frame`. If the source design puts a pill inline with text, either rebuild it
-  as its own element pair or, when it is genuinely decorative and inseparable, treat that whole
-  region as an editable image and say so.
+- **A badge, pill, or icon sitting beside text is an `mj-group`, not a loose frame inside
+  `mj-text-Frame`.** A loose frame there flattens to an image and detaches from the text.
+  Rebuild it as a group inside the section: `mj-group` containing one `mj-column` for the badge
+  (its pill styling becomes the column's background colour and corner radius, with live text
+  inside) and another `mj-column` for the adjoining text. Size those columns in **percentages,
+  not pixels**, and remember the group must be a child of the section, not of a column, so a
+  design that nests such a row inside a column needs the row lifted to section level. Only fall
+  back to treating the region as an editable image when the composition is genuinely
+  inseparable.
 - Map every text node to the type styles from foundations.
 - Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.
