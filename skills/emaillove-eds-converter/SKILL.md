@@ -51,7 +51,8 @@ Build the scaffold every later batch depends on:
    (download_assets) and upload into the target file (upload_assets). Logos become images,
    never vectors.
 6. **Root template frame** on Campaigns at the customer's email width: vertical auto-layout,
-   the shared marker, and the six theme colors from the audit's proposal:
+   width FIXED at that email width, height Hug, the shared marker, and the six theme colors
+   from the audit's proposal:
    `setSharedPluginData('emaillove', 'nodeType', 'mainFrame')` plus backgroundColor,
    contentColor, textColor, linkColor, buttonTextColor, buttonContentColor.
 7. **Report** what was built, what the audit proposed that you changed, and what needs the
@@ -115,6 +116,13 @@ transcribing, build the module as a component with correct export structure:
   untagged inner content is not skipped, it is flattened into a hosted PNG by the exporter's
   unknown-node path, so buttons silently lose their text and links and image sections can
   export empty. After building each module, verify every leaf pair before moving on.
+- **Heights hug, widths are a decision, spacing is padding.** Section 0 of the render spec is
+  the whole rule and it is not cosmetic: every frame from the root down hugs vertically, a
+  fixed height clips content in Outlook, vertical rhythm comes from auto layout padding (manual
+  positioning exports as nothing), a FIXED width is only for load-bearing cases like unequal
+  columns and `mj-group` percentage math, and a button sized FILL is what makes it full width on
+  mobile. `mj-spacer` is the single node allowed a fixed height. Read section 0 before you
+  transcribe, not after.
 **Start from the visual pattern, not the layer name.** Most conversion mistakes come from
 rebuilding what a design *looks like* instead of reaching for the primitive that produces it.
 This mapping covers almost everything you will meet:
@@ -228,6 +236,9 @@ checklist at the end of `references/render-spec.md`:
   alignment axes match on every auto-layout frame; no detached instances; no unrecognized
   frames except intentional editable-image regions; `mj-column-inner`, if used, is literally
   `children[0]` of its column.
+- Sizing: walk the tree and confirm every frame is vertical HUG, the only fixed height is an
+  `mj-spacer`, every FIXED width is one of the load-bearing cases, and each button's width
+  sizing was chosen for its mobile behavior (render spec section 0).
 - Naming: every layer carries the display name for its tag, and no friendly string leaked
   into the plugin data `name` key.
 - Component: the module root is a COMPONENT, a direct child of its category page, not inside

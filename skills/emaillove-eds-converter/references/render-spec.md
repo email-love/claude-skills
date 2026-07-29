@@ -21,6 +21,135 @@ or text characters.
 
 ---
 
+## 0. Sizing: hug heights, deliberate widths (read this before you create a node)
+
+Sizing is not cosmetic. It decides whether the email survives Outlook, whether it
+survives a copy change, and how the button behaves on a phone. Email Love's own
+product docs state the rule plainly: make sure the Height of each component and
+its child frames is set to Hug contents, not Fixed, because fixed-height
+containers can cause content clipping, especially in Outlook.
+
+Every other section of this spec assumes these rules. Where a section gives you a
+`resize()` call, it is getting a node onto the canvas, not setting a size.
+
+### 0.1 Height is HUG on the root and on EVERY descendant frame
+
+- `layoutSizingVertical = 'HUG'` on the root, and on every wrapper, section,
+  group, column, column-inner, and leaf pair wrapper inside it. Never `'FIXED'`.
+- **Why this is not a preference.** A fixed height in email does not scroll and
+  does not overflow gracefully. Outlook on Windows renders through the Word
+  engine and CLIPS whatever does not fit, so a fixed-height frame that looked
+  correct on canvas ships as a cut off headline in the least forgiving client in
+  the mix. It also breaks the first time copy runs one line longer, which is
+  every other send. A hug frame absorbs that change; a fixed frame crops it.
+- If you call `resize(w, h)` at all, the height argument is a throwaway. Set
+  `layoutMode`, then set `layoutSizingVertical = 'HUG'` in the same breath,
+  before you append children. Never leave a node sitting at a resized height.
+- Order of operations: `layoutSizing*` is only accepted once the node itself has
+  a `layoutMode`, and `'FILL'` only once the node is a child of an auto-layout
+  parent. So: create, set `layoutMode`, append, then set sizing.
+- Three node types are not frames and do not hug the same way. A TEXT node hugs
+  vertically (`layoutSizingVertical = 'HUG'`, section 4.1). The `mj-image`
+  RECTANGLE and the `mj-divider` LINE carry intrinsic geometry from `resize()`
+  and have no hug at all. Their pair wrapper FRAMES still hug, and that is what
+  keeps them from being clipped.
+- `mj-spacer` is the single exception in this spec, and 0.2 says why.
+
+### 0.2 Vertical rhythm is auto layout padding, never a height
+
+- Space between blocks is `paddingTop` / `paddingBottom` on the owning frame.
+  Not a taller frame, not `itemSpacing` (ground rule 7), not manual positioning.
+- **Manual positioning does not export at all.** The exporter reads Auto Layout
+  padding and nothing else, so a node nudged into place on the canvas exports
+  with zero spacing and the design collapses silently. If a gap is not padding,
+  it does not exist in the sent email.
+- Prefer padding to spacers, per the product docs: use padding instead of spacer
+  elements when possible. When the worker JSON returns an `mj-spacer` whose only
+  job is a gap between two blocks, fold that height into the padding of the
+  neighboring element and drop the spacer. Keep a spacer only where the design
+  needs a standalone gap of its own (a colored band, a gap inside a bordered
+  column).
+- `mj-spacer` is the ONLY node in this spec that carries a fixed height. It is
+  load bearing there: the exporter emits `height: <node.height>px` straight off
+  the node, and a spacer has no children to clip. Set
+  `layoutSizingVertical = 'FIXED'` on a spacer and nowhere else in the tree.
+
+### 0.3 Width: FILL, HUG, and the narrow case for FIXED
+
+Widths are generally FILL or HUG. FIXED is correct only where the pixel number
+is load bearing.
+
+| Sizing | Where it belongs |
+| --- | --- |
+| FILL | `mj-wrapper` under the root; `mj-section` under a wrapper; a single `mj-column` in its section; `mj-column-inner`; every leaf pair wrapper as a column child; the `mj-text` TEXT node inside its frame; the `mj-divider` LINE for a full-width rule |
+| HUG | `mj-group` (its width comes from the fixed columns inside it); the `mj-button` frame (auto-width button); `mj-button-text`; and the transient state of any frame you have created but not yet appended and set to FILL |
+| FIXED | the four cases below, and nothing else |
+
+FIXED width is correct for:
+
+1. **The root frame**, at the numeric `mj-body` width (usually 600). This is the
+   canvas the whole email is measured against.
+2. **Every column in a section that holds two or more columns**, unequal columns
+   above all. The exported percentage is
+   `column.width / (section.width - section horizontal padding) * 100`, so the
+   pixel number IS the percentage. A 200 + 360 split only stays a 200 + 360
+   split because both are pinned.
+3. **Every column inside an `mj-group`.** MJML requires percentage widths there,
+   and the exporter derives them from your pixels (280 + 280 in a 560 group
+   exports 50/50). Do not reach for FILL to express a percentage.
+4. **The `mj-image` RECTANGLE**, whose pixel width also decides whether the image
+   stays fluid on mobile (section 4.2).
+
+Anywhere else, a FIXED width is a latent bug: it stops tracking the section
+content box the moment a padding value changes, and the exported percentage
+drifts away from the design with no visible error.
+
+### 0.4 Button width is a mobile behavior decision
+
+The plugin syncs a button's mobile width from how you sized it in Figma:
+
+- **FILL** (the button stretches to fill its column): the plugin enables
+  full width on mobile (`width: 100%`) and the exporter sets `applyFullWidth`.
+  The button spans the column on desktop and on mobile.
+- **HUG or FIXED**: the button keeps its width on mobile.
+
+So choose from the source design, never from what makes the canvas look tidy. An
+edge to edge CTA is FILL. An inline, auto-width button is HUG, which is what
+worker JSON buttons are by default (section 4.3). FIXED only when the design
+system pins a button width, and it behaves like HUG on mobile. Record the choice
+in your report when it is anything other than HUG.
+
+Never set the button frame's height. It comes from the text height plus
+`inner-padding`, and that padding is also how you get a tap target of at least
+44px.
+
+### 0.5 Where padding belongs, by level
+
+| Level | Typical values | Notes |
+| --- | --- | --- |
+| `mj-wrapper` | 0 to 20 | Outer breathing room around a group of rows. This is where a visible gap between content and the outer background color comes from |
+| `mj-section` | 0 to 20, often 0 | Many designs keep section padding at 0 and control all spacing at column and element level. Horizontal section padding also defines the content box that column percentages are computed against (section 3.2), so reproduce the worker values exactly |
+| `mj-column` | 20 to 30 horizontal, 10 to 20 vertical | The most commonly adjusted level. This is what gives text, images, and buttons room from the column edge |
+| Leaf pair wrapper (`mj-text-Frame`, `mj-image-Frame`, `mj-button-Frame`, `mj-divider-Frame`) | sparingly | Fine tuning one element, for example 10px above a button but not above the text over it |
+| `mj-button` `inner-padding` | from the MJML, symmetric only | This is the button's tap target, not layout spacing. Asymmetric values round-trip wrong (section 4.3) |
+
+In a conversion the worker JSON paddings are authoritative: transcribe them
+exactly. The ranges above are for gaps you have to invent, and for judging when a
+converted value is obviously wrong.
+
+Four things that keep padding honest:
+
+- **Be consistent.** Pick a base unit (8px is a good one) and use multiples of
+  it across the whole module rather than mixing 20 and 30 between rows.
+- **Padding sits inside the box and eats content width.** Two 50 percent columns
+  with 20px on each side lose 80px of content width in total.
+- **Outlook** ignores very small values (under 5px) and handles even numbers more
+  predictably.
+- **Mobile padding is a separate override** (`mobileStylesPadding*`), not a
+  reason to compromise the desktop value.
+
+---
+
 ## 1. Non-negotiable ground rules
 
 1. **Tag every node via shared plugin data.** The plugin identifies a node with
@@ -66,7 +195,8 @@ or text characters.
    and one SOLID fill of the exact hex when the MJML sets a background.
 7. **itemSpacing = 0 everywhere.** Nonzero itemSpacing makes the exporter emit
    extra `c-gap` raw divs and half-padding CSS. All vertical rhythm in the
-   worker JSON is expressed as padding; keep it that way.
+   worker JSON is expressed as padding; keep it that way. Not a taller frame
+   either: heights hug, spacing is padding, and section 0 is the whole rule.
 8. **Ignore `css-class` in the worker JSON.** The exporter regenerates classes
    (UUIDs plus `mj-s`, `mj-c`, `mj-t`, `mj-b` etc.). Never copy them anywhere.
 9. **Fonts.** Load every font before setting characters. Map
@@ -107,10 +237,13 @@ a COMPONENT instead and read section 7 first; everything below applies
 unchanged either way.
 
 - **Geometry:** `resize(W, 100)` where `W` = numeric `mj-body` `width`
-  (usually `600`), then `layoutMode = 'VERTICAL'`,
+  (usually `600`), then `layoutMode = 'VERTICAL'` and immediately
   `layoutSizingVertical = 'HUG'`, horizontal FIXED at `W`.
   `primaryAxisAlignItems = counterAxisAlignItems = 'MIN'`. `itemSpacing = 0`,
   all paddings 0.
+  The `100` is a throwaway that gets the node onto the canvas; the root's real
+  height is whatever its content hugs to, and it must never be left FIXED
+  (section 0.1). The width is one of the four load-bearing FIXED widths (0.3).
 - **Layer name:** the module/email name (this becomes the component name and
   S3 path if the frame is later promoted, so keep it clean, e.g.
   `[Customer] / banner-bright`). Do NOT put a tag in the root layer name.
@@ -156,8 +289,9 @@ exporter reconstructs them (body width comes from the root frame's width).
 
 - Node: FRAME, direct child of the root.
 - Shared `name` = `mj-wrapper`.
-- Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG, horizontal FILL
-  (600 wide), `primaryAxisAlignItems = counterAxisAlignItems = 'MIN'`.
+- Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG (never FIXED, section
+  0.1), horizontal FILL (600 wide),
+  `primaryAxisAlignItems = counterAxisAlignItems = 'MIN'`.
 - Attribute mapping:
 
   | MJML attr | Figma property |
@@ -178,8 +312,9 @@ exporter reconstructs them (body width comes from the root frame's width).
 
 - Node: FRAME, child of a wrapper (or of the root if the MJML has no wrapper).
 - Shared `name` = `mj-section`.
-- Auto-layout: `layoutMode = 'HORIZONTAL'`, both sizing HUG (then FILL width
-  as a child), `primaryAxisAlignItems = counterAxisAlignItems = 'CENTER'`
+- Auto-layout: `layoutMode = 'HORIZONTAL'`, both sizing HUG, then FILL width
+  as a child of the wrapper (height stays HUG),
+  `primaryAxisAlignItems = counterAxisAlignItems = 'CENTER'`
   (the plugin's own sections are CENTER/CENTER; primary exports as the
   section `text-align`, MIN = left, MAX = right, else center).
 - Attribute mapping: same table as wrapper (`padding-*` to paddings,
@@ -201,7 +336,8 @@ exporter reconstructs them (body width comes from the root frame's width).
 
 - Node: FRAME, MUST be a direct child of `mj-section`, never of a column.
 - Shared `name` = `mj-group`.
-- Auto-layout: `layoutMode = 'HORIZONTAL'`, both sizing HUG,
+- Auto-layout: `layoutMode = 'HORIZONTAL'`, both sizing HUG (the group's width
+  comes from the fixed columns inside it, section 0.3),
   `primaryAxisAlignItems = counterAxisAlignItems = 'CENTER'` (primary exports
   as the group's horizontal alignment; counter exports as `vertical-align`).
 - `background-color` to fill, `padding-*` to paddings, `border-radius` to
@@ -219,11 +355,21 @@ exporter reconstructs them (body width comes from the root frame's width).
 
 - Node: FRAME, child of `mj-section` or `mj-group`.
 - Shared `name` = `mj-column`.
-- Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG.
-  Horizontal sizing: FIXED at the worker `width` (e.g. 560, 280). Only use
-  HUG when the section has a single column and you have verified the hug
-  width equals the worker width. When multiple columns share a section, all
-  must be FIXED so the exported percentages are stable.
+- Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG, never FIXED. A column
+  is the frame most often left at a fixed height by mistake, and it is the one
+  where Outlook clipping bites hardest, because every leaf in the email hangs
+  off a column (section 0.1).
+- Horizontal sizing, per section 0.3:
+  - **Single column in its section: FILL.** It resolves to the section content
+    box, which is the worker `width` when you have reproduced the section's
+    width and paddings exactly, and it exports `width: 100%`. FILL keeps
+    tracking that content box if a padding value is later corrected. An
+    explicit FIXED at the worker width is acceptable and exports identically;
+    never use HUG, which collapses the column to its content.
+  - **Two or more columns in one section, or any column inside an `mj-group`:
+    FIXED at the worker `width` (e.g. 280, 200).** This is load bearing. The
+    exported percentage is derived from the pixel number, so unequal splits and
+    group percentages only survive when every column is pinned.
 - **Axis alignment rule (the trap):** set BOTH axes to the dominant
   horizontal alignment of the column's content:
   - content `align="left"` (or mixed/default): `MIN` / `MIN`
@@ -242,7 +388,7 @@ exporter reconstructs them (body width comes from the root frame's width).
 
   | MJML attr | Figma property |
   | --- | --- |
-  | `width` | frame width in px (FIXED) |
+  | `width` | frame width in px: FILL for a lone column, FIXED at this number for multi-column and group columns (above) |
   | `padding-*` | paddings |
   | `background-color` | SOLID fill; absent means `fills = []` (any fill at all exports as background-color, even at opacity 0, so leave fills truly empty) |
   | `border-radius` | cornerRadius |
@@ -269,7 +415,8 @@ If you must use it:
   content in a column, split the section so the card gets its own dedicated
   column with the `mj-column-inner` as sole first child.
 - Shared `name` = `mj-column-inner`.
-- Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG, horizontal FILL,
+- Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG (never FIXED, even when
+  the card looks like a fixed box in the source), horizontal FILL,
   `primaryAxisAlignItems = counterAxisAlignItems = 'CENTER'`.
 - Inner background color to fill, inner radius to cornerRadius, inner
   borders to strokes, inner paddings to paddings.
@@ -286,11 +433,17 @@ layout (paddings, alignment, container background) and an inner node that
 carries content. Style the inner node, not the wrapper. Both must be tagged.
 A wrapper with a fill and no child exports as an empty cell.
 
+Every pair wrapper hugs vertically. A leaf's height is its content plus the
+wrapper's padding, and nothing else: never a height you typed (section 0.1).
+`mj-spacer` in 4.5 is the one node that breaks this, deliberately.
+
 ### 4.1 mj-text: `mj-text-Frame` wrapping a TEXT node `mj-text`
 
 Wrapper FRAME:
 - Shared `name` = `mj-text-Frame`. Layer name e.g. `Text Block`.
-- `layoutMode = 'HORIZONTAL'` (yes, horizontal), vertical HUG,
+- `layoutMode = 'HORIZONTAL'` (yes, horizontal), vertical HUG, never FIXED:
+  a pinned text frame is the classic Outlook clip, because copy length is the
+  thing that changes most often between sends.
   `primaryAxisAlignItems = counterAxisAlignItems = 'CENTER'`.
 - `padding-*` from the mj-text attrs go HERE (the exporter reads
   `node.parent.paddingTop` etc. off this frame).
@@ -324,16 +477,23 @@ Inner TEXT node (direct child):
 
 Wrapper FRAME:
 - Shared `name` = `mj-image-Frame`. Layer name e.g. `Image Block`.
-- `layoutMode = 'HORIZONTAL'`, both sizing HUG (FILL width as column child).
+- `layoutMode = 'HORIZONTAL'`, both sizing HUG (FILL width as column child,
+  height stays HUG so it takes the rectangle's height).
 - `primaryAxisAlignItems` from `align`: left = MIN, right = MAX, center or
   absent = CENTER. Set `counterAxisAlignItems` to the SAME value.
 - `padding-*` from the mj-image attrs go HERE.
 - `fills = []` ALWAYS.
+- Never copy the rectangle's height onto this frame. The wrapper hugs; the
+  rectangle carries the pixels.
 
 Inner RECTANGLE (direct child):
 - Shared `name` = `mj-image`.
 - `resize(width, height)` from the MJML `width`/`height` attrs (numeric px).
   Keep `layoutSizingHorizontal = 'FIXED'` so the rectangle keeps its size.
+  A RECTANGLE is not a frame: it has no hug, and its pixel size is one of the
+  four load-bearing FIXED widths in section 0.3. This is the one place in a
+  module where a hard height is expected, and it is safe because a rectangle
+  has no children to clip.
 - Fill: if the worker `src` is a real URL, create the image via
   `figma.createImageAsync(src)` and set an IMAGE fill, `scaleMode: 'FILL'`.
   If `src` is `"placeholder"` or unavailable, substitute the matching asset
@@ -362,7 +522,8 @@ Three levels. The TEXT node MUST be a direct child of the `mj-button` frame:
 
 Level 1, wrapper FRAME:
 - Shared `name` = `mj-button-Frame`. Layer name e.g. `Button Block`.
-- `layoutMode = 'HORIZONTAL'`, both sizing HUG (FILL width as column child).
+- `layoutMode = 'HORIZONTAL'`, both sizing HUG (FILL width as column child,
+  height stays HUG).
 - `primaryAxisAlignItems` from the mj-button `align` (left = MIN,
   right = MAX, else CENTER); `counterAxisAlignItems` = SAME value.
   The exporter reads the button's alignment from this frame, the button's
@@ -374,10 +535,17 @@ Level 1, wrapper FRAME:
 
 Level 2, FRAME `mj-button`:
 - Shared `name` = `mj-button`.
-- `layoutMode = 'HORIZONTAL'`, `layoutSizingHorizontal = 'HUG'`,
-  `layoutSizingVertical = 'HUG'` (HUG exports an auto-width button; FIXED
-  exports an explicit `width`; FILL exports a full-width button and sets
-  `applyFullWidth`). The worker buttons are auto width: use HUG.
+- `layoutMode = 'HORIZONTAL'`, `layoutSizingVertical = 'HUG'` always (the
+  height is text height plus `inner-padding`, never a number you set), and
+  `layoutSizingHorizontal` per section 0.4, because **width here is a mobile
+  behavior decision, not a cosmetic one**:
+  - `'HUG'` exports an auto-width button and the plugin keeps that width on
+    mobile. Worker buttons are auto width, so HUG is the default.
+  - `'FILL'` exports a full-width button, sets `applyFullWidth`, and the plugin
+    automatically makes it full width on mobile (`width: 100%`). Choose it when
+    the source design shows an edge to edge CTA, and say so in your report.
+  - `'FIXED'` exports an explicit `width` and also keeps that width on mobile.
+    Only when the design system pins a button width.
 - `primaryAxisAlignItems` from `text-align` (default CENTER);
   `counterAxisAlignItems = 'CENTER'`.
 - `background-color` to one SOLID fill (a missing fill exports
@@ -390,7 +558,9 @@ Level 2, FRAME `mj-button`:
   `paddingRight = R`, `paddingBottom = B`, `paddingLeft = L`
   (e.g. `15px 25px 15px 25px` gives 15/25/15/25). Symmetric values are safe;
   note the plugin's own re-import of asymmetric inner-padding swaps
-  left/right, so avoid asymmetric inner padding.
+  left/right, so avoid asymmetric inner padding. This padding is the button's
+  tap target and the only thing that sets its height, so check the result is at
+  least 44px tall rather than reaching for a fixed height.
 - Shared plugin data ON THIS FRAME:
 
   | key | from |
@@ -416,7 +586,8 @@ and are out of scope).
 
 Wrapper FRAME:
 - Shared `name` = `mj-divider-Frame`. Layer name e.g. `Divider`.
-- `layoutMode = 'HORIZONTAL'`, vertical HUG, FILL width as column child.
+- `layoutMode = 'HORIZONTAL'`, vertical HUG, FILL width as column child. Space
+  above and below a rule is this frame's padding, never its height.
 - `primaryAxisAlignItems` from `align` (default CENTER);
   `counterAxisAlignItems` = SAME value... the exporter reads divider `align`
   from this wrapper via `getPrimaryAlign(node.parent, 'row')`, same pattern
@@ -432,9 +603,20 @@ reads `strokes`, `strokeWeight`, and `dashPattern`):
 - `dashPattern`: `[]` for solid, `[4, 4]` for dashed, `[1, 2]` for dotted.
 - `resize(W, 0)` where W = numeric `width` if given in px, else the column
   content width; then `layoutSizingHorizontal = 'FILL'` for a full-width
-  divider. The exporter emits `width: <node.width>px`.
+  divider. The exporter emits `width: <node.width>px`. A LINE is not a frame
+  and has no hug; its zero height is the geometry of a line, not a sizing
+  choice.
 
-### 4.5 mj-spacer: single FRAME (no pair)
+### 4.5 mj-spacer: single FRAME (no pair), and the one fixed height in the spec
+
+**Try not to need one.** The product docs are explicit that padding beats
+spacers, and section 0.2 says how: when the worker JSON hands you a spacer whose
+only job is a gap between two blocks, fold its height into the padding of the
+neighboring element and drop it. Build the spacer only when the design needs a
+standalone gap of its own, for example a colored band or a gap inside a bordered
+column.
+
+When you do build one:
 
 - Node: FRAME, direct child of the column.
 - Shared `name` = `mj-spacer`. Layer name e.g. `Spacer`.
@@ -443,6 +625,9 @@ reads `strokes`, `strokeWeight`, and `dashPattern`):
 - `resize(width, H)` with H = numeric `height` attr, then
   `layoutSizingVertical = 'FIXED'` and `layoutSizingHorizontal = 'FILL'` as a
   column child. The exporter emits `height: <node.height>px`.
+- **This is the only FIXED vertical sizing anywhere in this spec**, and it is
+  load bearing: the exported height is read straight off the node, and a spacer
+  has no children to clip. It is not a precedent for any other node.
 - `padding-*` attrs map to the frame's paddings.
 - No children.
 
@@ -458,6 +643,10 @@ container tags (wrapper/section/column/group/column-inner) carry their own
 paddings; leaf tags carry theirs on the PAIR WRAPPER frame (the exporter
 reads `node.parent.padding*` for text, button, image, divider). A shorthand
 `padding` attr, if ever present, expands CSS-style before mapping.
+
+Padding is also the only mechanism for vertical rhythm, and section 0.5 has the
+level-by-level table with the documented typical ranges for any gap the worker
+JSON does not already specify.
 
 ### 5.2 Colors
 
@@ -486,9 +675,11 @@ counter axis to the same value as the primary on every one of these frames.
 
 ### 5.4 Column width handling
 
-- Single column: section 600 wide with `padding-left/right: 20px` and column
-  FIXED 560 exports `width: 100%`. Column FIXED 600 in an unpadded section
-  also exports 100%. Always reproduce the worker's exact px.
+- Single column: section 600 wide with `padding-left/right: 20px` and a FILL
+  column (which resolves to 560) exports `width: 100%`; a column pinned FIXED
+  at 560 exports the same thing. FILL is preferred because it keeps tracking
+  the content box (section 0.3). Always reproduce the worker's exact px on the
+  section so that content box is right.
 - Multi column: widths export as percentages of the section content box.
   280 + 280 in a 560 content box gives 50% + 50%. The worker may bake gutters
   as column paddings (e.g. `padding-right: 10px` on the left column); keep
@@ -815,15 +1006,29 @@ the node.
    frame.
 6. All nodes `visible = true` (except a region you deliberately left off via a
    BOOLEAN default); `itemSpacing = 0` everywhere; no stray fills.
-7. Root width equals the mj-body width; column px widths equal the worker
-   attrs; section paddings equal the worker attrs.
-8. If the module is reusable: the root is a COMPONENT, a direct child of the
-   page, not inside a COMPONENT_SET or a Figma SECTION, with no stray instances
-   of it left on the page.
-9. Every component property you added was re-read back off the node to confirm
-   the binding landed, and each one has a reason you can state in the report.
-10. No em dashes in any layer name, plugin data value, or text characters.
-11. Compare a fresh screenshot of the frame against the source screenshot you
+7. **Every frame in the tree has `layoutSizingVertical === 'HUG'`.** Walk the
+   whole tree and check, root included. The only FIXED height allowed is on an
+   `mj-spacer`; the only hard heights are on the `mj-image` rectangle and the
+   `mj-divider` line, neither of which is a frame. Anything else pinned is an
+   Outlook clip waiting to happen (section 0.1).
+8. **Every FIXED width is one of the four load-bearing cases** (root, columns
+   in a multi-column section, columns in a group, the image rectangle). Lone
+   columns are FILL, groups and buttons are HUG (section 0.3).
+9. **Every button's width sizing was a decision.** HUG unless the design calls
+   for a full-width CTA, in which case FILL, which is also what makes it full
+   width on mobile (section 0.4). Buttons are at least 44px tall, from
+   `inner-padding` rather than a set height.
+10. All vertical spacing is padding: no gaps produced by a taller frame, by
+    `itemSpacing`, or by a manually positioned node (which exports as nothing).
+11. Root width equals the mj-body width; column px widths equal the worker
+    attrs; section paddings equal the worker attrs.
+12. If the module is reusable: the root is a COMPONENT, a direct child of the
+    page, not inside a COMPONENT_SET or a Figma SECTION, with no stray instances
+    of it left on the page.
+13. Every component property you added was re-read back off the node to confirm
+    the binding landed, and each one has a reason you can state in the report.
+14. No em dashes in any layer name, plugin data value, or text characters.
+15. Compare a fresh screenshot of the frame against the source screenshot you
     converted from, for spacing, alignment, and color parity. Small color and
     font-metric differences are acceptable; missing content, zero-height
-    sections, and alignment flips are not.
+    sections, clipped text, and alignment flips are not.

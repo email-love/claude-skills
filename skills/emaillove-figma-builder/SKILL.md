@@ -373,7 +373,7 @@ template here.
 
 ## The standing corrections
 
-These are the mistakes that keep recurring. Check every build against all five. On Path A they
+These are the mistakes that keep recurring. Check every build against all six. On Path A they
 apply to the root and to anything you build outside an instance; they are never a reason to open
 an instance and correct its internals, which the components already got right.
 
@@ -393,6 +393,15 @@ an instance and correct its internals, which the components already got right.
 - **Alignment: set both axes to the same value.** The exporter reads `primaryAxisAlignItems` for
   **horizontal** alignment, so a vertical column that looks centered on canvas exports as left.
   Every auto-layout frame you create must have `primaryAxisAlignItems === counterAxisAlignItems`.
+- **Sizing is not cosmetic: heights hug, widths are a decision.** Every frame you create, from
+  the root down, is vertical HUG. A fixed height clips content in Outlook and breaks the first
+  time the copy runs a line longer. Vertical rhythm is auto layout padding, never a taller
+  frame and never manual positioning, which does not export at all. Widths are FILL or HUG
+  except where a pixel number is load bearing (the root width, columns in a multi-column
+  section, columns in a group, the image rectangle). And a button sized **FILL** is what makes
+  it full width on mobile, while HUG or FIXED keeps its width there, so size buttons from the
+  design, not from what tidies the canvas. **Section 0 of the render spec** has the full rule,
+  the padding levels, and the one exception (`mj-spacer`).
 - **Colors and type come from the design system and are applied on top of the structure.**
   Generated structure is a starting shape, not a styled email.
 
@@ -404,9 +413,10 @@ shows images where you expected live text, that is the first thing to check.
 ## Root frame
 
 Preferred: duplicate an existing Email Love email frame, which carries all of this already. When
-you create a root from scratch, it is a top-level vertical auto-layout frame at the email width
-(600 or 640), with **all nine** keys set. Empty theme keys are not neutral: the exporter
-substitutes dark defaults, which wrecks a light email.
+you create a root from scratch, it is a top-level vertical auto-layout frame with its width
+FIXED at the email width (600 or 640), its **height Hug** (render spec section 0.1: never a
+fixed height, on the root or on anything inside it), and **all nine** keys set. Empty theme keys
+are not neutral: the exporter substitutes dark defaults, which wrecks a light email.
 
 ```js
 frame.setSharedPluginData('emaillove', 'nodeType', 'mainFrame')
@@ -514,6 +524,10 @@ consistent with the file's real campaigns. Then check structure:
   complete pair, every `mj-button` with a direct TEXT child, both alignment axes equal on every
   auto-layout frame, all nodes visible, column widths matching the worker JSON. Plus the four B5
   repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4.
+- **Sizing, on both paths, for every frame you created:** vertical HUG everywhere, no fixed
+  height except an `mj-spacer`, no FIXED width outside the load-bearing cases, all spacing
+  expressed as padding, and every button's width chosen for how it should behave on mobile
+  (render spec section 0).
 - **Path B naming and components:** every node carries the display name for its tag and a real
   tag in plugin data, with no friendly string in the plugin data key. Anything built for reuse
   is a COMPONENT, a direct child of its page, with every property binding re-read and confirmed.
@@ -541,7 +555,9 @@ the user to update the plugin.
 
 Two reference files carry the ground truth this skill deliberately does not restate:
 
-- **`render-spec.md`**, the complete MJML JSON to Figma mapping: every tag, every attribute,
+- **`render-spec.md`**, the complete MJML JSON to Figma mapping: sizing, which governs every
+  frame you create (section 0: hug heights, padding for rhythm, when a width is FILL, HUG, or
+  FIXED, button width as a mobile decision, padding by level), then every tag, every attribute,
   alignment, fills, fonts, column width math, layer naming (section 6, with the full tag to
   display-name table), when a node is a COMPONENT rather than a FRAME (section 7), component
   properties per element type (section 8), and the post-build checklist. Path B transcription
@@ -568,7 +584,7 @@ rule in it applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.1.0 of this skill. If you have web access, check once per conversation
+This is version 2.2.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's
