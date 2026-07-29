@@ -347,13 +347,29 @@ What you can do is make each save a single click:
 1. **Finish each component as a clean, standalone unit** with correct structure and naming,
    placed on the appropriate library page (Heroes with heroes, and so on), spaced apart so
    each is easy to select.
-2. **Pre-tag every finished component** with your proposed metadata, so the intent travels
-   with the node:
+2. **Find the customer's real categories first, then pick the best fit for each component.**
+   Categories are not a fixed list: they are whatever sections that customer already has in
+   their plugin. Never invent a category name. Get the real ones in this order:
+
+   - If the Email Love MCP is connected, `list_components` returns their components grouped by
+     the customer's own categories. Use those names exactly.
+   - Otherwise, infer from the file: the library page names in an Email Love design system
+     usually mirror the plugin's sections.
+   - If neither is available, ask the user to read the section names off their Customs tab.
+
+   Then classify each component by what it structurally *is*, not by what it is named. The
+   common default sections and what belongs in them: **Hero** for the top-of-email feature
+   block, usually a large image with headline and CTA; **Single Column** for one full-width
+   stack of text, image, or button; **Multi-Column** for two or more columns side by side;
+   **Receipt** for order and line-item layouts; **Image** for image-only blocks. When a
+   component genuinely fits none of them, pick the closest general section and say so, rather
+   than creating a category that does not exist in their plugin.
+
+3. **Pre-tag every finished component** with the category you chose and a clear name:
    `node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')` and
    `node.setSharedPluginData('emaillove', 'saveName', 'Hero — text led, portrait')`.
-   Today the plugin's save dialog does not read these; they document intent for the human and
-   are ready for the plugin's bulk-save to consume once it ships.
-3. **Drive the saves like pick-in-Figma in reverse.** Give the user a checklist ordered by
+   The tag travels with the node, so the plugin can route it to the right section on import.
+4. **Drive the saves like pick-in-Figma in reverse.** Give the user a checklist ordered by
    page, then walk it: "Select 'Hero — text led, portrait', open the plugin, Save Component,
    category Hero, name as listed; say done and I'll queue the next." The plugin generates the
    thumbnail automatically at save, so the user only selects, clicks, and picks the category
@@ -387,4 +403,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.9.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.10.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.

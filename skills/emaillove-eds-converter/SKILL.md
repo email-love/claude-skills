@@ -128,12 +128,21 @@ const headlineProp = comp.addComponentProperty('Headline', 'TEXT', textNode.char
 textNode.componentPropertyReferences = { characters: headlineProp }
 ```
 
-Then tag it for saving into the plugin:
+Then tag it for saving into the plugin. **Use the customer's real category names**, which are
+whatever sections already exist in their plugin, not names you invent. If the Email Love MCP is
+connected, `list_components` returns their categories; otherwise infer from their library page
+names or ask. Classify by what the component structurally is: **Hero** for a top-of-email
+feature block, **Single Column** for one full-width stack, **Multi-Column** for side-by-side
+columns, **Receipt** for line-item layouts, **Image** for image-only blocks. When nothing fits,
+choose the closest existing section and note it, rather than inventing one.
 
 ```js
 node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')
 node.setSharedPluginData('emaillove', 'saveName', 'Hero — text led, portrait')
 ```
+
+Record the category you chose per module in the batch report, so a human can correct any
+misfits in one pass rather than hunting for them later.
 
 ### 4. Verify per module
 
