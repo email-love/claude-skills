@@ -14,6 +14,12 @@ Claude builds real, export-ready emails inside your Figma file, assembled from y
 - The Email Love Figma plugin (latest version) and a synced design system in that file
 - Optional but recommended: the free [Email Inspiration MCP](https://help.emaillove.com/plugin/ai/email-inspiration-mcp) for brand inspiration
 
+### emaillove-migration-audit
+
+Already have a Figma design system or template library that was not built with Email Love? This skill scopes the migration before anyone commits. It is strictly read-only: it classifies every template (live-text convertible, editable-image candidate, hybrid, or not emailable), extracts your brand foundations (type ramp with email-safe fallbacks, palette, proposed theme colors, spacing, buttons), flags risks like unlicensed fonts or components living in unshared library files, and produces a shareable migration report with an effort estimate.
+
+Install it the same ways as the builder (plugin: `emaillove-migration-audit@email-love`; claude.ai: the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases)). The conversion itself is done by Email Love as part of Enterprise onboarding: [hello@emaillove.com](mailto:hello@emaillove.com).
+
 ## Installation
 
 ### Claude.ai (web and desktop)
