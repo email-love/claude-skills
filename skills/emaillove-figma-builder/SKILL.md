@@ -188,6 +188,14 @@ instance, never retag anything inside it, never change its internal auto-layout,
 fill to a structural frame inside it. Detaching severs the structure the exporter reads, and
 restructuring internals reintroduces exactly the hand-authoring this skill forbids.
 
+**Naming inside an instance is not your problem, so leave it alone.** A component the plugin
+built carries the plugin's own naming on every node, the MJML tag in plugin data and the
+friendly display name on the layer, and an instance surfaces the main component's plugin data.
+Do not rename layers inside an instance to "clarify" them, and do not write plugin data onto
+instance internals. The naming rules in the render spec (section 6) are for nodes you create,
+and on Path A the only node you create is the root. If a component's internals look wrong,
+that is a design-system fix in the source component, not something to patch per instance.
+
 Also: **one visible CTA button per email** unless the user asks otherwise (hide competing
 buttons via component properties); **leave final CTA URLs to the plugin** unless the user gave
 you real URLs; **placeholder missing imagery** as flat gray fills at the existing dimensions and
@@ -204,7 +212,9 @@ In order:
    component you did not find, on a page you did not check.
 3. Only if they confirm nothing exists: build that one section through **Path B** (generate and
    transcribe, not freehand), then offer to save it into their design system so it exists next
-   time (see B6).
+   time (see B6). A gap-fill section is a design-system asset by definition, so build it the
+   way B6 says: friendly layer names, a COMPONENT root, and properties for the parts that will
+   change. It should be indistinguishable from the components around it.
 
 Never assemble the section by hand, and never flatten it to an image to make the problem go
 away. An image in place of a section is a decision for the customer to make, not for you.
@@ -292,6 +302,15 @@ Follow the render spec exactly (see "References" at the end). It maps every MJML
 attribute to the Figma node, auto-layout, fill, and shared plugin data the exporter reads back.
 Do not improvise a mapping. Run its post-build checklist per email before moving on.
 
+**Name every node twice** (render spec, section 6). The MJML tag goes in the `name` shared
+plugin data key; the layer name gets the plugin's own friendly display name for that tag
+("Row (Contains columns that sit side by side)", "Text Block", "Button Text"). The exporter
+resolves the tag from plugin data and never reads the layer name for dispatch, so this costs
+nothing and it is the difference between a file a designer can read and a wall of `mj-`
+strings. The spec has the full table. Never rely on the layer-name fallback: a node with no
+plugin data tag can have the friendly label baked in as its tag by the plugin's own naming
+helper, and it stops exporting.
+
 What it maps: `mj-wrapper`, `mj-section`, `mj-group`, `mj-column`, `mj-column-inner`, and the
 text, image, button, divider, and spacer leaves. **When the worker returns a tag the spec does
 not map**, which in practice means a social icon row coming back as `mj-social` with
@@ -332,8 +351,16 @@ do is set it up so the save is one click:
 - **Rename the frame first.** The raw Figma frame name becomes both the component name and its
   storage path, and there is no rename field in the save dialog. A frame left at its import name
   saves as a component literally called `EmailLove_clone`.
-- Then: select the frame, make sure a design system is selected in the plugin, open Custom
-  Templates, click **Add New Template**, pick a category. The plugin generates the thumbnail.
+- **Make anything meant for reuse a COMPONENT, with properties.** A one-off campaign email can
+  stay a frame. A block they will use again is a design-system asset: promote it with
+  `figma.createComponentFromNode`, then add the two to five properties a marketer will actually
+  change. Sections 7 and 8 of the render spec cover both, including why a COMPONENT root is safe
+  (the plugin's export path and Add New Template both accept one), the rules that keep it
+  working, and the exact per-element property bindings. A property whose binding is wrong is
+  worse than no property, so re-read each binding back off the node before you present.
+- Then: select the frame or component, make sure a design system is selected in the plugin, open
+  Custom Templates, click **Add New Template**, pick a category. The plugin generates the
+  thumbnail.
 - Do not write `saveCategory` or `saveName` plugin data. The plugin reads neither key today.
 
 For a whole legacy library rather than one email, that is a migration, not a build: point the
@@ -487,6 +514,9 @@ consistent with the file's real campaigns. Then check structure:
   complete pair, every `mj-button` with a direct TEXT child, both alignment axes equal on every
   auto-layout frame, all nodes visible, column widths matching the worker JSON. Plus the four B5
   repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4.
+- **Path B naming and components:** every node carries the display name for its tag and a real
+  tag in plugin data, with no friendly string in the plugin data key. Anything built for reuse
+  is a COMPONENT, a direct child of its page, with every property binding re-read and confirmed.
 - Every `mj-raw` frame contains its text child. Dark mode overrides intact. Exactly one visible
   CTA button per email unless the user asked otherwise.
 
@@ -512,7 +542,9 @@ the user to update the plugin.
 Two reference files carry the ground truth this skill deliberately does not restate:
 
 - **`render-spec.md`**, the complete MJML JSON to Figma mapping: every tag, every attribute,
-  alignment, fills, fonts, column width math, and the post-build checklist. Path B transcription
+  alignment, fills, fonts, column width math, layer naming (section 6, with the full tag to
+  display-name table), when a node is a COMPONENT rather than a FRAME (section 7), component
+  properties per element type (section 8), and the post-build checklist. Path B transcription
   follows it exactly.
 - **`structure.md`**, the plugin's own conventions read out of its source: how a node is
   identified, the full node type list, the leaf pair rules, and every writable plugin data key.
@@ -536,7 +568,7 @@ rule in it applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.0.0 of this skill. If you have web access, check once per conversation
+This is version 2.1.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

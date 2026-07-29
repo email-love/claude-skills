@@ -4,8 +4,9 @@ Audience: render agents transcribing the MJML JSON returned by the
 design-converter worker (SKILL.md, Phase 3 step 1) into Figma frames that the
 Email Love plugin will preview and export correctly. You may ONLY use what an
 external agent can write: layer names, geometry, auto-layout,
-fills/strokes/radii, TEXT node properties, and
-`setSharedPluginData('emaillove', key, value)`.
+fills/strokes/radii, TEXT node properties,
+`setSharedPluginData('emaillove', key, value)`, and, for reusable modules,
+component creation plus component properties (sections 7 and 8).
 
 Sources of truth, in order:
 1. `references/structure.md` in this skill
@@ -27,11 +28,13 @@ or text characters.
    fallback to the shared `emaillove` namespace since commit f60c404,
    2026-07-24), else the Figma layer name. Always write
    `node.setSharedPluginData('emaillove', 'name', '<exact tag>')`.
-   The layer name is then free for a human label ("Hero Text", "CTA Button").
-   If you skip the shared key, the layer name itself must be either the bare
-   tag (`mj-section`) or the parsed form `Label, (mjml:mj-section)`. A layer
-   named `mj-section - Report CTA` with no shared key FAILS: the whole string
-   is read as the tag.
+   The layer name is then free for a human label, and section 6 says exactly
+   which label to use: the plugin's own display name for that tag, so a
+   converted file reads like one the plugin built. Never rely on the layer-name
+   fallback. If you did skip the shared key, the layer name itself would have to
+   be either the bare tag (`mj-section`) or the parsed form
+   `Label, (mjml:mj-section)`; a layer named `mj-section - Report CTA` with no
+   shared key FAILS, because the whole string is read as the tag.
 2. **Exact tag strings.** Matching is exact string equality against:
    `mj-wrapper`, `mj-section`, `mj-group`, `mj-column`, `mj-column-inner`,
    `mj-text-Frame`, `mj-text`, `mj-image-Frame`, `mj-image`,
@@ -98,7 +101,10 @@ or text characters.
 
 ## 2. Root frame (one per MJML document)
 
-Create a top-level FRAME on the target page:
+Create a top-level FRAME on the target page. When the thing you are building is
+a reusable design-system module rather than a one-off email, build the root as
+a COMPONENT instead and read section 7 first; everything below applies
+unchanged either way.
 
 - **Geometry:** `resize(W, 100)` where `W` = numeric `mj-body` `width`
   (usually `600`), then `layoutMode = 'VERTICAL'`,
@@ -507,21 +513,317 @@ color from `strokes[0]` and per-side weights.
 
 ---
 
-## 6. Post-build checklist (run per module before handing off)
+## 6. Layer names: friendly on the canvas, the tag in plugin data
+
+Every node carries two names, read by two different audiences:
+
+- `node.name`, the Figma layer name, is for the human who opens the file.
+- the plugin data key `name` (shared namespace `emaillove`) is the MJML tag.
+
+**The exporter never reads the layer name for dispatch.** It resolves the tag
+through `getMetaName(node)`, which reads plugin data `name` first (private,
+then the shared `emaillove` namespace) and falls back to `node.name` only when
+both are empty. Every branch of the export tree walker keys off that resolved
+tag. So a friendly layer name cannot break the export, as long as the plugin
+data tag is there. The plugin does exactly this to its own nodes: it writes the
+friendly string to the layer name and the tag to plugin data in the same
+breath.
+
+Name every node you create twice:
+
+```js
+const section = figma.createFrame()
+section.name = 'Row (Contains columns that sit side by side)'   // for humans
+section.setSharedPluginData('emaillove', 'name', 'mj-section')  // for the plugin
+```
+
+Use the display names in 6.1. They are the plugin's own strings, so a converted
+file reads identically to one the plugin built, and a designer opening the
+layers panel sees the same vocabulary the plugin's UI uses.
+
+Three ways this goes wrong:
+
+1. **Skipping the plugin data write and relying on the fallback.** Do not. The
+   plugin has a helper (`enableVariableNaming`) that copies `node.name` into
+   plugin data `name` for any node whose plugin data `name` is empty. Once that
+   runs, the friendly label IS the tag, permanently, and the node matches no
+   branch in the exporter. Write the tag at creation time on every node.
+2. **Putting the friendly name in plugin data.** The plugin data value must be
+   either the bare tag (`mj-section`) or the parsed form
+   `Friendly, (mjml:mj-section)`. A friendly-only value is read whole as the
+   tag, matches nothing, and the node is dropped with no error. Extra props
+   ride in the same string when needed: `, (type:link)`, `, (group:Button)`.
+3. **Button icon frames are the one exception, and they are a real trap.** The
+   library-save and template-upload path finds a button's icon frames by a RAW
+   layer-name substring check (`c.name.includes('beforeIcon-Frame')`), not
+   through `getMetaName`. The HTML export path uses `getMetaName` and is fine.
+   So a button whose icon frames carry only the friendly names loses its icons
+   when the component is saved to the library. If you build button icons at
+   all, keep the literal substring `beforeIcon-Frame` / `afterIcon-Frame` in
+   the layer name. Button icons are out of scope for this spec's leaf set
+   (section 4.3), so the safe move is not to build them here.
+
+The root is the one node this spec gives no tag: it is identified by
+`nodeType = mainFrame`, and its layer name is the module or email name
+(section 2), which also becomes the component name when it is saved into the
+plugin. Keep that name clean and do not put a tag in it.
+
+### 6.1 Display names by tag
+
+| tag (plugin data `name`) | Figma layer name (`node.name`) |
+| --- | --- |
+| `mj-body` | Email Canvas |
+| `mj-wrapper` | Wrapper (Groups rows and sets the background for this section ) |
+| `mj-section` | Row (Contains columns that sit side by side) |
+| `mj-column` | Column (Your images, text, buttons, and other content go in here) |
+| `mj-column-inner` | Inner Column |
+| `mj-group` | Group (Groups columns together for responsive stacking) |
+| `mj-text-Frame` | Text Block |
+| `mj-text` | Text |
+| `mj-image-Frame` | Image Block |
+| `mj-image` | Image |
+| `mj-button-Frame` | Button Block |
+| `mj-button` | Button |
+| `mj-button-text` | Button Text |
+| `mj-hero-Frame` | Hero Block |
+| `mj-hero` | Hero |
+| `mj-hero-Image` | Hero Image |
+| `mj-divider-Frame` | Divider |
+| `mj-divider` | Divider Line |
+| `mj-raw` | Code Block |
+| `mj-raw-text` | Code Text |
+| `mj-spacer` | Spacer |
+| `mj-social` | Social Bar |
+| `mj-social-element` | Social Icon |
+| `mj-navbar` | Nav Bar |
+| `mj-navbar-link` | Nav Link |
+| `mj-nav-text` | Nav Text |
+| `mj-table` | Table |
+| `mj-table-row` | Table Row |
+| `mj-table-column` | Table Cell |
+| `mj-table-text` | Table Text |
+| `mj-table-image` | Table Image |
+| `beforeIcon-Frame` | Before Icon (but see failure 3 above) |
+| `afterIcon-Frame` | After Icon (but see failure 3 above) |
+
+Reproduce these strings verbatim, including the stray space before the closing
+paren in the wrapper string; that is what the plugin writes, and matching it
+keeps diffs and comparison tooling clean. Any tag not listed uses the tag
+itself as the layer name.
+
+You may append a short human qualifier when a module holds several of the same
+block and the distinction helps a reviewer ("Text Block / eyebrow"). Avoid the
+comma form there, since `Label, (mjml:mj-text)` is the parsed tag syntax and a
+comma reads as the start of one. Never prepend anything that looks like a tag,
+and never let the qualifier replace the display name.
+
+---
+
+## 7. Components: when a node is a COMPONENT instead of a FRAME
+
+**Make it a COMPONENT when it is meant to be reused**: a converted design-system
+module, a section you built to fill a gap and intend to save into the library,
+a foundations button or badge that other modules instance. Keep it a FRAME when
+it is a one-off campaign email that nobody will instance.
+
+This is safe. Confirmed against the plugin source:
+
+- **Export accepts a COMPONENT everywhere it accepts a FRAME.** The export
+  gate whitelists `FRAME`, `INSTANCE`, `COMPONENT` at the root and at every
+  container level, and the root branch is `nodeType === 'mainFrame'` plus that
+  whitelist. The HTML export path has no node-type check on the root at all.
+- **Add New Template accepts a COMPONENT.** The whole-email branch tests plugin
+  data only (`nodeType === 'mainFrame'`), never `node.type`. The save-a-module
+  branch clones your selection into a temporary frame it creates itself, which
+  is the plugin's own established move.
+- **The plugin already does this.** Every `mj-wrapper` the plugin renders is
+  created as a COMPONENT, not a FRAME. Purple components inside a plugin-built
+  email are normal. Do not "fix" them into frames.
+- **Instances work.** `INSTANCE` is in the same whitelist and an instance
+  surfaces the main component's plugin data, so a customer who places an
+  instance of a componentized module still exports correctly.
+
+The calls, either at creation or by promoting a finished frame:
+
+```js
+// build it as a component from the start...
+const moduleRoot = figma.createComponent()      // instead of figma.createFrame()
+// ...or promote the frame you already finished:
+const moduleRoot = figma.createComponentFromNode(frame)
+
+moduleRoot.name = 'Hero, text led'              // becomes the saved component name
+moduleRoot.setSharedPluginData('emaillove', 'nodeType', 'mainFrame')
+```
+
+Everything else in this spec applies unchanged: a ComponentNode supports the
+same auto-layout, sizing, padding, fill, resize, and plugin data calls the frame
+sections use.
+
+Four rules keep a COMPONENT root working:
+
+1. **Keep it a direct child of the page.** The plugin's template discovery
+   enumerates DIRECT page children and filters on plugin data. A root that gets
+   pulled into a COMPONENT_SET (someone adds variants to it) is no longer a page
+   child and vanishes from the plugin's template picker. Never combine template
+   roots into a variant set. A Figma SECTION swallows a root the same way, and
+   that hazard applies to FRAME roots too.
+2. **Do not leave instances of a template root on the page.** Instances inherit
+   the main component's plugin data, which is the mechanism the plugin relies on
+   elsewhere, so an instance of a template root also reads as a template. If you
+   need to show a module in use, place it inside an email root, not loose on the
+   library page.
+3. **Properties go on the component that owns the node** (section 8). Because
+   every `mj-wrapper` is itself a COMPONENT, a root component cannot bind a
+   property to anything inside its wrapper components: Figma rejects
+   `componentPropertyReferences` on an instance sublayer. Bind at the level that
+   directly owns the node.
+4. **Do not write `isStandalone`.** The shipped plugin build ignores that key
+   entirely (it is behind a compile-time flag that is off), so a "standalone"
+   section or hero sitting directly under the root gets no wrapper-level
+   controls in the properties sidebar and is not eligible for the Upload button.
+   Keep `mj-wrapper` as the top-level block boundary and put properties on the
+   wrapper-level component.
+
+---
+
+## 8. Component properties
+
+Properties turn a rebuilt module into something a marketer can use without
+opening it. They are an agent-side layer on top of the plugin's plugin data
+model: the plugin neither writes nor reads them, and they change nothing about
+the export except through `visible` (see 8.2).
+
+Three hard constraints before any code:
+
+- `addComponentProperty` exists **only** on ComponentNode and ComponentSetNode.
+  A FrameNode does not have the method. Convert first (section 7).
+- The property id that comes back is **suffixed** (`Body#12:3`). Always bind and
+  set with the returned id, never with the bare name.
+- Figma refuses `componentPropertyReferences` on an **instance sublayer**. The
+  property must be added to the component that directly contains the node you
+  are binding.
+
+There are exactly four property types: BOOLEAN, TEXT, INSTANCE_SWAP, VARIANT.
+**There is no image property type**, so an `mj-image` fill cannot be exposed as
+a property; image swapping stays a plugin-side fill edit.
+
+### 8.1 TEXT, bound to `characters`, for copy that changes per send
+
+Bind the inner TEXT node, never the wrapper: the `mj-text` node inside a
+`mj-text-Frame`, or `mj-button-text`, `mj-nav-text`, `mj-table-text`.
+
+```js
+const headline = moduleRoot.addComponentProperty('Headline', 'TEXT', textNode.characters)
+textNode.componentPropertyReferences = { characters: headline }
+// later, on an instance:
+instance.setProperties({ [headline]: 'New headline' })
+```
+
+`characters` is only valid on a TextNode. This is safe for export because the
+exporter reads the live `characters` off the node at extract time.
+
+### 8.2 BOOLEAN, bound to `visible`, for optional regions
+
+Bind the block-level wrapper frame, never the inner leaf: the
+`mj-button-Frame` for an optional CTA, the `mj-image-Frame` for an optional
+image, the eyebrow's `mj-text-Frame`.
+
+```js
+const showBtn = moduleRoot.addComponentProperty('Show Button', 'BOOLEAN', true)
+ctaFrame.componentPropertyReferences = { visible: showBtn }
+```
+
+This composes exactly with the exporter, which returns early on any node where
+`visible` is false. Flipping the boolean off on an instance genuinely removes
+the block from the exported MJML and HTML rather than shipping a hidden
+element.
+
+### 8.3 INSTANCE_SWAP, bound to `mainComponent`, for style variants
+
+Bind an INSTANCE node inside the module, in practice the button instance
+pointing at a foundations button.
+
+```js
+const style = moduleRoot.addComponentProperty(
+  'Button Style',
+  'INSTANCE_SWAP',
+  primaryButton.key,          // the default the instance starts on
+  {
+    preferredValues: [
+      { type: 'LOCAL_COMPONENT', key: primaryButton.key },
+      { type: 'LOCAL_COMPONENT', key: inverseButton.key },
+      { type: 'LOCAL_COMPONENT', key: textLink.key },
+    ],
+  },
+)
+buttonInstance.componentPropertyReferences = { mainComponent: style }
+```
+
+For a published library component the default value is the component `key`. A
+local component's node id also resolves in practice.
+
+### 8.4 VARIANT
+
+Only meaningful on a ComponentSetNode, and added to the set rather than to a
+member. Skip it for email modules unless you deliberately want a variant set,
+and remember rule 1 in section 7: a template root inside a component set
+disappears from the plugin's picker.
+
+### 8.5 Which properties to add
+
+**A property whose binding is wrong is worse than no property.** It looks
+editable in the panel, does nothing or edits the wrong node, and the person who
+trusted it ships the mistake. Bind fewer things, and verify every binding by
+reading `componentPropertyReferences` back off the node after you set it.
+
+Derive properties from evidence, not from imagination:
+
+- A BOOLEAN needs a sibling design in the source library where that region is
+  genuinely absent.
+- A TEXT needs evidence that the copy actually changes between sends (different
+  values across variants, a template variable in the source, a date or offer).
+- Boilerplate stays unbound: mailing address, legal lines, standing disclosures.
+- Two to five properties per module is the working range. Zero is a legitimate
+  answer for a module with no text node and no optional region, for example a
+  fixed logo header. Four good properties beat twenty; a cluttered panel gets
+  ignored.
+
+Name properties in plain language ("Show Button", "Headline", "Body", "Button
+Style") and reuse the same names across modules so the panel reads consistently
+system-wide.
+
+**The known failure:** a button label that lives on a sublayer inside a nested
+button instance cannot be bound from the module. The fix is to add the TEXT
+property to the foundations button component itself and let it surface through
+the instance. Same rule as always: put the property on the component that owns
+the node.
+
+---
+
+## 9. Post-build checklist (run per module before handing off)
 
 1. Root has shared `nodeType = mainFrame` plus ALL theme color keys and
    `lightThemeBackgroundColor`.
 2. Every FRAME/RECT/LINE/TEXT you created has shared `name` set to exactly
-   one known tag; zero untagged frames anywhere in the tree.
-3. Every leaf is a complete pair; every `mj-button` has a direct TEXT child;
+   one known tag; zero untagged frames anywhere in the tree. No node is
+   relying on the layer-name fallback.
+3. Every node's layer name is the display name for its tag (section 6.1), and
+   no friendly string was written into the plugin data `name` key.
+4. Every leaf is a complete pair; every `mj-button` has a direct TEXT child;
    no empty wrapper frames.
-4. `primaryAxisAlignItems === counterAxisAlignItems` on every auto-layout
+5. `primaryAxisAlignItems === counterAxisAlignItems` on every auto-layout
    frame.
-5. All nodes `visible = true`; `itemSpacing = 0` everywhere; no stray fills.
-6. Root width equals the mj-body width; column px widths equal the worker
+6. All nodes `visible = true` (except a region you deliberately left off via a
+   BOOLEAN default); `itemSpacing = 0` everywhere; no stray fills.
+7. Root width equals the mj-body width; column px widths equal the worker
    attrs; section paddings equal the worker attrs.
-7. No em dashes in any layer name, plugin data value, or text characters.
-8. Compare a fresh screenshot of the frame against the source screenshot you
-   converted from, for spacing, alignment, and color parity. Small color and
-   font-metric differences are acceptable; missing content, zero-height
-   sections, and alignment flips are not.
+8. If the module is reusable: the root is a COMPONENT, a direct child of the
+   page, not inside a COMPONENT_SET or a Figma SECTION, with no stray instances
+   of it left on the page.
+9. Every component property you added was re-read back off the node to confirm
+   the binding landed, and each one has a reason you can state in the report.
+10. No em dashes in any layer name, plugin data value, or text characters.
+11. Compare a fresh screenshot of the frame against the source screenshot you
+    converted from, for spacing, alignment, and color parity. Small color and
+    font-metric differences are acceptable; missing content, zero-height
+    sections, and alignment flips are not.

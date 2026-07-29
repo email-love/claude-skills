@@ -1,7 +1,7 @@
 {
   "name": "emaillove-eds-converter",
   "displayName": "Email Love EDS Converter",
-  "version": "1.5.0",
+  "version": "1.7.0",
   "description": "Convert an audited legacy Figma design system into a working Email Love design system, foundations first, then modules in batches with design review",
   "author": {
     "name": "Email Love",

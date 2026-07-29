@@ -42,7 +42,10 @@ Build the scaffold every later batch depends on:
    font unless the user confirms web-font hosting). Name styles as the customer named theirs.
 3. **Buttons page.** Rebuild each of their button styles as a component: correct email
    construction (a styled frame with a single text node), not their app-style nested
-   instances. These become the sub-components nested inside mj-button-Frames.
+   instances. These become the sub-components nested inside mj-button-Frames, and they are
+   the INSTANCE_SWAP targets for module-level "Button Style" properties later. Put the
+   label's TEXT property on the button component itself: a label living inside a nested
+   instance cannot be bound from the module that uses it (render spec, section 8.5).
 4. **Spacing.** Recreate their spacer scale as components if they had one.
 5. **Assets.** Export the logo and any recurring imagery from the source file
    (download_assets) and upload into the target file (upload_assets). Logos become images,
@@ -98,8 +101,13 @@ Figma node, auto-layout, fill, and shared plugin data the plugin's exporter read
 including the root frame's `nodeType = mainFrame` marker and theme color keys. While
 transcribing, build the module as a component with correct export structure:
 
-- Structural frames named exactly (`mj-section`, `mj-column`) or carrying the tag in the
-  `name` shared plugin data key with a human layer name.
+- **Every node gets two names.** The MJML tag goes in the `name` shared plugin data key;
+  the Figma layer name gets the plugin's own friendly display name for that tag ("Row
+  (Contains columns that sit side by side)", "Text Block", "Button Text"), so the layers
+  panel reads like a plugin-built file rather than a wall of `mj-` strings. The exporter
+  never reads the layer name for dispatch, so this is free. Section 6 of the render spec
+  has the full tag to display-name table, the precedence rules, and the three ways this
+  goes wrong. Never rely on the layer-name fallback.
 - **Content leaves are tagged PAIRS, wrapper plus inner node.** `mj-text-Frame` contains a
   text node tagged `mj-text`; `mj-image-Frame` contains the image rectangle tagged
   `mj-image`; `mj-button-Frame` contains a node tagged `mj-button` whose own direct child is
@@ -167,22 +175,26 @@ in the module's report line for the designer.
 
 ### 4. Componentize, add properties, and pre-tag
 
-Make the finished module a COMPONENT on its category page.
+Make the finished module a COMPONENT on its category page. A module is a design-system
+asset, so it is a component, not a frame: the plugin accepts a COMPONENT root everywhere it
+accepts a FRAME, on both the export path and Add New Template, and component properties are
+impossible without one. Section 7 of the render spec has the calls, the confirmation, and
+the four rules that keep a component root working (keep it a direct page child, never
+combine template roots into a variant set, bind properties at the level that owns the node,
+do not write `isStandalone`).
 
-**Add component properties for the parts a marketer will change.** Derive them from evidence
-in the source library rather than adding them everywhere: if a region appears in some variants
-of this module and not others, that is a BOOLEAN bound to `visible`; the headline, body, and
-button label are TEXT properties bound to `characters`; a genuine style choice (button
-variant, icon) is an INSTANCE_SWAP. Because the plugin exports what is visible, a boolean that
-hides a region removes it from the sent email. Four good properties beat twenty; a cluttered
-panel gets ignored. Record the properties you added, and why, in the module's report line.
+**Add component properties for the parts a marketer will change**, per section 8 of the
+render spec: TEXT bound to `characters` on the inner text node, BOOLEAN bound to `visible`
+on the block wrapper, INSTANCE_SWAP bound to `mainComponent` on a nested instance. There is
+no image property type.
 
-```js
-const showBtn = comp.addComponentProperty('Show Button', 'BOOLEAN', true)
-ctaFrame.componentPropertyReferences = { visible: showBtn }
-const headlineProp = comp.addComponentProperty('Headline', 'TEXT', textNode.characters)
-textNode.componentPropertyReferences = { characters: headlineProp }
-```
+Derive them from evidence in the source library rather than adding them everywhere: a
+BOOLEAN needs a sibling design where that region is genuinely absent; a TEXT needs evidence
+the copy changes between sends; boilerplate stays unbound. Two to five per module is the
+working range, and zero is a legitimate answer for a fixed block like a logo header.
+**A property whose binding is wrong is worse than no property**, so re-read
+`componentPropertyReferences` back off each node to confirm the binding landed. Record the
+properties you added, and why, in the module's report line.
 
 Then tag it for saving into the plugin. **Use the customer's real category names**, which are
 whatever sections already exist in their plugin, not names you invent. If the Email Love MCP is
@@ -211,10 +223,16 @@ misfits in one pass rather than hunting for them later.
 Verify against `references/structure.md` (the plugin's ground truth) and the post-build
 checklist at the end of `references/render-spec.md`:
 
-- Structural checklist: naming or metadata resolves on every structural frame; every leaf
-  is a complete tagged pair; both alignment axes match on every auto-layout frame; no
-  detached instances; no unrecognized frames except intentional editable-image regions;
-  `mj-column-inner`, if used, is literally `children[0]` of its column.
+- Structural checklist: the `name` plugin data key resolves to a real tag on every node
+  (nothing relying on the layer-name fallback); every leaf is a complete tagged pair; both
+  alignment axes match on every auto-layout frame; no detached instances; no unrecognized
+  frames except intentional editable-image regions; `mj-column-inner`, if used, is literally
+  `children[0]` of its column.
+- Naming: every layer carries the display name for its tag, and no friendly string leaked
+  into the plugin data `name` key.
+- Component: the module root is a COMPONENT, a direct child of its category page, not inside
+  a component set or a Figma section, with no stray instances of it left loose on the page.
+  Every property binding re-read and confirmed.
 - Visual: screenshot the rebuild next to the source screenshot from step 1; flag
   divergences rather than silently accepting them.
 - Mobile: list the mobile keys you set per node.
@@ -222,8 +240,9 @@ checklist at the end of `references/render-spec.md`:
 ### 6. Batch report and gate
 
 One report per batch: per module, what was rebuilt, verdict honored or changed (with reason),
-mobile decisions, divergences flagged, save tags applied. End with the open questions for the
-design review. Do not start the next batch until the user says the review happened.
+mobile decisions, divergences flagged, component properties added and the evidence for each,
+save tags applied. End with the open questions for the design review. Do not start the next
+batch until the user says the review happened.
 
 ## Hand-off after the final batch
 
