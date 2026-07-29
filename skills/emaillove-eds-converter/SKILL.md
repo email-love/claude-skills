@@ -109,10 +109,26 @@ changes (padding scale, hidden elements, alignment shifts, reordered stacks). Wh
 difference cannot be expressed in these keys (different copy, different image crop), note it
 in the module's report line for the designer.
 
-### 3. Componentize and pre-tag
+### 3. Componentize, add properties, and pre-tag
 
-Make the finished module a COMPONENT on its category page, then tag it for saving into the
-plugin:
+Make the finished module a COMPONENT on its category page.
+
+**Add component properties for the parts a marketer will change.** Derive them from evidence
+in the source library rather than adding them everywhere: if a region appears in some variants
+of this module and not others, that is a BOOLEAN bound to `visible`; the headline, body, and
+button label are TEXT properties bound to `characters`; a genuine style choice (button
+variant, icon) is an INSTANCE_SWAP. Because the plugin exports what is visible, a boolean that
+hides a region removes it from the sent email. Four good properties beat twenty; a cluttered
+panel gets ignored. Record the properties you added, and why, in the module's report line.
+
+```js
+const showBtn = comp.addComponentProperty('Show Button', 'BOOLEAN', true)
+ctaFrame.componentPropertyReferences = { visible: showBtn }
+const headlineProp = comp.addComponentProperty('Headline', 'TEXT', textNode.characters)
+textNode.componentPropertyReferences = { characters: headlineProp }
+```
+
+Then tag it for saving into the plugin:
 
 ```js
 node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')

@@ -1,7 +1,7 @@
 {
   "name": "emaillove-figma-builder",
   "displayName": "Email Love Figma Builder",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "description": "Build export-ready marketing and lifecycle emails inside your Figma file from your Email Love design system",
   "author": {
     "name": "Email Love",

@@ -306,6 +306,36 @@ varies enough across clients that it warrants a human check.
 
 Write like a person, not a template. Front-load the value in the first section, keep one primary CTA, make everything scannable. For sequences, each email must escalate or advance the story; if two emails in one recipient's path repeat the same theme, rewrite the later one to build on the first. Match the brand voice from existing copy in the file, informed by any Step 2 inspiration.
 
+### Component properties
+
+When you build a component, add Figma component properties for the parts a marketer will
+actually change. Instances then expose toggles and fields in Figma's properties panel, and
+because the plugin exports what is visible, a boolean that hides a region genuinely removes it
+from the sent email rather than just hiding it on the canvas.
+
+```js
+const showBtn = comp.addComponentProperty('Show Button', 'BOOLEAN', true)
+ctaFrame.componentPropertyReferences = { visible: showBtn }
+
+const headlineProp = comp.addComponentProperty('Headline', 'TEXT', textNode.characters)
+textNode.componentPropertyReferences = { characters: headlineProp }
+```
+
+Three types earn their place:
+
+- **BOOLEAN** on genuinely optional regions: an eyebrow, a second button, a supporting image,
+  a disclaimer. Bind to `visible`.
+- **TEXT** on the copy fields someone edits every campaign: headline, body, button label. Bind
+  to `characters`, so the copy is editable from the panel without hunting through layers.
+- **INSTANCE_SWAP** where a real choice exists, such as button style or icon.
+
+Restraint beats coverage: four well-chosen properties are more useful than twenty, and a
+cluttered panel gets ignored. Add a boolean only where the design shows that region is really
+optional (present in some variants of the source library, absent in others), text properties
+for the top-level copy, and nothing else. Properties can only be added to COMPONENT or
+COMPONENT_SET nodes, never to instances, and you must load a text node's font before reading
+its characters for a default value.
+
 ### Saving components into the plugin's design system
 
 Users sometimes want a section you built (or a whole new component set) saved into the
@@ -357,4 +387,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.8.1 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.9.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
