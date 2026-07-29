@@ -76,6 +76,50 @@ whole design system is a different job: a batch of five design-system modules ha
 at tens of minutes per pass, which is why a library migration is a separate batched process with
 design review between batches, not something to fold into a build (hello@emaillove.com).
 
+### Report progress while it runs
+
+The estimate is the promise; these lines are how you keep it. A build is minutes rather than tens
+of minutes, so the granularity is the **section**, not the whole email and not the node. Post one
+line at each of these points and nowhere else:
+
+1. **Before the first write to the canvas:** the path and why (you owe that line anyway), the
+   section plan by name, and the estimate. **The section count you give here is the denominator
+   for every line after it**, so name them: "Path A, 9 sections: preheader, logo header, hero,
+   three product cards, testimonial, CTA, footer. Roughly 8 minutes."
+2. **After each section lands:** count, percentage, section name.
+3. **On Path B, either side of the design-converter call** (B3): one line before it and one after.
+   This is the single wait in a build where nothing at all happens on the canvas, so it is the one
+   place a user reasonably concludes the run has hung. Say the same thing the moment you re-run
+   with `recache=1` or retry an `X-Trivial-Response`, rather than mentioning it in the hand-off.
+4. **At the end:** what was built, what you assumed or had to ask about, and anything skipped.
+
+How each line is written:
+
+- **A count and a percentage, never prose.** "Section 4 of 9 done, 44 percent" is the format.
+  "Almost there" is not a checkpoint.
+- **Name the section.** "Section 4 of 9: testimonial" lets the user click it in Figma. "Section 4
+  of 9" does not.
+- **Two counters for a sequence, not one.** "Email 2 of 4, section 3 of 7: hero" locates someone
+  in a campaign. A single percentage of the whole sequence does not.
+- **Say what is happening now, in the user's language.** "Transcribing the footer, 43 nodes" tells
+  them why it is slow. "Calling the plugin API" does not.
+- **Section boundaries only.** Never per node, per instance, per property, or per screenshot. A
+  hero with thirty nodes gets one line when it is finished, not thirty.
+- **Revise the estimate when the pace disagrees with it.** Most builds are short enough that the
+  opening number holds. But if sections are landing at double what you opened with, say so at the
+  next section boundary with the new number instead of at the end, and revise upward without
+  apology: Path B transcription in particular runs slower than it looks.
+
+Two lines, the format to copy. Path A, after a section:
+
+> Section 4 of 9 done, 44 percent: testimonial, instanced and filled. Sections are averaging about
+> 50 seconds, so the remaining 5 are roughly 4 minutes. Next: section 5 of 9, CTA.
+
+Path B, before the worker:
+
+> Sending the hero comp to the design converter now. It takes a few seconds to about half a
+> minute, then transcribing what comes back is the longer part.
+
 ## Step 1: The brief (adaptive interview)
 
 Collect the essentials before touching the canvas. If the user's message already answers a
@@ -291,6 +335,21 @@ send it, so the worker returns email-scale numbers in the first place, and pin `
 `promptInputs` (B3). Tell the user the factor you derived; it is a judgment they may want to
 correct. Render spec section 0.6 is the rule this protects.
 
+**A factor you derive here is ONE number, applied to EVERY number.** Whether you scale the
+screenshot before sending it or divide the worker's output afterward, the same factor governs type
+sizes, line heights, widths, paddings, image dimensions, and spacer heights. Rounding is allowed,
+to the nearest whole pixel, after the division. Choosing a converted value because it looks like a
+size email usually uses is not rounding; it is a second factor invented for one element.
+
+**Check it against the source's own ratios.** Divide the largest type size you ended up with by
+the smallest, do the same in the source, and compare. More than a couple of percent apart means
+something got rounded toward a pleasant number instead of divided. The failure looks like this,
+measured on a real conversion: a source headline of 55 and body of 35, a ratio of 1.57, came out
+as 30 and 16, a ratio of 1.88, so 1.83 on the headline and 2.19 on the body. The email read as
+though its padding were wrong even though every padding value was correct, which is why this is
+worth a deliberate check rather than a glance. If a converted size looks wrong, the factor is the
+suspect and not the style: re-derive the factor, re-divide everything, re-run the check.
+
 Rendering, whichever HTML you start from: headless Chrome with
 `--headless=new --screenshot=<out.png> --window-size=<email width>,<tall enough for the whole
 email> --force-device-scale-factor=2`, then trim any trailing blank space before sending. A
@@ -361,7 +420,7 @@ node is not. List every row you rebuilt this way in your report.
 
 ## B5: Repair what the worker gets wrong (every time, these are known)
 
-The worker returns structure, not a finished email. Four gaps, all observed repeatedly:
+The worker returns structure, not a finished email. Five gaps, all observed repeatedly:
 
 1. **Pills and badges come back as `mj-text`** with an inline-styled `<div>` carrying a
    background color and a border radius. Rebuild every one as an `mj-button` (see the standing
@@ -379,6 +438,21 @@ The worker returns structure, not a finished email. Four gaps, all observed repe
 4. **Unpinned colors, radii, and fonts drift** by a few units between runs, and unpinned fonts
    flatten to Arial. Correct them against the brand foundations rather than accepting what came
    back.
+5. **A photo that overlaps or bleeds past its band comes back as neither of the two things it
+   could be.** Customer designs do this constantly: a product shot entering from the right behind
+   body copy, an animal cropped off by the left edge of a cream band with text beside it. Email has
+   no z-order and no absolute positioning, so it cannot be reproduced, and the worker only ever saw
+   the flat composite, so it returns the band as one image or as text over an image that would have
+   to extend past its column. **Rebuild it as a two column row per render spec 3.4.1, the Two
+   Column Swap**: one `mj-section`, two `mj-column`s, image in one and text in the other in source
+   order, both columns FIXED and summing with the section padding to the content box, the image a
+   rendered crop at its column's content width, no `mj-group` (the stack is the point, and it puts
+   the image above the text on mobile). This is Email Love's standard substitute rather than a
+   judgment call, so do not attempt the overlap and do not leave the band as a flattened image. When
+   the source is their own Figma design you can confirm the case before converting: compare the
+   image node's absolute box against the band's box, and look for a background-colored sibling
+   clipping the photo by z-order rather than a mask. Say in your report that the overlap was traded
+   for the two column row, since it is a visible difference from the design they handed you.
 
 ## B6: Apply the design system on top, then make it reusable
 
@@ -592,8 +666,10 @@ consistent with the file's real campaigns. Then check structure:
   internals were restructured.
 - **Path B:** the render spec's post-build checklist passes: every node tagged, every leaf a
   complete pair, every `mj-button` with a direct TEXT child, both alignment axes equal on every
-  auto-layout frame, all nodes visible, column widths matching the worker JSON. Plus the four B5
-  repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4.
+  auto-layout frame, all nodes visible, column widths matching the worker JSON. Plus the five B5
+  repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4. If the
+  source had an overlapping or bleeding photo, that band is a two column row per render spec 3.4.1,
+  not a flattened image and not an attempted overlap.
 - **Sizing, on both paths, for every frame you created:** vertical HUG everywhere, no fixed
   height except an `mj-spacer`, no FIXED width outside the load-bearing cases, every pinned
   width that carries text given slack (render spec section 3.3.1), all spacing expressed as
@@ -633,7 +709,8 @@ Two reference files carry the ground truth this skill deliberately does not rest
   FIXED, button width as a mobile decision, padding by level), then **the two root shapes and
   which one you are building** (section 2: an EMAIL TEMPLATE, which is what this skill produces,
   versus a DESIGN-SYSTEM MODULE, which is what a saved block must be), then every tag, every
-  attribute, alignment, fills, fonts, column width math, layer naming (section 6, with the full
+  attribute, alignment, fills, fonts, column width math, the Two Column Swap for a photo that
+  overlaps or bleeds past its band (section 3.4.1), layer naming (section 6, with the full
   tag to display-name table), when a node is a COMPONENT rather than a FRAME (section 7),
   component properties per element type (section 8), and the post-build checklist. Path B
   transcription follows it exactly.
@@ -659,7 +736,7 @@ rule in it applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.4.0 of this skill. If you have web access, check once per conversation
+This is version 2.7.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

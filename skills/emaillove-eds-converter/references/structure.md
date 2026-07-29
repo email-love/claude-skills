@@ -67,6 +67,11 @@ From `src/constants/nodeTypes/mjmlNodeTypes.ts`, which splits them explicitly:
 `mj-table` / `mj-table-row` / `mj-table-column` / `mj-table-text` / `mj-table-image`,
 `beforeIcon-Frame` / `afterIcon-Frame`
 
+Nothing in this list expresses z-order, overlap, or absolute position, and no plugin data key adds
+them. A source photo that bleeds past its block or sits behind copy has no tag to be given: it is
+rebuilt as a two column row, which is the Two Column Swap in `render-spec.md` section 3.4.1. Do
+not improvise a container for it; an unrecognized frame is flattened to an image (below).
+
 ## Every content leaf is a tagged pair
 
 The wrapper carries layout; the inner node carries content, and **both must be tagged**:
@@ -112,6 +117,11 @@ cannot grow, so a label that fits exactly on canvas wraps in Preview. Rule and n
 
 To stop a whole section stacking without a group, set `stackColumns` = `'false'` on the section.
 Wrapper-level `stackColumns`/`reverseStack` propagate down to child sections that lack their own.
+
+**A group is not the vehicle for the Two Column Swap** (`render-spec.md` section 3.4.1, the
+standard rebuild for an overlapping or bleeding image). That pattern wants the stacking a group
+suppresses, so it uses a plain `mj-section` holding two `mj-column`s. Reach for a group only when
+the design genuinely must stay side by side at 390px.
 
 ## mj-raw
 

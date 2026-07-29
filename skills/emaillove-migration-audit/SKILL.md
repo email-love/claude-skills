@@ -34,6 +34,35 @@ between batches. The time is dominated by round trips to Figma, one per node cre
 not by AI: the automated conversion of a design takes seconds. These are ranges from past runs,
 not guarantees, so keep the Step 6 effort estimate framed as a range too.
 
+### Report progress while you walk
+
+The walk is where the silence is. Reading the pages and then every candidate design is one Figma
+call after another with nothing appearing on screen, so a library that takes minutes reads as a
+hung run. Three lines fix that, and three is the whole contract here: this skill creates nothing,
+so it earns far fewer updates than the conversion does.
+
+1. **After the census** (end of Step 2): the counts you found. Pages, candidate frames, designs
+   after desktop/mobile twins are merged, text and paint styles. **The design count is the
+   denominator for everything after it**, so state it here even when it is obvious.
+2. **As you walk the designs** (Step 4, pass 1): one line per design. A count, a percentage, the
+   design's name, and what it added to the inventory. Say a blocker at the design where you hit
+   it rather than saving it for the report: a component library file you cannot see, a split you
+   are inferring and need the designer to confirm, a type ramp that contradicts the width
+   derivation.
+3. **At the end** (Step 6): the shape of the report. Modules by verdict, the scale factor, and the
+   one or two flags that decide the next step.
+
+The format for the walking line, and it is a count and a percentage rather than prose:
+
+> Design 3 of 11 walked, 27 percent: Welcome email, 4 blocks cut, 2 of them new, 9 modules in the
+> inventory so far.
+
+**Name the design**, so the user can find it in their own file. **Design boundaries only**, never
+per node and never per style: an audit that narrates every text node it reads is worse than one
+that stays quiet, and it is the failure mode to avoid here. If the library turns out larger than
+it looked and the walk is running well past the minutes you promised up front, say so at the next
+design boundary with a revised number rather than letting the user work it out.
+
 ## Step 1: Scope the input
 
 You need the Figma file link. If several files hold the design system, audit each. Ask only
@@ -58,6 +87,31 @@ Build the inventory with read-only calls:
    type. Group desktop and mobile twins (the same design at two widths, commonly 600 and 390);
    in Email Love these merge into ONE frame with Mobile Styles overrides, so count designs,
    not frames.
+4. **Asset survey, and the distinction that decides everything downstream: absent versus
+   fused.** Walk the images the designs actually rely on (image fills, placed assets, logos,
+   icon rows, badge rows, rating rows) and note where each one lives. Then separate two findings
+   that look identical in a screenshot and have completely different remedies:
+   - **Genuinely absent.** The design points at an asset that is not in the file: an image that
+     failed to load, a literal placeholder, an icon set the team keeps elsewhere, a vector that
+     lives only in the component library you were not given. Nobody can build the module until
+     the customer supplies it, so this is a blocker and it is an ask.
+   - **Present but fused.** The asset is in the file, combined with others into a single raster.
+     A row of social icons carried as one screenshot rectangle is the standard case; payment
+     badges, app-store buttons, and star rows do the same thing. Nothing is missing and there is
+     nothing to ask anyone for: whoever converts the module renders that strip and slices it
+     into the individual images the email needs. Two tells, either one being enough: one image
+     node spans a region the design reads as several separate things, and its dimensions are a
+     wide, short strip rather than the size of any single item in it.
+
+   Reporting a fused asset as absent is an observed failure and it cost a whole conversion pass:
+   the audit concluded that a footer's six social icons "are not in the file", the converter
+   built the footer with six empty rectangles, and the icons had been in the file the whole time
+   inside one strip image. **So write which of the two it is, in those words, and write it on the
+   module's row rather than only in Flags** (Step 4's rule about build constraints): `build
+   constraints` reads `slice the fused N-item strip, do not treat as missing` for the fused case
+   and `asset absent, blocked on customer` for the absent one. Say how many items are in the
+   strip, since that count is what the converter checks its slice against. The verdict does not
+   change either way; what changes is whether the module is buildable today, and by whom.
 
 Record the authored type sizes and the design widths verbatim, in the numbers the file actually
 carries. Step 3 divides both, and it cannot do that from rounded or remembered figures.
@@ -108,6 +162,42 @@ never carries source pixels across.
 Record the result in the report's **Scale factor** section (Step 6). Phase 2 reads that number
 instead of deriving its own, which is the whole point of settling it here.
 
+### The factor is ONE number, and the ramp table has to prove it
+
+Recommending a factor is necessary and not sufficient. Phase 2 has to APPLY it, uniformly, to
+every number it writes: type sizes, line heights, widths, paddings, image dimensions, spacer
+heights. The report is what makes that auditable, so it shows the arithmetic per style rather
+than only the conclusion.
+
+**Write the type ramp mapping as a four-column table, one row per style:**
+
+| Style | Authored size | Factor | Email size |
+| --- | --- | --- | --- |
+| Headline | 65 | 2.2 | 30 |
+| Subhead | 55 | 2.2 | 25 |
+| Body | 35 | 2.2 | 16 |
+
+The Factor column carries the SAME number on every row, and that is the reason for printing it
+at all: a per-style factor cannot hide in a table that restates the factor on each line, because
+a second number in that column is visible at a glance. Never write the table as authored size
+straight to email size with the division left out, and never round a row toward a size that
+looks like a nicer email number. Divide, round to the nearest whole pixel, write down what you
+get. Same table, same discipline, for the spacing scale.
+
+**Acceptance test, run on the table before the report ships: the source's ratios must survive.**
+Divide the largest email size in the table by the smallest, divide the largest authored size by
+the smallest, and compare the two. More than a couple of percent apart means a row has been
+rounded off the factor: find that row and fix it, do not ship the table. Run the same check
+across the spacing scale. Worked, from the migration this rule comes from: authored 65/35 = 1.86
+against email 30/16 = 1.88 passes, a 1 percent drift that is nothing but whole-pixel rounding.
+The module that actually shipped came out with a 55 source headline at 30 and a 35 source body
+at 16, so 1.57 in the source against 1.88 built, a 20 percent failure. That is the defect this
+test exists to catch, and it is worth catching here because downstream it presents as a padding
+problem rather than a type problem, so nobody thinks to look at the ramp.
+
+If a row's email size looks wrong, that is evidence the FACTOR is wrong, not licence to adjust
+the row. Revisit the factor, re-divide the whole ramp, re-run the test.
+
 ## Step 4: Split the designs into modules, then classify every module
 
 Email Love design systems are built from modules, not from whole designs. A module is one
@@ -144,11 +234,32 @@ Three passes:
    Header, Heroes, Single Column, Two Column, Three Column, Four Column, Buttons, Reviews,
    Images, Lists, Order Tables, Footer) rather than one you invent.
 
+   **Then order the categories deliberately, because they become PAGES.** Phase 2 builds one page
+   per category in this inventory, in the order the inventory presents them, and it builds no
+   others. So a category order that came out of whatever the walk happened to find first becomes
+   an incidental page list in the customer's finished library, which is the shape problem the
+   prescription in Phase 2 exists to remove. Do not leave it to the walk.
+
+   **Order the categories the way modules appear in a typical email, top to bottom:** Pre-Header,
+   Header, Heroes, Single Column, Two Column, Three Column, Four Column, Images, Reviews, Lists,
+   Order Tables, Buttons, Footer. That is how someone building an email scans for the next block
+   they need, so it is how the file should be ordered. Skip any category the inventory does not
+   use, and add none it does not. Where a category genuinely has no settled place in that
+   sequence, put it where the customer's own emails put it and say in the report that you did.
+
+   **Group the inventory rows by category, in that order, and order the rows inside a category by
+   reuse, highest first.** The category order is the load-bearing part, since it is what Phase 2
+   reads; the within-category order is what makes the highest-reuse modules easy to find. The
+   batch plan is read off Recommended next step, which names modules explicitly, so it does not
+   depend on row order.
+
 Then assign every module exactly one verdict:
 
 - **(A) Live-text convertible.** Auto-layout stacks of text, images, and buttons that map
   onto mj-section/mj-column/element-frame structure. Text stays selectable and editable in
-  the sent email. Best deliverability and accessibility; most modules should land here.
+  the sent email. Best deliverability and accessibility; most modules should land here. **A block
+  whose only obstacle is a photograph that overlaps or bleeds past its band is an A too**, with
+  the named bleed concession below: the substitute is settled, so it is not a C.
 - **(B) Editable-image candidate.** Design-rich compositions (layered imagery, text on
   photos, custom shapes, brand illustrations) that would fight email rendering as live text.
   Email Love handles these deliberately: the design frame is placed inside a column without
@@ -157,7 +268,12 @@ Then assign every module exactly one verdict:
   inside is not live in the inbox (image weight, accessibility, clients with images off), so
   recommend pairing with alt text and keeping critical copy outside the image.
 - **(C) Hybrid.** Split the module: headline and body as live text, the rich visual region as
-  an editable image. Common for heroes.
+  an editable image. Reserve it for blocks where copy and picture are one composited whole with no
+  boundary to cut on: type set over a photographic collage where the lettering is part of the
+  artwork. **An image that merely overlaps or bleeds past its band is NOT a C**; it is an A with
+  the bleed concession below. The test: if you can name the rectangle the image belongs in and the
+  rectangle the text belongs in, it is an A. If you cannot, it is a C. C reads to a customer as a
+  partial conversion, so spend it only where the module really is one.
 - **(D) Not emailable.** Interactive patterns (hover states, carousels, video embeds beyond a
   thumbnail link), viewport-relative layouts, or app UI that has no email equivalent. List
   what would replace them.
@@ -181,6 +297,42 @@ human has to accept. A fifth letter would fork the ladder, and every per-verdict
 effort row with it, on something orthogonal to construction. B and C rows may carry a
 concession too when one applies; on those the field is optional, because their verdict already
 carries an explanation.
+
+**One concession has a settled substitute, so do not invent one: an image that overlaps or
+bleeds.** Source designs routinely place a photograph so it overlaps or bleeds past the block it
+belongs to: a product shot entering from the right behind body copy, an animal cropped off by the
+left edge of a cream band with text beside it. In Figma that is z-order plus absolute position,
+and email has neither, so it cannot be reproduced. **The standard remedy is to rebuild the block as
+a two column row**: one section, the image in one column and the text in the other, in the same
+left to right order the design implies, so the image stops at its column edge and nothing overlaps.
+It is called the **Two Column Swap**, and the converter builds it from section 3.4.1 of the render
+spec. Name it that way in the report so the two skills are talking about one thing.
+
+Recognizing it is its own step, because nothing in the source labels it and the screenshot looks
+like an ordinary photo in a band. Two tells, either one being enough:
+
+- **The photo's bounds extend past the bounds of the block it reads as part of.** Compare the
+  image node's absolute box against the band's box, never the screenshot, where the overflow is
+  invisible by construction.
+- **The photo is clipped by a sibling drawn over it rather than by a mask.** A rectangle of
+  background color sits above it in z-order, the layer panel shows no mask and no crop, and the
+  composite you see exists in no single node.
+
+When you find one:
+
+- **The verdict is A**, and the row carries the standard wording verbatim rather than a phrasing of
+  your own: concession column `image bleed rebuilt as a two column row`, verdict column
+  `A (concession: image bleed rebuilt as a two column row)`.
+- **Do not propose an alternative and do not re-argue it per module.** It is settled, for reasons
+  worth stating once in the report if a reader asks: the substitute keeps the text LIVE, where
+  flattening the block to one editable image gives up selectable text, accessibility, and dark mode
+  for the sake of an effect; and it degrades well, because two columns stack on mobile so the image
+  lands above the text, a normal email pattern and better than a bleed that would have had to be
+  abandoned on a 390 wide screen anyway.
+- **The notes name the loss precisely: the overlap, and nothing else.** Add the mobile stacking
+  note so nobody reads the stack as a second concession.
+- **Build constraints carry "render the node, not the fill" for that image**, because the substitute
+  needs a rendered crop of the source region and the raw fill is the whole uncropped photograph.
 
 **A flag that constrains HOW a module gets built belongs on that module's row.** Flags is a prose
 section a human reads once. The Module inventory is what the converter works from, row by row,
@@ -213,7 +365,8 @@ designers expect: **mj-hero** renders live text over a full background image, so
 a photo" is verdict A when the text sits on one background image rather than woven through
 layered art; and sections support background images behind live columns. Reserve B for
 compositions where text and imagery genuinely interleave (text wrapping around cutouts,
-badges over product shots, hand-placed collage).
+badges over product shots, hand-placed collage). An overlapping or bleeding photo is not one of
+those: it is an A with the bleed concession above.
 
 Finally, **roll the verdicts up per design**: for each design, the ordered list of module names
 it is made of and the worst verdict present in it. The Per-design roll-up is a view of the Module
@@ -227,9 +380,10 @@ From the survey, draft what the Email Love design system will carry:
 
 - **Type ramp mapping:** each of their text styles mapped to an email-safe equivalent, using
   their own fallback choices when a fallbacks page exists. Flag fonts that need web-font
-  hosting or substitution. When the Step 3 scale factor is not 1, show the arithmetic in three
-  columns (authored size, factor, resulting email size) so a reader can audit it instead of
-  trusting it.
+  hosting or substitution. When the Step 3 scale factor is not 1, use the four-column table Step
+  3 specifies (style, authored size, factor, email size), with the factor restated on every row,
+  so a reader can audit the arithmetic instead of trusting it. Run Step 3's ratio acceptance test
+  on the finished table.
 - **Palette:** their named paint styles, and a proposed set of the six Email Love theme
   colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
   buttonContentColor) drawn from it, marked as a proposal for their designer to confirm.
@@ -269,33 +423,51 @@ convert from, precisely enough to screenshot without re-deriving the split (Step
 name plus a node name or id, or, where there is no node to name, a position within that design
 ("top 0 to 480", "between the divider and the footer rule"). Every A row states either `none` or
 a named concession in the concession column, with what is lost and the proposed substitute in the
-notes. **Build constraints is REQUIRED on every row
+notes; a bleed module carries `image bleed rebuilt as a two column row` verbatim rather than a
+substitute you worded yourself. **Build constraints is REQUIRED on every row
 and states either `none` or the short imperative constraints from Step 4** (for example "render
 nodes, not raw fills: images clipped by z-order" or "image is inset 91 percent, not full bleed"),
-so that nothing which changes how a module is built exists only in Flags. Order the rows so a
-batch plan can be read straight off them: highest reuse first.]
+so that nothing which changes how a module is built exists only in Flags. **Group the rows by
+category, in the top-of-email-to-bottom order Step 4 specifies, and order the rows within a
+category by reuse, highest first. The category order is load bearing:** Phase 2 creates one page
+per category in exactly the order they appear here, so an incidental order in this table becomes
+an incidental page list in the customer's library. The batch plan is read off Recommended next
+step, which names its modules, rather than off row order.]
 ## Per-design roll-up
 [One row per design: design name | width(s) | the module names it is made of, in order | worst
 verdict present. A roll-up of the Module inventory, not a second classification: no verdict
 appears here that is not already on a module row above.]
 ## Brand foundations
-[Type ramp mapping table (authored size, factor, email size), proposed theme colors, spacing
-scale at email scale, button styles, target email width.]
+[Type ramp mapping table (style, authored size, factor, email size, one row per style with the
+same factor on every row), proposed theme colors, spacing scale at email scale, button styles,
+target email width. State that the ratio acceptance test passed, with the two ratios you
+compared.]
 ## Flags
 [Everything a human should look at: fonts unavailable for email, naming typos, empty pages,
 inconsistent widths, accessibility risks from image-heavy modules, module boundaries you
 inferred rather than read. Plus two that are decisions rather than observations: every named
 concession from the Module inventory, for the designer to accept or reject, and the scale-factor
-recommendation when the two derivations disagreed. Anything here that constrains how a specific
-module gets built must ALSO appear in that module's build constraints column (Step 4): Flags is
+recommendation when the two derivations disagreed. **Write a concession line as what it actually
+is.** A bleed concession is a known remedy the designer is confirming, not an open question, so
+state the loss (the overlap), the substitute (rebuilt as a two column row, image beside text,
+stacking image-above-text on mobile), and that this is Email Love's standard for the case, so the
+answer is yes or a deliberate exception. A concession whose substitute you proposed yourself is
+genuinely open, so ask it as a question and say what you would do absent an answer. Anything here
+that constrains how a specific module gets built must ALSO appear in that module's build
+constraints column (Step 4): Flags is
 where a human decides, the row is where a builder reads, and a build constraint that lives only
 here will be missed.]
 ## Effort estimate
 [Per-verdict counts over MODULES, not designs, and an S/M/L per module (the Module inventory
 already carries the per-module value; total it here). A modules are mechanical; C modules need a
 design pass; D modules need product decisions; a concession costs decision time, not build time.
-State the total in designer-days as a range, and say plainly that estimates firm up after the
-first converted batch.]
+**Bleed modules count as A, so expect the A count to run higher and the C count lower than a first
+look at the library suggests.** That is correct rather than an under-count: say in one line that the
+standard two column substitute keeps those modules live-text, so a reader who expected a large C
+number knows why there is not one. The swap is a known shape rather than a design pass, so those
+modules stay mechanical; it does add a restructure, so a module that would otherwise have been an S
+can be an M. State the total in designer-days as a range, and say plainly that estimates firm up
+after the first converted batch.]
 ## Recommended next step
 [The batch plan, naming modules by their Module inventory row names: foundations first, then
 batch 1 of about five of the highest-reuse modules, then the later batches, with a design review
@@ -315,7 +487,8 @@ both:
    foundations once, then modules in batches with a designer review between batches. It builds
    in a NEW target file and keeps this source file read-only. What it reads out of this report,
    by section name: the **Module inventory** (one module per row, one batch per group of rows,
-   with the source refs, verdicts, concessions, build constraints, categories, and effort), the
+   with the source refs, verdicts, concessions, build constraints, categories, and effort, and
+   its category ORDER, which becomes the order of the component pages in the converted file), the
    **Scale factor** (every number it builds is at that scale), the **Brand foundations** (type
    ramp on email-safe fallbacks, proposed theme colors, spacing, buttons, target email width),
    and the **Flags**.
@@ -324,15 +497,18 @@ both:
 
 Two things need a human "yes" before either route starts, and both are in Flags: the scale
 factor, and each named concession. They change what gets built, so getting them agreed now is
-cheaper than re-running a batch. If the audit surfaced a missing component library file, that
-blocks conversion outright; say so rather than letting a batch start without it.
+cheaper than re-running a batch. **For a bleed concession that yes is a confirmation of a known
+remedy, not a design question**, so ask for it as one and expect it to be quick; only a concession
+whose substitute you proposed yourself needs the designer to actually deliberate. If the audit
+surfaced a missing component library file, that blocks conversion outright; say so rather than
+letting a batch start without it.
 
 Offer to answer questions about any specific module's verdict, and to re-run the audit after
 they clean up anything the flags surfaced.
 
 ## Staying current
 
-This is version 1.3.0 of this skill. If you have web access, check once per conversation
+This is version 1.8.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

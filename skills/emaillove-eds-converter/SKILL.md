@@ -101,6 +101,48 @@ where the time is spent. Never leave a user thinking the AI is the slow part.
 long you expect it to take and that progress will be quiet for long stretches, so twenty silent
 minutes does not read as a hung run.
 
+### Report progress while it runs
+
+The estimate is the promise; these checkpoints are how you keep it. Post exactly one line at each
+of these five points, and nowhere else:
+
+1. **After the source census** (your read of the audit's Module inventory plus your first look at
+   the source file): the counts found. Modules in the inventory, modules in this batch, designs
+   they come from.
+2. **Before a batch starts:** what IS in it by module name, what is NOT and why (deferred,
+   blocked on an unconfirmed concession, out of scope), and the opening estimate.
+3. **After each module completes:** count, percentage, module name, revised remaining time.
+4. **The moment a step is retried or a decision goes to the user:** a `recache=1` re-run, a
+   trivial-response retry, an unconfirmed concession, an unsigned scale factor. Say it then, not
+   in the batch report.
+5. **At the end:** what was built, what was skipped, and why.
+
+How each line is written:
+
+- **A count and a percentage, never prose.** "Module 3 of 7 done, 43 percent" is the format.
+  "Making good progress" is not a checkpoint. The denominator is the batch size you listed at
+  checkpoint 2.
+- **Name the module.** "Module 4 of 7: Global footer" lets the user click it in Figma. "Module 4
+  of 7" does not.
+- **Revise the estimate from observed pace, every time.** After module 1 you know the real
+  per-module cost in this file, so recompute the remainder from it instead of repeating the
+  opening guess. Revising upward is fine and expected: an unstructured source runs slower than
+  the opening guess, and the honest larger number beats the tidy stale one.
+- **Say what is happening now, in the user's language.** "Transcribing the footer, 43 nodes"
+  tells them why it is slow. "Calling the worker" does not.
+- **Module boundaries only.** Never narrate per node, per API call, or per screenshot. A
+  fifty-node module gets one line when it finishes, not fifty.
+- **Own an overrun the moment it is apparent.** If the run is tracking well past the estimate you
+  gave, say so at that module boundary, with the new number. A user who was told twenty minutes
+  and is at forty should hear it from you rather than work it out.
+
+One worked example, the format to copy:
+
+> Module 3 of 7 done, 43 percent: Global footer, 43 nodes transcribed. Modules are averaging 6
+> minutes in this file against the 4 I estimated, so the remaining 4 are roughly 25 minutes,
+> putting the batch near 45 minutes total against the 30 I opened with. Next: Module 4 of 7,
+> Two column product row.
+
 ## Phase 2: Foundations (run once per customer)
 
 **Everything you build, here and in Phase 3, is at email scale.** Take the factor from the
@@ -114,29 +156,186 @@ report, so batch 1 and every batch after it inherits one number.
 
 Build the scaffold every later batch depends on:
 
-1. **Pages**, following Email Love library conventions: a Cover, one page per category the
-   audit's Module inventory uses (Heroes, Single Column, Lists, and so on), Buttons, Type,
-   Campaigns.
-2. **Type mapping.** Recreate the customer's type ramp as Figma text styles in the target
-   file using their email-safe fallback choices from the audit (never the unlicensed brand
-   font unless the user confirms web-font hosting). Name styles as the customer named theirs.
-   Use the email sizes the audit's Brand foundations table already computed at the scale
-   factor, not the authored source sizes.
-3. **Buttons page.** Rebuild each of their button styles as a component: correct email
+1. **Pages: a FIXED frame plus a dynamic middle.** The page structure is PRESCRIBED, not derived
+   from what the audit happened to find. Two customers' libraries have to be navigable by the
+   same person without relearning the file, so the scaffolding pages are always present, always
+   spelled exactly as written here, and always in this order. Only the component category pages
+   vary.
+
+   ```
+   Cover
+   Getting Started
+   --- Foundations
+   Foundations
+   Type
+   Buttons
+   --- Components
+   <one page per category from the audit's Module inventory, in the inventory's own order>
+   --- Templates
+   Campaigns
+   ```
+
+   **The scaffolding pages are not optional and not reorderable.** Do not drop the Cover because
+   the file is small, do not merge Foundations into Type, do not sort the category pages
+   alphabetically or by how many modules they hold, and do not move Campaigns up because it is
+   the page you were working on. An agent deciding the shape per run is the defect this
+   prescription removes: the page list stops being a matter of judgment.
+
+   **The three `---` pages are dividers, not content.** Figma has no page folders, so a page
+   named `--- Foundations` acts as a visual separator in the page list. Leave them empty. Name
+   them with three hyphens, one space, then the word, exactly as written. **A divider sits BEFORE
+   the group it introduces**, which is the order that reads correctly in the page list:
+   `--- Foundations` then the foundations pages, `--- Components` then the category pages,
+   `--- Templates` then Campaigns.
+
+   **The middle is the only dynamic part.** One page per category the audit's Module inventory
+   uses (Heroes, Single Column, Lists, and so on), in the order the inventory presents them, and
+   no page for a category the inventory does not use. Do not invent a category here: the audit
+   already chose them from the sections the customer's plugin has, and it ordered them
+   deliberately.
+
+   **One category collides with a scaffolding page, and there is exactly one right answer:
+   Buttons.** `Buttons` is both a foundations page in the canonical order above and one of the
+   categories the audit can use, so an inventory that carries button modules would otherwise
+   produce two pages with the same name. It does not: the middle SKIPS the Buttons category, and
+   any Buttons-category module goes on the existing Buttons page, below the button styles. The
+   page list stays exactly the canonical list. No other category collides.
+
+   Create the pages in one pass in this order so the list comes out right without reordering.
+   **A file you just created still has Figma's default page: RENAME it to `Cover` rather than
+   creating a Cover beside it**, or the finished list carries a stray `Page 1` and fails the
+   checklist below. If the target file already had pages before you arrived, move them into
+   position rather than appending, and delete nothing you did not create.
+
+   **Each scaffolding page has a CONTRACT.** Layout and polish are yours; the listed content is
+   not. Two runs of this skill on two customers must produce the same page doing the same job.
+
+   - **Cover.** The first thing anyone opening the file sees, and it answers "what is this and
+     what width is it" without anyone having to ask. Required: the customer's brand name set
+     large; "Email Love Design System" beneath it; and a single metadata line carrying three
+     facts, the design system's own version (`v1.0` on a first build, never this skill's version
+     number), the email width the system is built at, and the month and year
+     (for example `v1.0 · 600px · July 2026`). **The width is required because it is the single
+     most useful fact about an email design system:** it decides whether a module dropped in from
+     anywhere else fits. Put the content on a full-bleed frame whose fill is bound to
+     `color/bg/brand`, so the cover is on brand color and moves when the brand color moves. No
+     module lives on this page.
+   - **Getting Started.** How to use the library, in prose a designer or marketer new to the file
+     can follow. Required, one short block each: that modules are wrapper components and are used
+     by INSTANCING them, never by copying or detaching; that text and images are edited through
+     the component properties on an instance rather than by editing inside it; that color, type,
+     and spacing come from the tokens on Foundations and Type rather than from hand-typed values;
+     and where to look when something does not export as expected (confirm the block is still an
+     instance and not detached, confirm the copy was changed through its property rather than in
+     place, then hello@emaillove.com). Name the email width and the scale factor here too, so the
+     page stands alone.
+   - **Foundations.** The token sheet. Required: a swatch per color, each labeled with BOTH its
+     hex and its variable name, with primitives and semantic aliases in two clearly separated
+     groups so a reader can see which name to reach for; the spacing scale rendered as visible
+     bars or frames, each labeled with its token name and its pixel value; and the radius token
+     with its value. A hex on this page that no variable carries is a defect: the point of the
+     page is that everything on it is bindable.
+   - **Type.** A SPECIMEN sheet, not a list of style names. Per style in the ramp, three things:
+     the style name, a line of sample text actually set in that style, and a caption stating
+     family, weight, and size (for example `Inter, Bold, 30px`). Order the rows largest to
+     smallest so the ramp reads as a ramp. **This page is how a human catches a broken ramp by
+     eye.** A specimen sheet makes a style that has drifted off the single scale factor visible
+     as a step the wrong size next to its neighbors, which is the same defect the ratio check in
+     step 3 catches arithmetically, and which presents downstream as a padding bug rather than a
+     type bug (the single-factor rule: step 3 here, render spec section 0.6). Run both checks
+     every time: the arithmetic catches what the eye misses on a long ramp, and the eye catches
+     what a passing ratio hides in the middle of one.
+   - **Buttons.** One component per button style the audit listed, built as step 4 specifies, each
+     visibly labeled with its name, each with its fill bound to the semantic token that style
+     actually uses. Where the inventory has a Buttons category, its modules land here too, below
+     the styles and visibly separated from them. Nothing else on the page: no loose instances, no
+     scratch work.
+   - **Campaigns.** The one root EMAIL TEMPLATE frame, built as step 7 specifies. It is the only
+     `mainFrame` in the file and it is an email, not a module. Empty until batch 1 drops modules
+     into it.
+2. **Variables: two tiers, and component fills BIND to them.** Build real Figma variables, not a
+   page of hex values a reader has to retype. One collection named `Email Love Tokens`, one mode,
+   two tiers inside it:
+
+   - **Primitives, named by value:** `black/1000`, `navy/900`, `blue/500`, `cream/100`. The
+     family plus a numeric weight, taken from the audit's palette. A primitive's name says what
+     the color IS and never where it is used, so nothing about it goes stale when a usage
+     changes. COLOR variable values take `{ r, g, b, a }` with alpha, on a 0 to 1 scale, while
+     the paint you bind them to takes `{ r, g, b }` without it: the two are easy to cross and the
+     error is silent.
+   - **Semantic aliases, named by role, each pointing at a primitive:** `color/bg/page`,
+     `color/bg/content`, `color/bg/brand`, `color/bg/subtle`, `color/text/primary`,
+     `color/text/inverse`, `color/text/accent`. A semantic carries no color of its own; its
+     value is an alias:
+     `semantic.setValueForMode(modeId, { type: 'VARIABLE_ALIAS', id: primitive.id })`.
+   - **A numeric spacing scale** as FLOAT variables under `spacing/`: `spacing/xs`, `spacing/sm`,
+     `spacing/md`, `spacing/lg`, `spacing/xl`, `spacing/2xl`. The NAMES are prescribed; the
+     default values are 4, 8, 16, 24, 32, 48. Where the audit carried the customer's own spacing
+     scale, its values win and keep these names. **Do not round the audit's values onto the
+     default ladder** to make them look tidier: that is step 5's rule, and rounding a customer's
+     14 up to 16 is a second scale factor wearing a friendly number.
+   - **A radius token for the pill,** `radius/pill`, FLOAT, at the radius the customer's button
+     styles actually use.
+   - **Set `scopes` explicitly on every variable.** The default `ALL_SCOPES` puts every token in
+     every picker, which makes the collection useless at the moment it becomes large. Background
+     colors get `['FRAME_FILL', 'SHAPE_FILL']`, text colors `['TEXT_FILL']`, spacing `['GAP']`
+     plus whichever padding scopes you actually use, radius `['CORNER_RADIUS']`.
+   - **Component fills bind to the SEMANTIC variables, never to a primitive and never to raw
+     hex.** `setBoundVariableForPaint` returns a NEW paint, so capture it:
+     `node.fills = [figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', semanticVar)]`.
+     Spacing binds with `node.setBoundVariable('paddingTop', spacingVar)` and its siblings;
+     radius binds per corner (`topLeftRadius` and the other three), never through `cornerRadius`.
+     `fontSize` and `lineHeight` are NOT bindable, so type sizes stay literal on the text node and
+     the ramp is governed by the text styles from step 3 instead.
+   - **What this buys: changing a brand color becomes one edit.** Repoint `color/bg/brand`'s
+     alias at a different primitive and every module using it moves together. Leave forty
+     components carrying hex and it is forty edits, plus a reviewer counting them to be sure.
+   - **Variables are a Figma-side convenience and must not change what exports.** The plugin's
+     exporter reads RESOLVED fills: it takes `node.fills[0].color` and hexes it, and it never
+     reads `boundVariables` at all. A bound paint still carries the resolved RGB in `color`, so
+     binding is invisible to the export, and that is exactly the property that makes this safe to
+     do. Two consequences follow. Set each primitive to the hex the audit gave, so resolved
+     equals intended. And the email template root's theme keys are shared plugin data STRINGS,
+     not fills (step 7), so they cannot be bound at all: they carry literal hex, and repointing a
+     semantic token means updating the matching theme key by hand.
+3. **Type mapping. Build the ramp from the audit's table VERBATIM.** Recreate the customer's
+   type ramp as Figma text styles in the target file using their email-safe fallback choices
+   from the audit (never the unlicensed brand font unless the user confirms web-font hosting).
+   Name styles as the customer named theirs. Take the Email size column of the audit's Brand
+   foundations table exactly as written: every value in it is already the authored size divided
+   by the one confirmed factor. Do not re-derive it, do not re-round it, and above all do not
+   map a style toward a size that looks like a number email usually uses. A 65 the table says
+   is 30 is 30; a 55 the table says is 25 is 25, even though 30 and 24 are the sizes you have
+   seen in a hundred other emails. Mapping style by style toward pleasant numbers is exactly
+   how a per-style factor gets back in after the audit removed it, and it is the defect this
+   instruction exists to prevent. Render spec section 0.6 carries the measured case: a module
+   that came out with 1.83 on its headline and 2.19 on its body, from a ramp built one round
+   number at a time, and it read as a padding bug.
+
+   **Then run the ratio check, before anything gets built on top of these styles.** Divide the
+   largest size in the ramp you just built by the smallest, divide the largest authored source
+   size by the smallest, and compare the two. More than a couple of percent apart means a style
+   has drifted off the factor: find it, fix it, check again. If a size still looks wrong once
+   the ramp passes, that is evidence against the FACTOR, so take it back to the audit and the
+   designer and move the whole ramp together. Never adjust the one style and leave the rest of
+   the ramp where it was.
+4. **Buttons page.** Rebuild each of their button styles as a component: correct email
    construction (a styled frame with a single text node), not their app-style nested
    instances. These become the sub-components nested inside mj-button-Frames, and they are
    the INSTANCE_SWAP targets for module-level "Button Style" properties later. Put the
    label's TEXT property on the button component itself: a label living inside a nested
    instance cannot be bound from the module that uses it (render spec, section 8.5).
-4. **Spacing.** Recreate their spacer scale as components if they had one, at the email-scale
-   values from the audit.
-5. **Assets.** Export the logo and any recurring imagery from the source file
+5. **Spacing.** Recreate their spacer scale as components if they had one, at the email-scale
+   values from the audit, taken verbatim like the type ramp: the same one factor, whole-pixel
+   rounding only, never rounded onto a friendlier multiple of 8 because it reads better. Run the
+   ratio check across the ends of the scale the same way.
+6. **Assets.** Export the logo and any recurring imagery from the source file
    (download_assets) and upload into the target file (upload_assets). Logos become images,
    never vectors. Export the RENDERED node every time, never the raw image fill behind it: a
    source fill with `scaleMode: 'CROP'` loses its crop the moment you take the underlying
    asset, and you get the whole photograph instead of the picture the designer composed
    (render spec 4.2.1, which also has the aspect-ratio rule).
-6. **Root EMAIL TEMPLATE frame** on Campaigns at the audit's target email width (600 or 640,
+7. **Root EMAIL TEMPLATE frame** on Campaigns at the audit's target email width (600 or 640,
    never the source canvas width when the source was not at email scale): vertical
    auto-layout, width FIXED at that email width, height Hug, the shared marker, and the theme
    colors from the audit's proposal:
@@ -150,9 +349,72 @@ Build the scaffold every later batch depends on:
    themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
    each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker and no theme keys.
    Do not copy this frame as a starting point for a module.
-7. **Report** what was built, the scale factor and target email width you built at, what the
-   audit proposed that you changed, and what needs the designer's eye before batch 1 (theme
-   colors especially: they are a proposal until a human confirms).
+8. **Report** what was built, the scale factor and target email width you built at, the ratio
+   check result with the two ratios you compared, the completion checklist result below, what the
+   audit proposed that you changed, and
+   what needs the designer's eye before batch 1 (theme colors especially: they are a proposal
+   until a human confirms). If you changed a type size or a spacer away from the audit's table,
+   that is not a foundations detail, it is a change to the factor: say so explicitly and say
+   who agreed to it.
+
+### Phase 2 completion checklist
+
+**Run every line of this before reporting foundations done**, and put the result in the report.
+Each line is a read-back off the file, not a recollection of having built it: an agent that
+remembers creating the Cover and an agent that read its metadata line back are not in the same
+position. Report the checklist as passed only when it passed in full; a partial pass is an open
+item, named.
+
+Pages, in canonical order:
+
+- [ ] The page list reads exactly Cover, Getting Started, `--- Foundations`, Foundations, Type,
+      Buttons, `--- Components`, the category pages, `--- Templates`, Campaigns. Read the names
+      off `figma.root.children` and compare them in sequence, including the three hyphens and the
+      single space in each divider name. Nothing else is in the list: no second `Buttons`, and no
+      `Page 1` left over from creating the file.
+- [ ] The category pages are exactly the categories the audit's Module inventory uses, in the
+      inventory's order, with none added, none missing, and none renamed, except Buttons, which
+      has its page in the Foundations group instead.
+- [ ] The three divider pages are empty.
+- [ ] **Cover:** brand name set large, "Email Love Design System" beneath it, and one metadata
+      line stating version, email width, and month and year. The width printed there matches the
+      width the root frame was actually built at. Its frame fill is bound to `color/bg/brand`.
+- [ ] **Getting Started:** instancing rather than copying, editing through component properties,
+      styling from the tokens, and the "does not export as expected" path are all four present,
+      plus the email width and the scale factor.
+- [ ] **Foundations:** every swatch labeled with hex AND variable name, primitives and semantics
+      visibly separated, the spacing scale rendered and labeled with token names and values, the
+      radius token present. No hex anywhere on the page that no variable carries.
+- [ ] **Type:** one specimen row per style, each with the style name, a sample line actually set
+      in that style, and a caption naming family, weight, and size, ordered largest to smallest.
+      Then look at it: does the ramp step evenly? A step that reads wrong beside its neighbors is
+      a factor problem, not a style problem (step 3).
+- [ ] **Buttons:** one component per audit button style, each labeled, each a styled frame with a
+      single text node, the label's TEXT property on the component itself, no loose instances left
+      on the page.
+- [ ] **Campaigns:** exactly one root frame, `nodeType = 'mainFrame'`, at the target email width,
+      with all nine theme keys set and not one of them empty.
+
+Variables and bindings:
+
+- [ ] The collection exists with both tiers: primitives named by value, semantics named by role.
+- [ ] Every semantic's value reads back as a `VARIABLE_ALIAS` pointing at a primitive, not as a
+      color of its own. Read the value and check its `type`, do not infer it from the swatch.
+- [ ] The spacing scale exists as FLOAT variables under `spacing/`, and `radius/pill` exists.
+- [ ] `scopes` is set explicitly on every variable, and nothing is left on `ALL_SCOPES`.
+- [ ] Every fill on every foundations component resolves through a semantic variable: walk the
+      button components and the Cover frame and confirm each fill carries a bound variable rather
+      than a hand-typed color.
+- [ ] Binding changed nothing about export: read `fills[0].color` back off a bound node and
+      confirm it hexes to the value the audit gave for that token.
+- [ ] The root frame's theme keys carry literal hex matching the semantics they mirror, because
+      plugin data cannot be bound.
+
+Scale, checked last because it invalidates everything above it:
+
+- [ ] The ratio check passed, with both ratios recorded (step 3).
+- [ ] Every number on every page is at email scale: the root frame is 600 or 640, the type sizes
+      are the audit's Email size column verbatim, the spacing values are the audit's.
 
 ## Phase 3: Module conversion (run per batch)
 
@@ -180,7 +442,9 @@ reviewer can tell your boundary from the audit's. Build every number at the audi
 
 Before building any module whose inventory row carries a concession, check the audit's Flags for
 a human "yes" on it. If there is none, ask, and record the answer in the batch report. Building
-first and asking later means rebuilding.
+first and asking later means rebuilding. For `image bleed rebuilt as a two column row` that yes is
+a confirmation of Email Love's standard remedy rather than an open design question, so ask it as
+one, briefly; it still needs answering, and silence is not a yes.
 
 **A row's build constraints are instructions, not context.** Read them before the first node of
 that module and state in the batch report how each one was satisfied. They exist because a
@@ -297,6 +561,7 @@ This mapping covers almost everything you will meet:
 | A row of links | `mj-navbar` with `mj-navbar-link` | |
 | Tabular data | `mj-table` with `mj-table-row` | |
 | ESP tokens, Handlebars, dynamic cards | `mj-raw` | Passed through verbatim. |
+| A photo that overlaps or bleeds past the block it belongs to | a two column row: one `mj-section`, two `mj-column`s, image in one and text in the other (render spec 3.4.1) | Email has no z-order and no absolute positioning, so the overlap cannot be reproduced. The Two Column Swap is the standard substitute, not a judgment call. |
 | A composition that genuinely cannot be rebuilt | an untagged frame in a column | Deliberately flattened to a hosted image, still editable in Figma. |
 
 - **Build the pair, do not style the wrapper.** The wrapper carries layout; the inner node
@@ -332,7 +597,8 @@ This mapping covers almost everything you will meet:
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.
 - **Honor the inventory row's verdict.** Verdict A: live text throughout. **Verdict
   `A (concession: ...)`: build it as live text like any other A and apply the named substitute,
-  nothing more.** Do not quietly reproduce the effect the concession gave up, in an image or
+  nothing more.** The commonest one has a name and a fixed construction, in the next bullet. Do
+  not quietly reproduce the effect the concession gave up, in an image or
   otherwise: that is the concession being un-made without the designer in the room, and it turns
   a module the audit priced as mechanical into a flattened picture. Verdict B regions: place the
   design content as a frame with NO recognized tag name inside a column; the exporter flattens it
@@ -344,6 +610,36 @@ This mapping covers almost everything you will meet:
   a batch is usually a batching mistake rather than a module to attempt. Changing a verdict when
   the nodes contradict the audit is allowed and sometimes right; record it and its reason in the
   batch report.
+- **`A (concession: image bleed rebuilt as a two column row)` has one construction: the Two Column
+  Swap, render spec 3.4.1.** Read that section before the first node of the module; it is the
+  authority and this is the summary. The source design put a photograph so it overlaps or bleeds
+  past its band, email has neither z-order nor absolute positioning, and the audit has already
+  settled the substitute. **Build one `mj-section` with two `mj-column` children, the image column
+  and the text column in the same source order the design implies**, and:
+  - Both columns **FIXED**. Their widths plus the section's horizontal padding sum to the section
+    content box (a 600 section with 20/20 padding takes columns summing to 560), and the exporter
+    derives the percentages from those pinned numbers.
+  - **Derive the widths in this order:** pin the text column first with the slack from render spec
+    3.3.1, give the image column the remainder, size the image last. Worked example from the spec:
+    text hugs at 260 and pins to 292, so the image column is 268.
+  - The image is a **rendered crop of the source region (4.2.1), never the raw fill**, and it is
+    cropped to its column rather than padded to fit (4.2.1's never-pad rule). The `mj-image`
+    rectangle takes the image column's content width and the crop's natural aspect for its height:
+    a 780 x 660 render at 268 wide is 227 tall.
+  - Heights **HUG** throughout, both alignment axes equal on the section and on each column, and
+    the gutter is one column's horizontal padding only, never both.
+  - **Not an `mj-group`.** A group keeps columns side by side on mobile, which is the opposite of
+    what this pattern wants: the stack is the point, and it puts the image above the text.
+  - **Mobile order follows source order.** Where the design reads text then image on desktop but
+    should read image then text on mobile, set `reverseStack` = `'true'` on the section rather than
+    reordering the columns.
+
+  Two things not to do. **Do not attempt the overlap**, in any form, including a background image
+  behind a column or a negative padding trick: the concession is that the overlap is gone. And **do
+  not fall back to an editable image** for the block or for the text beside it, which is the failure
+  this substitute exists to replace and would quietly turn an A into a partial conversion. The
+  worker will not hand you this structure either, because the overlap is invisible in the screenshot
+  it read, so the swap is always a rebuild you make: record it in the module's report line.
 - Text over a single background photo is mj-hero territory, live text, not an image.
 
 ### 3. Merge the mobile twin
@@ -432,6 +728,12 @@ checklist at the end of `references/render-spec.md`:
   `mj-spacer`, every FIXED width is one of the load-bearing cases, every pinned width that
   carries text has slack (render spec section 3.3.1), and each button's width sizing was
   chosen for its mobile behavior (render spec section 0).
+- Concession honored, where the row carried one: on a module built with the Two Column Swap, both
+  columns are FIXED and their widths plus the section's horizontal padding sum to the section
+  content box, the text column's pin has slack, the `mj-image` rectangle is at the image column's
+  content width with the crop's natural aspect for its height, there is no `mj-group` around the
+  pair, and nothing in the block was flattened to an image (render spec 3.4.1). Confirm too that
+  the overlap was not reproduced by some other means.
 - Scale: the module root is at the audit's target email width, and its type sizes, paddings, and
   image dimensions are at email scale rather than source scale (render spec section 0.6). A
   module built at source scale looks correct in isolation and wrong the moment it sits next to
@@ -449,7 +751,8 @@ checklist at the end of `references/render-spec.md`:
 
 One report per batch: per module, keyed by its Module inventory row name, what was rebuilt, the
 design you converted it from, verdict honored or changed (with reason), any concession and
-whether it was accepted and by whom, mobile decisions, divergences flagged, component properties
+whether it was accepted and by whom (and for a bleed concession, the two column widths you landed
+on, so a reviewer can check the sum), mobile decisions, divergences flagged, component properties
 added and the evidence for each, the category you kept or changed. Open with the scale factor and
 target email width the batch was built at, so a reviewer can check one number instead of
 measuring modules. End with the open questions for the design review. Do not start the next batch
@@ -470,7 +773,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.12.0 of this skill. If you have web access, check once per conversation
+This is version 1.16.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

@@ -186,6 +186,49 @@ built correctly. If you find yourself deriving the factor from the file rather
 than reading it from the audit, stop: a fresh derivation silently overrules the
 decision a human already made between two disagreeing derivations.
 
+**One factor, chosen once, applied to EVERY number.** Not type sizes only: line
+heights, widths, paddings, image dimensions, spacer heights, radii, border
+widths. Uniformity is the entire point of settling on a single number, and it is
+lost the moment any one value is arrived at some other way. Rounding is allowed,
+but only to the nearest whole pixel, and only after the division. What is not
+allowed is picking a converted value because it looks like a size email usually
+uses. That is a second factor, invented for one style, wearing the costume of a
+sensible number.
+
+**Then check the result against the source's own RATIOS.** Divide the largest
+converted type size by the smallest and compare that to the same ratio in the
+source. Do it for the ends of the spacing scale too. If the two ratios differ by
+more than a couple of percent, per-style rounding has crept in, and the drift is
+somewhere between the number you divided and the number you wrote down.
+
+**The failure this catches, measured in a real converted module.** The source was
+drawn above email scale: headline 55, body 35. What got built at 600 wide:
+headline 30, body 16. That is two different factors inside one module, 55/30 =
+1.83 on the headline and 35/16 = 2.19 on the body, and the consequence is that
+the source's own type relationship did not survive. The source
+headline-to-body ratio is 55/35 = 1.57; the built one is 30/16 = 1.88. The
+headline is 20 percent too large relative to the body.
+
+The audit had done its job. It reported 1.815 from the canvas width and 2.2 from
+the type ramp, named the 21 percent gap, and recommended 2.2. Foundations then
+built the ramp style by style toward round email numbers, a 65 to 30, a 55 to 25,
+a 35 to 16, and per-style factors came back in through that rounding, so the
+recommended factor was never actually applied to anything.
+
+What makes it expensive is the symptom, because it does not present as a type
+problem. The module reads as though its padding is wrong: a headline 20 percent
+oversized crowds the space around it, so the reviewer goes hunting through
+padding values that are every one of them correct, and finds nothing. The ratio
+check finds it in one division.
+
+**A converted size that looks wrong is evidence against the FACTOR, not licence
+to adjust one style.** If a 25px headline looks small, the reading is that 2.2 may
+be the wrong factor for this library. Revisit the factor, put the whole ramp
+through the new one, and re-run the ratio check. Never nudge the one style and
+leave the rest where they were. One style nudged is this bug; the whole ramp
+moved together is a decision, and it is a decision that belongs back with the
+audit and the designer who confirmed the factor.
+
 ### 0.7 DOUBLE PADDING: a gap belongs to ONE block, never to both
 
 The space between two stacked blocks is one decision, made once, on one node.
@@ -686,6 +729,86 @@ real design drift for no gain.
   `mj-button-Frame`, `mj-divider-Frame`) and `mj-spacer`, top to bottom.
   After appending, set each child's `layoutSizingHorizontal = 'FILL'`.
 
+#### 3.4.1 THE TWO COLUMN SWAP: the standard rebuild for an overlapping or bleeding image
+
+**The failure it replaces.** Source designs routinely place a photograph so it
+overlaps or bleeds past the block it belongs to: a product shot entering from the
+right behind body copy, an animal cropped off by the left edge of a cream band
+with text beside it. In Figma that is z-order plus absolute position. Email has
+neither, so it cannot be reproduced, and no attribute in this spec gets close.
+**The standard remedy is to rebuild the block as a two column row: one
+`mj-section`, two `mj-column`s, the image in one and the text in the other, in
+the same left to right order the design implies.** The image stops at its column
+edge instead of bleeding, and nothing overlaps. This is a settled decision rather
+than a per-module judgment call, so do not re-argue it per module and do not go
+hunting for a cleverer reproduction of the overlap.
+
+**How to recognize it, because nothing in the source labels it.** Two tells,
+either one of which is enough:
+
+- **The photo's bounds extend past the bounds of the block it reads as part of.**
+  It is wider or taller than the band, or its absolute x/y put part of it outside
+  the frame that appears to contain it. Compare the image node's absolute box
+  against the band's box; do not judge it from the screenshot, where the overflow
+  is invisible by construction.
+- **The photo is clipped by a sibling drawn over it rather than by a mask.** A
+  rectangle of background color sits above it in z-order and hides one edge. The
+  layer panel shows no mask and no crop, and the composite you see exists in no
+  single node.
+
+On an unstructured source neither tell is written down anywhere, and the
+screenshot looks like an ordinary photo in a band, which is why recognizing this
+is its own step rather than something you notice in passing.
+
+**The construction.** One `mj-section`, two `mj-column` children, image column
+and text column in source order.
+
+- Both columns FIXED (0.3 case 2, 3.4). Their widths plus the section's
+  horizontal padding must sum to the section content box: a 600 wide section with
+  20/20 padding takes columns summing to 560. Unequal splits only survive because
+  both numbers are pinned; the exporter derives the percentages from them.
+- **Derive the widths in this order.** Pin the text column first, with the slack
+  from 3.3.1, then give the image column the remainder, then size the image last.
+  Worked: text hugs at 260 and pins to 292, so the image column is 268.
+- **The image is a rendered crop of the source region (4.2.1), never the raw
+  fill**, and it is cropped to its column rather than padded to fit, per 4.2.1's
+  never-pad rule on aspect ratio. The `mj-image` rectangle is the image column's
+  content width, and its height is the render's natural aspect at that width:
+  continuing the example, a 780 x 660 render at 268 wide is 227 tall, and 227 is
+  the number.
+- Heights HUG throughout (0.1). Both alignment axes equal on the section and on
+  each column (3.4, structure.md "Alignment: the trap").
+- Spacing on one side of each boundary only (0.7). The gutter between the two
+  columns is one column's horizontal padding, never both.
+- **Not an `mj-group`.** A group exists to keep columns side by side on mobile
+  (3.3), which is the opposite of what this pattern wants.
+
+**Mobile.** Two columns stack, so the image lands above the text, which is a
+normal email pattern and arguably better than a bleed that would have had to be
+abandoned on a 390 wide screen anyway. Stacking follows source order, so put the
+column you want first on mobile first. When the design reads text then image on
+desktop but should read image then text on mobile, set `reverseStack` = `'true'`
+on the section (3.2) rather than reordering the columns.
+
+**Why this is the default, so nobody relitigates it.** It keeps the text LIVE:
+the alternative, flattening the whole block to one editable image, gives up
+selectable text, accessibility, and dark mode for the sake of an effect. It
+degrades well, per the mobile note above. And the loss is small and nameable, the
+overlap and nothing else, which is exactly what the concession field records.
+
+**What this does to the verdict.** A block whose only obstacle is an overlap or
+an edge bleed is **verdict A**, carrying
+`A (concession: image bleed rebuilt as a two column row)`, and it is not a C.
+Build it as live text like any other A, apply this substitute, and add nothing
+further. C reads as a partial conversion, and this is not one.
+
+**What stays verdict C.** Blocks that genuinely need splitting into live text
+plus an editable image region: type set over a photographic collage where the
+lettering is part of the artwork, or any treatment where copy and picture are one
+composited whole with no boundary to cut on. The test: if you can name the
+rectangle the image belongs in and the rectangle the text belongs in, it is this
+pattern and it is an A. If you cannot, it is a C.
+
 ### 3.5 mj-column-inner (rarely needed)
 
 Use ONLY when a column needs a second, inner background/border box distinct
@@ -852,6 +975,57 @@ render wins and you re-derive the height. Forcing a render into the wrong box is
 either a `scaleMode: 'FILL'` quietly cropping it a second time or a visibly
 squashed photo.
 
+**NEVER PAD AN ASSET TO FIT A CONTAINER.** An email image is declared with a
+width and takes its height from the image. There is no container for it to fit
+into: `mj-image` sets a width, the client scales the file, and the height that
+appears is whatever the file's own aspect ratio produces. So the `mj-image`
+rectangle has exactly one correct height, the one that matches the asset's
+natural aspect, and the two ways of forcing a different one are both defects:
+
+- **Padding the export.** Adding white, or any background, to the exported PNG so
+  its ratio matches a rectangle you already have. The padding is now part of the
+  asset. It uploads to S3, it renders in every client, and no later change to the
+  rectangle can take it back out.
+- **Stretching the asset.** Keeping the rectangle's ratio and letting the fill
+  distort to cover it, or letting `scaleMode: 'FILL'` crop a second time. Either
+  way what ships is no longer the photograph.
+
+**The symptom is what makes this expensive: both read as a spacing bug, not an
+image bug.** Baked-in padding looks exactly like dead space above or below the
+subject, so it gets reported as "there is a gap over the headline" or "this band
+has too much room at the top". Everyone then searches the auto layout paddings,
+the frame heights, and the double-padding rule, all of which are correct, so the
+search comes up empty while the real cause sits in the pixels of the asset, which
+nobody is inspecting. Two separate defects on one observed build were this shape,
+a dropped crop transform and a PNG padded with white to reach a component's
+pinned ratio, and both were reported as spacing.
+
+**The rule: size the container to the asset, never the asset to the container.**
+Measure the render, choose the width deliberately, derive the height from the
+render's ratio, and resize the rectangle to that height. When a height already on
+the rectangle disagrees with the render, the rectangle is what changes. Nothing
+is ever added to an asset or taken off one to make a number work.
+
+**Corollary for design systems: a height that has to vary cannot live on the
+component.** An image band component that pins its rectangle at one height serves
+exactly one aspect ratio. Point it at a photograph of any other shape and whoever
+builds the email has to pad the asset or squash it, which is to say the
+component's own geometry is what produced the defect. So when a module is meant
+to hold photographs of different shapes, the width belongs to the component and
+**the height belongs to the instance**: build the master at the natural aspect of
+one representative photo, and resize the `mj-image` rectangle on each instance to
+that instance's own photo. Two instances of one component carrying different
+heights is correct here, and nothing in the export cares. Note it on the module
+so the next builder reads the master's height as a starting point rather than as
+a constraint to honor.
+
+Resizing a rectangle that sits several levels inside an instance has a bridge
+quirk worth knowing: the `resize()` can report success and change nothing. Read
+the dimensions back every time, and when they have not moved, set
+`layoutSizingVertical = 'FILL'` down the descendant chain and resize the instance
+itself, which cascades to the rectangle. Verify by re-reading the rectangle
+rather than by trusting the call.
+
 **Width is a decision, so make it deliberately and state it.** A source image
 narrower than its canvas (995 in a 1089 wide design, so about 91 percent) is
 inset by design, not full bleed. Either reproduce the inset as horizontal
@@ -860,6 +1034,54 @@ the foundations already use, or take it full bleed at the body width. Both are
 defensible. Pick against the design system's own established patterns, and record
 which you chose and why in the batch report so the next module makes the same
 call. What this must never be is an accident of arithmetic.
+
+### 4.2.2 Recovering assets from a combined raster
+
+A source design will often carry a row of several small things as ONE image: a
+strip of social icons, a row of payment badges, a set of app-store buttons, a
+line of rating stars. The individual assets are in the file. They are fused. The
+email needs them apart, because each icon is its own `mj-image` with its own
+`href`, so the module cannot be finished from the strip as it stands.
+
+**Slice the raster. Do not conclude the assets are missing.** "The icons are not
+in the file" is the wrong finding and an expensive one: it turns a mechanical crop
+into an ask the customer has to go and satisfy, and the module ships with empty
+rectangles while everyone waits. The accurate finding is that the assets exist in
+fused form and have to be cut out of a render.
+
+The route:
+
+1. **Render the strip large.** `download_assets` on the strip node at 3x or 4x. A
+   plain screenshot is capped at the node's own pixel size, which on a small
+   source strip leaves too few pixels per icon to crop from.
+2. **Find the boundaries by inspecting the image, never by dividing the width
+   into equal columns.** Glyph widths and the gaps between them differ, so equal
+   columns cut into the wide icons and leave the narrow ones off-center. Profile
+   the render instead: sum brightness, or alpha, per column, then read off the
+   runs of ink separated by runs of background and take one cluster per icon.
+   That also counts the icons for you, which is the check that catches a strip
+   holding five when the structure you are filling expects six.
+3. **Crop each cluster on a shared vertical band**, centered on that icon's own
+   horizontal ink center, with the same padding on every crop. Icons in a row
+   share a baseline and a scale in the source. Cropping each one tight to its own
+   bounds throws that away, and once they are all placed at one size the wide
+   ones come out small and the narrow ones large.
+4. **Apply by name, on the master.** Name the crops in reading order, confirm the
+   order visually before you apply anything, and match each crop to its rectangle
+   by the rectangle's name rather than by child index. A row like this is
+   identical in every email, so the fills belong on the COMPONENT rather than on
+   one instance, where every existing instance inherits them.
+
+**Resolution check, and state the answer either way.** Before slicing, divide the
+render's width by the number of icons and compare that against the width they
+will be placed at. A crop that arrives smaller than its `mj-image` width will be
+visibly soft, and a strip drawn small in the source cannot be rescued by
+rendering it larger, because those pixels were never there. When the raster is
+too small to slice usefully, say so plainly and ask for the individual assets or a
+vector source. Shipping blurry crops and calling the module done is the one
+outcome that is not available, and neither is deciding this quietly: the report
+says either "sliced at N px per icon for a 24px placement" or "the strip is too
+low-resolution to slice, individual assets needed".
 
 ### 4.3 mj-button: `mj-button-Frame` wrapping FRAME `mj-button` whose DIRECT child is a TEXT node
 
@@ -1439,4 +1661,23 @@ the node.
     4.2.1), so any crop or z-order clipping is baked into the pixels. Each
     rectangle's height is the render's aspect ratio at the width you chose, and
     the width itself was a recorded decision (full bleed or the source's inset),
-    not an accident.
+    not an accident. **No asset was padded or stretched to fit a rectangle**: the
+    rectangle was sized to the asset, per instance where one component holds
+    photos of different shapes. Look at the edges of each PNG you exported, since
+    baked-in white reads on the canvas as a spacing bug nobody can find in the
+    auto layout.
+19. **Every overlap or edge bleed in the source became a two column row**
+    (section 3.4.1), never an improvised container and never a flattened image.
+    Per swap: both columns FIXED and summing with the section padding to the
+    section content box, the text column pinned with section 3.3.1 slack, the
+    image column the remainder, the `mj-image` height the render's natural aspect
+    at the image column's content width, no `mj-group`, and the gutter paid by
+    one column only. Your report names the swap and states that the overlap is
+    the whole of what was lost.
+20. **No `mj-image` rectangle was left without an image fill because its asset
+    looked missing** (section 4.2.2). Where the source carried a row of icons or
+    badges as one raster, it was sliced out of a high-multiple render, with the
+    boundaries found by inspecting the image rather than by equal columns, the
+    crops applied to the master by rectangle name, and the per-icon resolution
+    stated. If it genuinely could not be sliced, the report says so and names the
+    ask.
