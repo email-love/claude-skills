@@ -16,7 +16,7 @@ Claude builds real, export-ready emails inside your Figma file, assembled from y
 
 ### emaillove-migration-audit
 
-Already have a Figma design system or template library that was not built with Email Love? This skill scopes the migration before anyone commits. It is strictly read-only: it classifies every template (live-text convertible, editable-image candidate, hybrid, or not emailable), extracts your brand foundations (type ramp with email-safe fallbacks, palette, proposed theme colors, spacing, buttons), flags risks like unlicensed fonts or components living in unshared library files, and produces a shareable migration report with an effort estimate.
+Already have a Figma design system or template library that was not built with Email Love? This skill scopes the migration before anyone commits. It is strictly read-only: it splits your designs into a deduplicated module inventory and classifies every module (live-text convertible, editable-image candidate, hybrid, or not emailable, with any design concession named), works out whether your file is drawn at email scale, extracts your brand foundations (type ramp with email-safe fallbacks, palette, proposed theme colors, spacing, buttons), flags risks like unlicensed fonts or components living in unshared library files, and produces a shareable migration report with an effort estimate and a hand-off into conversion.
 
 Install from any terminal (inside an interactive `claude` session these also work as `/plugin` slash commands):
 

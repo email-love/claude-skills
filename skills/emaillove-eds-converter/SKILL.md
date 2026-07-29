@@ -17,18 +17,45 @@ Two hard rules:
 
 - **The customer's source file is read-only, always.** All building happens in a separate
   target file. Reads from the source are inspections, screenshots, and asset downloads only.
-- **The audit report is required input.** It carries the classification (A/B/C/D), the brand
-  foundations, and the flags. Do not re-derive what it already settled; do re-verify anything
-  that looks wrong when you meet the actual nodes.
+- **The audit report is required input.** It carries the per-module classification (A/B/C/D plus
+  any named concession), the scale factor, the brand foundations, and the flags. Do not re-derive
+  what it already settled; do re-verify anything that looks wrong when you meet the actual nodes.
 
 ## Inputs
 
-1. The migration audit report (file or pasted).
+1. The migration audit report from the emaillove-migration-audit skill (file or pasted).
 2. The source Figma file link (read-only).
 3. The target file: an existing one the team designates, or create one named
    "[Customer] - Email Love Design System" via the Figma MCP.
-4. Which batch to run: "foundations", or a named batch of modules ("batch 1: the 5 modules
-   listed in the audit's recommended next step", or an explicit list).
+4. Which batch to run: "foundations", or a batch of modules named by their rows in the audit's
+   **Module inventory** ("batch 1: the five modules the audit's Recommended next step lists
+   first", or an explicit list of row names). An explicit list from the user wins over the
+   audit's proposed batch.
+
+### What you read out of the audit, by section name
+
+The audit's sections map onto the phases below. Use the audit's own words for these artifacts so
+the two halves of the migration stay one conversation:
+
+- **Module inventory** (required in the report): the deduplicated module list. One row is one
+  module, and a batch is a group of rows. It carries each module's name (which becomes the
+  component name), category, the designs it appears in, the source ref, verdict, concession,
+  build constraints, and effort. The source ref is the appearance to convert from and the
+  boundary to crop at, so you never re-derive a split the audit already made; a row's build
+  constraints bind how that module is built (Phase 3). This is what Phase 3 iterates over. There
+  is no per-design conversion pass: the report's Per-design roll-up is context for the customer,
+  not a work list.
+- **Scale factor** (required in the report): the number every geometry decision is divided by.
+  Read it; never re-derive it (see Phase 2).
+- **Brand foundations:** the type ramp on email-safe fallbacks, the proposed theme colors, the
+  spacing scale, the button styles, and the target email width. Phase 2 builds from these.
+- **Flags:** the gates. Two of them block work rather than describe it: the scale factor when
+  the audit's two derivations disagreed, and each named concession. Both need a human "yes"
+  before the affected modules get built.
+
+If the report has no Module inventory or no Scale factor, it predates this contract. Do not
+improvise a module list out of a per-design table: go back and run the audit skill again, which
+is minutes of work and saves rebuilding a batch against the wrong boundaries.
 
 ## How long this takes
 
@@ -76,25 +103,41 @@ minutes does not read as a hung run.
 
 ## Phase 2: Foundations (run once per customer)
 
+**Everything you build, here and in Phase 3, is at email scale.** Take the factor from the
+audit's Scale factor section and divide the source numbers by it: type sizes, widths, paddings,
+image dimensions. Do not re-derive the factor from the file, even when the arithmetic looks
+obvious to you: the audit computed both derivations, and where they disagreed a human chose
+between them, so a fresh derivation here quietly overrules that decision. When the audit says
+the factor is still a designer decision and nobody has confirmed it, get the yes before you
+build, because the factor changes every module. State the factor you built at in the foundations
+report, so batch 1 and every batch after it inherits one number.
+
 Build the scaffold every later batch depends on:
 
-1. **Pages**, following Email Love library conventions: a Cover, one page per section
-   category the audit found (Heroes, Copy Blocks, Lists, and so on), Buttons, Type,
+1. **Pages**, following Email Love library conventions: a Cover, one page per category the
+   audit's Module inventory uses (Heroes, Single Column, Lists, and so on), Buttons, Type,
    Campaigns.
 2. **Type mapping.** Recreate the customer's type ramp as Figma text styles in the target
    file using their email-safe fallback choices from the audit (never the unlicensed brand
    font unless the user confirms web-font hosting). Name styles as the customer named theirs.
+   Use the email sizes the audit's Brand foundations table already computed at the scale
+   factor, not the authored source sizes.
 3. **Buttons page.** Rebuild each of their button styles as a component: correct email
    construction (a styled frame with a single text node), not their app-style nested
    instances. These become the sub-components nested inside mj-button-Frames, and they are
    the INSTANCE_SWAP targets for module-level "Button Style" properties later. Put the
    label's TEXT property on the button component itself: a label living inside a nested
    instance cannot be bound from the module that uses it (render spec, section 8.5).
-4. **Spacing.** Recreate their spacer scale as components if they had one.
+4. **Spacing.** Recreate their spacer scale as components if they had one, at the email-scale
+   values from the audit.
 5. **Assets.** Export the logo and any recurring imagery from the source file
    (download_assets) and upload into the target file (upload_assets). Logos become images,
-   never vectors.
-6. **Root EMAIL TEMPLATE frame** on Campaigns at the customer's email width: vertical
+   never vectors. Export the RENDERED node every time, never the raw image fill behind it: a
+   source fill with `scaleMode: 'CROP'` loses its crop the moment you take the underlying
+   asset, and you get the whole photograph instead of the picture the designer composed
+   (render spec 4.2.1, which also has the aspect-ratio rule).
+6. **Root EMAIL TEMPLATE frame** on Campaigns at the audit's target email width (600 or 640,
+   never the source canvas width when the source was not at email scale): vertical
    auto-layout, width FIXED at that email width, height Hug, the shared marker, and the theme
    colors from the audit's proposal:
    `setSharedPluginData('emaillove', 'nodeType', 'mainFrame')` plus backgroundColor,
@@ -107,9 +150,9 @@ Build the scaffold every later batch depends on:
    themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
    each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker and no theme keys.
    Do not copy this frame as a starting point for a module.
-7. **Report** what was built, what the audit proposed that you changed, and what needs the
-   designer's eye before batch 1 (theme colors especially: they are a proposal until a human
-   confirms).
+7. **Report** what was built, the scale factor and target email width you built at, what the
+   audit proposed that you changed, and what needs the designer's eye before batch 1 (theme
+   colors especially: they are a proposal until a human confirms).
 
 ## Phase 3: Module conversion (run per batch)
 
@@ -125,6 +168,27 @@ small email.
 Section 2 of `references/render-spec.md` has both shapes side by side and the plugin evidence.
 Read it before the first module of a batch.
 
+**One module per row of the audit's Module inventory.** The batch is a group of those rows, and
+each row already tells you the module's name (use it verbatim as the component name), its
+category, the designs it appears in, its source ref, its verdict, its concession if any, its
+build constraints, and its effort. Where a module appears in several designs, the source ref
+names the one appearance to convert from, so convert it ONCE from there and note that design; the
+other appearances are the same component placed again, not more work. When a row has no source
+ref, pick the cleanest appearance yourself and record which one in the batch report, so a
+reviewer can tell your boundary from the audit's. Build every number at the audit's scale factor, dividing source pixels by it as you go
+(Phase 2 has the rule; render spec section 0.6 has it at the geometry level).
+
+Before building any module whose inventory row carries a concession, check the audit's Flags for
+a human "yes" on it. If there is none, ask, and record the answer in the batch report. Building
+first and asking later means rebuilding.
+
+**A row's build constraints are instructions, not context.** Read them before the first node of
+that module and state in the batch report how each one was satisfied. They exist because a
+correct audit finding was once left in Flags alone and the conversion built straight past it. An
+older audit may have no build-constraints column, so on those read Flags in full before the batch
+starts, and treat anything phrased as "export rendered nodes, not raw fills", "re-crop", or
+"clipped by z-order" as binding (render spec 4.2.1).
+
 For each module in the batch, in order:
 
 ### 1. Convert the source design to MJML JSON via the design-converter worker
@@ -133,8 +197,18 @@ Do not rebuild by eye and do not run the plugin's Convert button for migration b
 pipeline is: screenshot the source module (read-only), POST it to the design-converter
 worker, transcribe the returned MJML JSON into the target file, then verify.
 
-1. **Screenshot the source frame** from the customer's file (read-only; `get_screenshot`
-   or an export at 1x/2x). Keep the PNG; it is also your visual reference for verification.
+1. **Screenshot the module** from the customer's file (read-only; `get_screenshot` or an
+   export). The row's source ref says what to shoot: on an email-native source that is a named
+   frame or node; on an unstructured source it is the region of a design the source ref bounds,
+   cropped at the boundaries the audit set rather than at ones you decide now. Keep the PNG; it
+   is also your visual reference for verification.
+   **Size the export so the PNG comes back at the target email width**, which means exporting a
+   source at scale factor 2.2 at roughly 0.45x. The worker infers its numbers from the pixels
+   you send it, so a PNG already at email scale returns email-scale widths, paddings, and type
+   sizes, and the render spec's rule that worker values are authoritative stays true as written.
+   If you did send a source-scale PNG, its numbers are authoritative only at that scale: divide
+   every one of them by the factor before it becomes geometry, and say in the batch report that
+   you converted that way.
 2. **POST to the worker** at `https://design-converter.andy-30d.workers.dev`:
    - Headers: `Content-Type: application/json`, `Authorization: Bearer` with an EMPTY
      token, and `X-Auth-Provider: gumroad`. The worker treats empty Bearer + gumroad as
@@ -182,7 +256,8 @@ moduleRoot.setSharedPluginData('emaillove', 'name', 'mj-wrapper')
   single wrapper component. Never nest one wrapper inside another to keep them together.
 - **The layer name is load bearing here**, unlike everywhere else in the file. It becomes the
   saved component name and its storage path, and there is no rename field in the plugin's save
-  dialog, so name it the way it should appear in the customer's library.
+  dialog, so use the module's Module inventory row name verbatim: the audit chose it to be the
+  name in the customer's library, so renaming it here silently forks the two documents.
 - **Every node gets two names.** The MJML tag goes in the `name` shared plugin data key;
   the Figma layer name gets the plugin's own friendly display name for that tag ("Row
   (Contains columns that sit side by side)", "Text Block", "Button Text"), so the layers
@@ -255,10 +330,20 @@ This mapping covers almost everything you will meet:
 - Map every text node to the type styles from foundations.
 - Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.
-- Verdict B regions (from the audit): place the design content as a frame with NO
-  recognized tag name inside a column; the exporter flattens it to a hosted image at export
-  while it stays editable. Verdict C modules: live-text structure for the copy, one
-  editable-image frame for the rich region.
+- **Honor the inventory row's verdict.** Verdict A: live text throughout. **Verdict
+  `A (concession: ...)`: build it as live text like any other A and apply the named substitute,
+  nothing more.** Do not quietly reproduce the effect the concession gave up, in an image or
+  otherwise: that is the concession being un-made without the designer in the room, and it turns
+  a module the audit priced as mechanical into a flattened picture. Verdict B regions: place the
+  design content as a frame with NO recognized tag name inside a column; the exporter flattens it
+  to a hosted image at export while it stays editable. Verdict C modules: live-text structure for
+  the copy, one editable-image frame for the rich region. **Verdict D: do not build it.** D means
+  the pattern has no email equivalent, so it needs the product decision the audit asked for
+  (what replaces it) before anything is worth building; drop it from the batch, say so in the
+  batch report, and raise the replacement question at the design review. A D that arrives inside
+  a batch is usually a batching mistake rather than a module to attempt. Changing a verdict when
+  the nodes contradict the audit is allowed and sometimes right; record it and its reason in the
+  batch report.
 - Text over a single background photo is mj-hero territory, live text, not an image.
 
 ### 3. Merge the mobile twin
@@ -310,10 +395,12 @@ working range, and zero is a legitimate answer for a fixed block like a logo hea
 `componentPropertyReferences` back off each node to confirm the binding landed. Record the
 properties you added, and why, in the module's report line.
 
-Then decide its category for the upload. **Use the customer's real category names**, which are
-whatever sections already exist in their plugin, not names you invent. If the Email Love MCP is
-connected, `list_components` returns their categories; otherwise read them off the plugin's
-Assets sidebar, which ships 13 predefined sections: Pre-Header, Header, Heroes, Single Column,
+Then confirm its category for the upload. **The Module inventory row already proposes one**, so
+start there and change it only when the rebuilt structure contradicts it, saying so in the batch
+report. **Use the customer's real category names**, which are whatever sections already exist in
+their plugin, not names you invent. If the Email Love MCP is connected, `list_components` returns
+their categories; otherwise read them off the plugin's Assets sidebar, which ships 13 predefined
+sections: Pre-Header, Header, Heroes, Single Column,
 Two Column, Three Column, Four Column, Buttons, Reviews, Images, Lists, Order Tables, Footer.
 Classify by what the component structurally is: **Heroes** for a top-of-email feature block,
 **Single Column** for one full-width stack, **Two Column** or **Three Column** for side-by-side
@@ -345,6 +432,10 @@ checklist at the end of `references/render-spec.md`:
   `mj-spacer`, every FIXED width is one of the load-bearing cases, every pinned width that
   carries text has slack (render spec section 3.3.1), and each button's width sizing was
   chosen for its mobile behavior (render spec section 0).
+- Scale: the module root is at the audit's target email width, and its type sizes, paddings, and
+  image dimensions are at email scale rather than source scale (render spec section 0.6). A
+  module built at source scale looks correct in isolation and wrong the moment it sits next to
+  another module, so check it before the batch grows.
 - Naming: every layer carries the display name for its tag, and no friendly string leaked
   into the plugin data `name` key.
 - Component: the module root is a direct child of its category page, not inside a component
@@ -356,10 +447,13 @@ checklist at the end of `references/render-spec.md`:
 
 ### 6. Batch report and gate
 
-One report per batch: per module, what was rebuilt, verdict honored or changed (with reason),
-mobile decisions, divergences flagged, component properties added and the evidence for each,
-the category you chose. End with the open questions for the design review. Do not start the
-next batch until the user says the review happened.
+One report per batch: per module, keyed by its Module inventory row name, what was rebuilt, the
+design you converted it from, verdict honored or changed (with reason), any concession and
+whether it was accepted and by whom, mobile decisions, divergences flagged, component properties
+added and the evidence for each, the category you kept or changed. Open with the scale factor and
+target email width the batch was built at, so a reviewer can check one number instead of
+measuring modules. End with the open questions for the design review. Do not start the next batch
+until the user says the review happened.
 
 ## Hand-off after the final batch
 
@@ -376,7 +470,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.10.2 of this skill. If you have web access, check once per conversation
+This is version 1.12.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

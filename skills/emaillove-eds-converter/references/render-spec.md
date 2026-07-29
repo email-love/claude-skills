@@ -147,8 +147,9 @@ Never set the button frame's height. It comes from the text height plus
 | `mj-button` `inner-padding` | from the MJML, symmetric only | This is the button's tap target, not layout spacing. Asymmetric values round-trip wrong (section 4.3) |
 
 In a conversion the worker JSON paddings are authoritative: transcribe them
-exactly. The ranges above are for gaps you have to invent, and for judging when a
-converted value is obviously wrong.
+exactly, at the scale of the screenshot they came from (section 0.6). The ranges
+above are for gaps you have to invent, and for judging when a converted value is
+obviously wrong.
 
 Four things that keep padding honest:
 
@@ -160,6 +161,61 @@ Four things that keep padding honest:
   predictably.
 - **Mobile padding is a separate override** (`mobileStylesPadding*`), not a
   reason to compromise the desktop value.
+
+### 0.6 Every number here is at EMAIL scale, never source scale
+
+Widths, type sizes, paddings, radii, and image dimensions in this spec are email
+pixels: a 600 or 640 body, a 16px body copy, a 20px column padding. A source file
+that was never meant to export as email is often drawn at a multiple of that, and
+the migration audit settles the factor once (its **Scale factor** section, a
+number a designer confirmed) so every module in the library is built against the
+same one.
+
+The worker's numbers are at the scale of the screenshot it was sent, so the
+cheapest way to stay honest is to send it a PNG already at the target email
+width; then "transcribe the worker paddings exactly" (section 0.5) and "build at
+email scale" are the same instruction. If the screenshot went in at source scale,
+divide every returned number by the factor first.
+
+So divide source measurements by that factor before they become geometry here,
+and never carry a source pixel across untouched. A module built at source scale
+passes every other check in this spec: it hugs, it is tagged, it exports. It is
+simply two or three times too big, which shows up as a body size no email uses
+and a root wider than the body, and it only becomes obvious next to a module
+built correctly. If you find yourself deriving the factor from the file rather
+than reading it from the audit, stop: a fresh derivation silently overrules the
+decision a human already made between two disagreeing derivations.
+
+### 0.7 DOUBLE PADDING: a gap belongs to ONE block, never to both
+
+The space between two stacked blocks is one decision, made once, on one node.
+When the block above already carries a `paddingBottom`, the block below must NOT
+add a `paddingTop` for the same gap, and the reverse. Setting both is not "a
+little more room": the two values add, so a 40 below the section above plus a 30
+above the block below renders as 70, and the module reads as broken to the
+designer who drew it.
+
+**Failure signature**, in the order you notice it:
+
+- The gap looks roughly twice what the design shows, while each of the two
+  paddings that produced it is individually plausible. That plausibility is why
+  this survives review.
+- A leaf frame's height exceeds its content by exactly the padding you wrote,
+  and the module's total height is over by the same number. An `mj-image-Frame`
+  measuring 362 around a 332 rectangle is a 30 that should not exist.
+- Removing either value alone fixes the look. That is the proof there were two.
+
+**Where to put it: on the preceding block's `paddingBottom`.** Prefer trailing
+space over leading space so that each block owns the gap that follows it. Then a
+block switched off (`visible = false`, or a BOOLEAN component property, section
+8.2) takes its spacing away with it, instead of leaving a hole where lead-in
+space on the next block used to be paid for by a neighbor that is now gone.
+
+This holds at every level, not just section to section: wrapper to section,
+section to column, column to leaf pair. Before writing any padding, read what
+the sibling above it already carries. In a conversion the worker JSON paddings
+are authoritative and already complete (section 0.5), so a padding you add on
+top of them is almost always this bug.
 
 ---
 
@@ -726,8 +782,11 @@ Inner RECTANGLE (direct child):
   four load-bearing FIXED widths in section 0.3. This is the one place in a
   module where a hard height is expected, and it is safe because a rectangle
   has no children to clip.
-- Fill: if the worker `src` is a real URL, create the image via
-  `figma.createImageAsync(src)` and set an IMAGE fill, `scaleMode: 'FILL'`.
+- Fill: an IMAGE fill, `scaleMode: 'FILL'`, from an image that is already in the
+  target file. `figma.createImageAsync(src)` is NOT available to an external
+  agent, so a worker `src` URL is not something you can turn into a fill
+  directly, and section 4.2.1 has the route for anything coming from the
+  customer's source file.
   If `src` is `"placeholder"` or unavailable, substitute the matching asset
   already round-tripped into the target file's foundations pages when one
   exists (logos especially); otherwise use one SOLID light gray fill
@@ -746,6 +805,61 @@ Inner RECTANGLE (direct child):
   the exporter drops `fluid-on-mobile` (class `lf`); if equal it keeps it
   (`nf`). So match the worker `width` exactly: a 560 image in a 560 column
   stays fluid, a 134 logo does not. This is automatic; just get the px right.
+
+### 4.2.1 Bringing an image across from the source file: RENDER the node, never the raw fill
+
+An image in a source file is almost never the whole photograph the designer
+started from. Two things routinely sit between the raw bytes and what you see on
+the canvas, and neither one travels with the raw asset:
+
+- **A crop transform.** An image fill with `scaleMode: 'CROP'` carries an
+  `imageTransform` matrix: which part of the photograph is showing, and at what
+  zoom. Export the raw fill and you get the full frame back with that transform
+  discarded, including everything the designer cropped away. The symptom is dead
+  space where the composition used to be tight: a subject that filled the band
+  now floats small inside it or sits half out of view. Nothing about the
+  rectangle's geometry is wrong, which is exactly why this gets misdiagnosed and
+  reported as a spacing bug.
+- **Clipping by overlapping siblings.** Unstructured sources clip by z-order and
+  not by masks: a shape, a band of background, or another image sits on top and
+  hides part of the picture. What you see is a composite of several nodes, and
+  those pixels exist in none of them on its own. Only a render captures it.
+
+So, for every image you bring across: **render the node as it appears and use the
+render.** Never the raw fill, never the asset behind `fills[0].imageHash`. If the
+audit's row for a module says its images are clipped by z-order rather than by
+masks, or that they carry a crop, that is this rule and it is not optional.
+
+The route, since `figma.createImageAsync` is unavailable to an agent:
+
+1. `download_assets` on the NODE in the source file (`get_screenshot` on the
+   node, or `node.exportAsync`, do the same job), at 2x, to a local PNG. Reading
+   `fills[0].imageHash` and fetching that asset instead is the mistake, not the
+   shortcut.
+2. `upload_assets` to place that PNG onto the `mj-image` rectangle in the target
+   file. The crop is baked into the pixels now, so the fill is a plain
+   `scaleMode: 'FILL'` with an identity transform and there is no crop left to
+   reproduce.
+3. Verify against a screenshot of the SOURCE NODE, never against the source's
+   raw asset.
+
+**Aspect ratio: preserve the render's, never stretch to fit a chosen width.**
+Measure the ratio on the rendered PNG and derive the height from the width you
+picked: `height = round(targetWidth * renderH / renderW)`. A 995 x 550 render
+placed at 600 wide is 332 tall, and 332 is not a number to round to something
+tidier. If a height was decided earlier and it disagrees with the render, the
+render wins and you re-derive the height. Forcing a render into the wrong box is
+either a `scaleMode: 'FILL'` quietly cropping it a second time or a visibly
+squashed photo.
+
+**Width is a decision, so make it deliberately and state it.** A source image
+narrower than its canvas (995 in a 1089 wide design, so about 91 percent) is
+inset by design, not full bleed. Either reproduce the inset as horizontal
+padding on the `mj-image-Frame`, at email scale and snapped to the spacing scale
+the foundations already use, or take it full bleed at the body width. Both are
+defensible. Pick against the design system's own established patterns, and record
+which you chose and why in the batch report so the next module makes the same
+call. What this must never be is an accident of arithmetic.
 
 ### 4.3 mj-button: `mj-button-Frame` wrapping FRAME `mj-button` whose DIRECT child is a TEXT node
 
@@ -880,7 +994,8 @@ reads `node.parent.padding*` for text, button, image, divider). A shorthand
 
 Padding is also the only mechanism for vertical rhythm, and section 0.5 has the
 level-by-level table with the documented typical ranges for any gap the worker
-JSON does not already specify.
+JSON does not already specify. A gap the block above already pays for is not
+yours to pay for again: section 0.7.
 
 ### 5.2 Colors
 
@@ -1301,7 +1416,10 @@ the node.
 11. All vertical spacing is padding: no gaps produced by a taller frame, by
     `itemSpacing`, or by a manually positioned node (which exports as nothing).
 12. Root width equals the mj-body width; column px widths equal the worker
-    attrs; section paddings equal the worker attrs.
+    attrs; section paddings equal the worker attrs. All of those numbers are at
+    email scale, from the audit's confirmed scale factor, not source scale
+    (section 0.6): the root is 600 or 640, and body copy is a size email
+    actually uses.
 13. If it is a module: the root is a COMPONENT tagged `mj-wrapper`, a direct
     child of its category page, not inside a COMPONENT_SET or a Figma SECTION,
     with no stray instances of it left on the page, and there is no second
@@ -1313,3 +1431,12 @@ the node.
     converted from, for spacing, alignment, and color parity. Small color and
     font-metric differences are acceptable; missing content, zero-height
     sections, clipped text, and alignment flips are not.
+17. **No gap is paid for twice.** For every pair of stacked siblings, exactly one
+    of them carries the padding that separates them, and it is the one above
+    (section 0.7). Any frame whose height exceeds its content by exactly a
+    padding you wrote is this bug.
+18. **Every image is a render of its source node, not a raw fill** (section
+    4.2.1), so any crop or z-order clipping is baked into the pixels. Each
+    rectangle's height is the render's aspect ratio at the width you chose, and
+    the width itself was a recorded decision (full bleed or the source's inset),
+    not an accident.

@@ -277,6 +277,20 @@ Four questions, one batch, on top of the Step 1 brief:
   convert that render. Let the Step 2 inspiration decide the section order and pacing; let the
   brand interview decide every color and typeface.
 
+**Check that the source is at email scale before you convert it.** A past email or a comp you wrote
+yourself is at email width by construction. A Figma design drawn for presentation, or a web-first
+canvas, is often some multiple of it, and the worker reads its numbers off the pixels you send, so a
+1320px-wide frame comes back as a 1320px-wide email with 35px body copy. Two cheap derivations catch
+it: the frame width divided by the email width from B1, and the authored type sizes divided by the
+sizes email actually uses (a 35px body over 16, a 53px headline over 24). Land near 1 and the source
+is at email scale. Land near some other number and that number is your scale factor. When the two
+derivations disagree by more than a few percent, trust the type ramp: a designer picks type sizes
+deliberately off a ramp, while a canvas width absorbs bleed, margins, and whatever artboard someone
+happened to start on. Then do two things: scale the screenshot down to the email width before you
+send it, so the worker returns email-scale numbers in the first place, and pin `emailWidth` in
+`promptInputs` (B3). Tell the user the factor you derived; it is a judgment they may want to
+correct. Render spec section 0.6 is the rule this protects.
+
 Rendering, whichever HTML you start from: headless Chrome with
 `--headless=new --screenshot=<out.png> --window-size=<email width>,<tall enough for the whole
 email> --force-device-scale-factor=2`, then trim any trailing blank space before sending. A
@@ -645,7 +659,7 @@ rule in it applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.3.1 of this skill. If you have web access, check once per conversation
+This is version 2.4.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's
