@@ -1,0 +1,20 @@
+{
+  "name": "emaillove-eds-converter",
+  "displayName": "Email Love EDS Converter",
+  "version": "1.0.0",
+  "description": "Convert an audited legacy Figma design system into a working Email Love design system, foundations first, then modules in batches with design review",
+  "author": {
+    "name": "Email Love",
+    "email": "hello@emaillove.com"
+  },
+  "homepage": "https://help.emaillove.com/plugin/ai/agents-in-figma",
+  "repository": "https://github.com/email-love/claude-skills",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "figma",
+    "migration",
+    "design-system",
+    "conversion"
+  ]
+}

@@ -24,6 +24,15 @@
       "author": {
         "name": "Email Love"
       }
+    },
+    {
+      "name": "emaillove-eds-converter",
+      "source": "./skills/emaillove-eds-converter",
+      "description": "Convert an audited legacy Figma design system into a working Email Love design system: foundations, then modules in batches with design review between batches. Requires an emaillove-migration-audit report",
+      "version": "1.0.0",
+      "author": {
+        "name": "Email Love"
+      }
     }
   ]
 }

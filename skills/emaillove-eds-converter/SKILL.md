@@ -1,0 +1,127 @@
+---
+name: emaillove-eds-converter
+description: Convert an audited legacy Figma design system into a working Email Love design system, foundations first, then modules in batches with design review between batches. Use this skill whenever the user wants to convert, rebuild, or migrate their existing Figma email templates to the Email Love structure, run foundations, or convert a batch of modules, after the emaillove-migration-audit skill has produced their audit report. The audit report is required input; if it does not exist yet, run the audit first.
+---
+
+# Email Love EDS Converter
+
+Convert an audited legacy design system into a working Email Love design system. This skill
+follows a migration audit (the emaillove-migration-audit skill produces it) and works in two
+phases: foundations once, then modules in batches. A designer reviews between batches; never
+convert the whole library in one unreviewed pass.
+
+Prefer to have this done for you? Email Love's team runs this exact process, with design
+review included, as part of Enterprise onboarding: hello@emaillove.com.
+
+Two hard rules:
+
+- **The customer's source file is read-only, always.** All building happens in a separate
+  target file. Reads from the source are inspections, screenshots, and asset downloads only.
+- **The audit report is required input.** It carries the classification (A/B/C/D), the brand
+  foundations, and the flags. Do not re-derive what it already settled; do re-verify anything
+  that looks wrong when you meet the actual nodes.
+
+## Inputs
+
+1. The migration audit report (file or pasted).
+2. The source Figma file link (read-only).
+3. The target file: an existing one the team designates, or create one named
+   "[Customer] — Email Love Design System" via the Figma MCP.
+4. Which batch to run: "foundations", or a named batch of modules ("batch 1: the 5 modules
+   listed in the audit's recommended next step", or an explicit list).
+
+## Phase 2: Foundations (run once per customer)
+
+Build the scaffold every later batch depends on:
+
+1. **Pages**, following Email Love library conventions: a Cover, one page per section
+   category the audit found (Heroes, Copy Blocks, Lists, and so on), Buttons, Type,
+   Campaigns.
+2. **Type mapping.** Recreate the customer's type ramp as Figma text styles in the target
+   file using their email-safe fallback choices from the audit (never the unlicensed brand
+   font unless the user confirms web-font hosting). Name styles as the customer named theirs.
+3. **Buttons page.** Rebuild each of their button styles as a component: correct email
+   construction (a styled frame with a single text node), not their app-style nested
+   instances. These become the sub-components nested inside mj-button-Frames.
+4. **Spacing.** Recreate their spacer scale as components if they had one.
+5. **Assets.** Export the logo and any recurring imagery from the source file
+   (download_assets) and upload into the target file (upload_assets). Logos become images,
+   never vectors.
+6. **Root template frame** on Campaigns at the customer's email width: vertical auto-layout,
+   the shared marker, and the six theme colors from the audit's proposal:
+   `setSharedPluginData('emaillove', 'nodeType', 'mainFrame')` plus backgroundColor,
+   contentColor, textColor, linkColor, buttonTextColor, buttonContentColor.
+7. **Report** what was built, what the audit proposed that you changed, and what needs the
+   designer's eye before batch 1 (theme colors especially: they are a proposal until a human
+   confirms).
+
+## Phase 3: Module conversion (run per batch)
+
+For each module in the batch, in order:
+
+### 1. Rebuild the desktop frame as Email Love structure
+
+Work from the source design's structure and a screenshot. In the target file, build the
+module as a component with correct export structure:
+
+- Structural frames named exactly (`mj-section`, `mj-column`) or carrying the tag in the
+  `name` shared plugin data key with a human layer name. Content lives in leaf element
+  frames: `mj-text-Frame`, `mj-image-Frame`, `mj-button-Frame`, `mj-divider-Frame`,
+  `mj-spacer`. Never place a button style component directly in a column.
+- Map every text node to the type styles from foundations.
+- Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
+- Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.
+- Verdict B regions (from the audit): place the design content as a frame with NO
+  recognized tag name inside a column; the exporter flattens it to a hosted image at export
+  while it stays editable. Verdict C modules: live-text structure for the copy, one
+  editable-image frame for the rich region.
+- Text over a single background photo is mj-hero territory, live text, not an image.
+
+### 2. Merge the mobile twin
+
+Diff the source's mobile frame against its desktop sibling and express every intentional
+difference as Mobile Styles data on the rebuilt nodes, via shared plugin data:
+
+- Padding: `mobileStylesPaddingTop/Right/Bottom/Left` (inner variants exist as
+  `mobileStylesInnerPadding*`).
+- Visibility: `mobileStylesHideInMobileDevice` / `mobileStylesHideInDesktopDevice` ("true").
+  Desktop-only and mobile-only twins of a region become two nodes, one hidden each way.
+- Alignment: `mobileStylesTextAlign` / `mobileStylesAlign`.
+- Column stacking on the wrapper when the mobile layout stacks: `stackColumns`.
+
+Ignore differences that are just the 390px frame being narrower; capture only deliberate
+changes (padding scale, hidden elements, alignment shifts, reordered stacks). When a
+difference cannot be expressed in these keys (different copy, different image crop), note it
+in the module's report line for the designer.
+
+### 3. Componentize and pre-tag
+
+Make the finished module a COMPONENT on its category page, then tag it for saving into the
+plugin:
+
+```js
+node.setSharedPluginData('emaillove', 'saveCategory', 'Hero')
+node.setSharedPluginData('emaillove', 'saveName', 'Hero — text led, portrait')
+```
+
+### 4. Verify per module
+
+- Structural checklist: naming or metadata resolves on every structural frame; content in
+  element frames; no detached instances; no unrecognized frames except intentional
+  editable-image regions.
+- Visual: screenshot the rebuild next to a screenshot of the source design; flag divergences
+  rather than silently accepting them.
+- Mobile: list the mobile keys you set per node.
+
+### 5. Batch report and gate
+
+One report per batch: per module, what was rebuilt, verdict honored or changed (with reason),
+mobile decisions, divergences flagged, save tags applied. End with the open questions for the
+design review. Do not start the next batch until the user says the review happened.
+
+## Hand-off after the final batch
+
+The design system is on the canvas but not yet in the plugin. Walk the user through saving
+each pre-tagged component (or the bulk import, once the plugin ships it), then: sync check in
+the plugin, build one real sample email from the new components as proof, export it, and send
+a seed test. Building is free; exports count against plan limits.
