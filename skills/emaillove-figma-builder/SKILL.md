@@ -245,6 +245,23 @@ in your report so the user can verify in the plugin's mobile preview.
 
 ### The full element vocabulary
 
+**Start from the visual pattern, not the layer name.** Most conversion mistakes come from
+rebuilding what a design *looks like* instead of reaching for the primitive that produces it.
+This mapping covers almost everything you will meet:
+
+| What the design shows | What to build | Why |
+| --- | --- | --- |
+| A pill, badge, tag, or chip | `mj-button` | It renders a padded, rounded, background-filled box with centred text and an Outlook VML fallback. A column with a border radius does not survive Outlook. A pill needs no link to be a button. |
+| A call-to-action button | `mj-button` | Same primitive; add the `href`. |
+| Two things side by side that must not stack on mobile | `mj-group` of `mj-column`s | Columns stack on small screens unless grouped. |
+| Headline and copy over a full-bleed image | `mj-hero` | Keeps the text live rather than baking it into a picture. |
+| A horizontal rule | `mj-divider` | Never a thin rectangle. |
+| Vertical breathing room | `mj-spacer` | Never an empty frame. |
+| A row of links | `mj-navbar` with `mj-navbar-link` | |
+| Tabular data | `mj-table` with `mj-table-row` | |
+| ESP tokens, Handlebars, dynamic cards | `mj-raw` | Passed through verbatim. |
+| A composition that genuinely cannot be rebuilt | an untagged frame in a column | Deliberately flattened to a hosted image, still editable in Figma. |
+
 Beyond text, image, and button, the plugin has first-class element types. Use them rather than
 imitating them, because a faked element looks right on the canvas and exports wrong:
 
@@ -410,4 +427,4 @@ If the plugin says "Please select valid email template" on a frame you built, th
 
 ## Staying current
 
-This is version 1.11.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.
+This is version 1.12.0 of this skill. If you have web access, check once per conversation (quietly, without narrating it) whether a newer version exists: fetch https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a newer version exists, mention it once at hand-off with the right update path for the user's surface: claude.ai users re-upload the .skill file from that release; Claude Code plugin users run the marketplace update. If you have no web access, skip this silently.

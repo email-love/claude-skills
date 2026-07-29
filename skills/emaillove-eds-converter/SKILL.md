@@ -73,6 +73,23 @@ module as a component with correct export structure:
   untagged inner content is not skipped, it is flattened into a hosted PNG by the exporter's
   unknown-node path, so buttons silently lose their text and links and image sections can
   export empty. After building each module, verify every leaf pair before moving on.
+**Start from the visual pattern, not the layer name.** Most conversion mistakes come from
+rebuilding what a design *looks like* instead of reaching for the primitive that produces it.
+This mapping covers almost everything you will meet:
+
+| What the design shows | What to build | Why |
+| --- | --- | --- |
+| A pill, badge, tag, or chip | `mj-button` | It renders a padded, rounded, background-filled box with centred text and an Outlook VML fallback. A column with a border radius does not survive Outlook. A pill needs no link to be a button. |
+| A call-to-action button | `mj-button` | Same primitive; add the `href`. |
+| Two things side by side that must not stack on mobile | `mj-group` of `mj-column`s | Columns stack on small screens unless grouped. |
+| Headline and copy over a full-bleed image | `mj-hero` | Keeps the text live rather than baking it into a picture. |
+| A horizontal rule | `mj-divider` | Never a thin rectangle. |
+| Vertical breathing room | `mj-spacer` | Never an empty frame. |
+| A row of links | `mj-navbar` with `mj-navbar-link` | |
+| Tabular data | `mj-table` with `mj-table-row` | |
+| ESP tokens, Handlebars, dynamic cards | `mj-raw` | Passed through verbatim. |
+| A composition that genuinely cannot be rebuilt | an untagged frame in a column | Deliberately flattened to a hosted image, still editable in Figma. |
+
 - **Build the pair, do not style the wrapper.** The wrapper carries layout; the inner node
   carries content. An image is an `mj-image-Frame` containing a rectangle whose fill is the
   image, never a frame with an image fill on itself. A divider is an `mj-divider-Frame`
