@@ -30,6 +30,50 @@ Two hard rules:
 4. Which batch to run: "foundations", or a named batch of modules ("batch 1: the 5 modules
    listed in the audit's recommended next step", or an explicit list).
 
+## How long this takes
+
+Read this before starting a batch, and set the user's expectations from it. These are measured
+figures, not guarantees. Each was timed on a batch of FIVE modules, with several agents working
+in parallel and an adversarial verification pass on every module:
+
+- rendering a batch from converted MJML: about 38 minutes
+- restructuring a batch: about 31 minutes
+- promoting a batch to components: about 28 minutes
+- a sizing correction pass: about 18 minutes
+- adding component properties: about 14 minutes
+
+A single agent following this skill has a different profile: less parallelism, but also fewer
+passes, since it is not re-verifying another agent's work. Treat the figures as the shape of the
+work rather than as a quote.
+
+Honest ranges to give a user:
+
+- **The audit** (the emaillove-migration-audit skill): minutes, scaling with library size. It
+  creates nothing, so it is the quick part.
+- **Foundations:** a single pass, comparable in length to one batch of modules.
+- **A first batch of about five modules:** expect tens of minutes, and longer on an unstructured
+  source.
+- **A full library of a hundred or more modules:** multiple sessions. That is exactly why the
+  process is batched with a design review between batches instead of run end to end.
+
+**Where the time actually goes: round trips to Figma, not model thinking.** Every node created
+or read is a call. A module with forty nodes therefore takes many times longer than one with
+six, and the node count predicts the time far better than how complicated the design looks.
+
+**Source shape moves the number more than anything else.** An email-native source (frames
+already at 600 or 640, auto layout in place) converts far faster than an unstructured one
+(groups, absolute positioning, a scaled-up mockup), because in the second case the agent must
+first work out where each module begins and ends before it can rebuild anything. Measured on a
+real unstructured file: roughly three times slower per module than an email-native one.
+
+**The worker is not the bottleneck.** The design-converter conversion itself takes a few seconds
+to about half a minute per design. Everything after it, transcribing the result into Figma, is
+where the time is spent. Never leave a user thinking the AI is the slow part.
+
+**Say this out loud before you begin.** At the start of every batch, tell the user roughly how
+long you expect it to take and that progress will be quiet for long stretches, so twenty silent
+minutes does not read as a hung run.
+
 ## Phase 2: Foundations (run once per customer)
 
 Build the scaffold every later batch depends on:
@@ -332,7 +376,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.10.1 of this skill. If you have web access, check once per conversation
+This is version 1.10.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

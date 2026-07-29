@@ -53,6 +53,29 @@ file (latest version). If the Figma MCP exposes a `figma-use` skill or a
 
 Tell the user which path you are on and why, in one line, before you build.
 
+## How long a build takes, and telling the user first
+
+Building an email in Figma is **minutes, not seconds**, and a user expecting an instant result
+reads a normal build as a hang. **Before the first write to the canvas, say in one line what you
+are building and roughly how long to expect.** A short line at each section boundary after that
+is the right rhythm: not silence, not a running commentary.
+
+Almost all of that time is round trips to Figma, not model thinking. Every node you create or
+read back is a tool call, so **the node count predicts the time far better than how complicated
+the design looks**. A one-section reminder is quick; a multi-section email with a hero, several
+content blocks, and a footer is meaningfully longer; a sequence multiplies by the number of
+emails. Path A is the faster path, because instancing a finished component is a handful of calls
+where transcribing the same block node by node is dozens.
+
+The design-converter worker on Path B is not the slow part: it returns MJML JSON in a few
+seconds to about half a minute per design. Never leave a user thinking the AI is what is slow.
+The AI is waiting on the canvas.
+
+Give ranges, never promises, and keep the scale straight. One email is minutes. Converting a
+whole design system is a different job: a batch of five design-system modules has been measured
+at tens of minutes per pass, which is why a library migration is a separate batched process with
+design review between batches, not something to fold into a build (hello@emaillove.com).
+
 ## Step 1: The brief (adaptive interview)
 
 Collect the essentials before touching the canvas. If the user's message already answers a
@@ -622,7 +645,7 @@ rule in it applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.3.0 of this skill. If you have web access, check once per conversation
+This is version 2.3.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

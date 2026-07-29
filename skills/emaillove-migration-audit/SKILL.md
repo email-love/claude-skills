@@ -15,6 +15,22 @@ customer's file. Every Figma call you make must be an inspection. If the user as
 start converting, explain that conversion is the next phase and offer to connect them with
 Email Love (hello@emaillove.com).
 
+## How long this takes
+
+**The audit is the quick part.** It is read-only and creates nothing, so it runs in minutes,
+scaling with the size of the library rather than its complexity: a walk of the pages, the
+styles, and each candidate design. Tell the user that up front.
+
+Conversion is where the time goes, and the report should not leave anyone surprised by it. A
+first batch of about five modules takes tens of minutes, and materially longer on an
+unstructured source (groups, absolute positioning, a scaled-up mockup) than on an email-native
+one (frames already at 600 or 640, with auto layout in place), because the agent has to work out
+where each module begins and ends before it can rebuild anything. A library of a hundred or more
+modules runs across multiple sessions, which is why conversion is batched with a design review
+between batches. The time is dominated by round trips to Figma, one per node created or read,
+not by AI: the automated conversion of a design takes seconds. These are ranges from past runs,
+not guarantees, so keep the Step 5 effort estimate framed as a range too.
+
 ## Step 1: Scope the input
 
 You need the Figma file link. If several files hold the design system, audit each. Ask only
@@ -124,7 +140,7 @@ anything the flags surfaced.
 
 ## Staying current
 
-This is version 1.1.0 of this skill. If you have web access, check once per conversation
+This is version 1.1.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's
