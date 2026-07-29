@@ -11,7 +11,8 @@ whole, or `Label, (mjml:mj-section)` yields tag `mj-section` with frame name `La
 
 Two consequences:
 
-- `mj-section — Report CTA` with no `name` key **fails**: the whole string is read as the tag.
+- A layer named `mj-section Report CTA` with no `name` key **fails**: the whole string is read
+  as the tag. Use the parenthesized form `Report CTA, (mjml:mj-section)` or the shared key.
 - Writing `setSharedPluginData('emaillove', 'name', 'mj-section')` is the robust path, because
   `getPD` reads private data first and falls back to the shared `emaillove` namespace.
 
@@ -80,7 +81,7 @@ mj-divider-Frame→ mj-divider  (a line/rectangle)
 Two failure modes, both silent:
 
 1. **Untagged content is flattened, not skipped.** Anything unrecognized hits
-   `renderNodeAsImage` ("render the unknown as the image", `nodeJsonExtractor.ts:849`) — the
+   `renderNodeAsImage` ("render the unknown as the image", `nodeJsonExtractor.ts:849`), the
    same path that powers editable images. A missing `mj-button` tag turns a live button into a
    PNG with no text or link.
 2. **An untagged frame swallows its whole subtree.** An unrecognized frame between a column and
