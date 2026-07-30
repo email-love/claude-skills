@@ -1,6 +1,6 @@
 ---
 name: emaillove-eds-converter
-description: Convert an audited legacy Figma design system into a working Email Love design system, foundations first, then modules in batches with design review between batches. Use this skill whenever the user wants to convert, rebuild, or migrate their existing Figma email templates to the Email Love structure, run foundations, or convert a batch of modules, after the emaillove-migration-audit skill has produced their audit report. The audit report is required input; if it does not exist yet, run the audit first.
+description: Convert an audited legacy Figma design system into a working Email Love design system, foundations first, then modules in batches with design review between batches. Builds under the audit's source fidelity tier, preserving the source's geometry where it is a specification and building to email standards where it is not. Use this skill whenever the user wants to convert, rebuild, or migrate their existing Figma email templates to the Email Love structure, run foundations, or convert a batch of modules, after the emaillove-migration-audit skill has produced their audit report. The audit report is required input; if it does not exist yet, run the audit first.
 ---
 
 # Email Love EDS Converter
@@ -13,13 +13,29 @@ convert the whole library in one unreviewed pass.
 Prefer to have this done for you? Email Love's team runs this exact process, with design
 review included, as part of Enterprise onboarding: hello@emaillove.com.
 
-Two hard rules:
+Three hard rules:
 
 - **The customer's source file is read-only, always.** All building happens in a separate
   target file. Reads from the source are inspections, screenshots, and asset downloads only.
-- **The audit report is required input.** It carries the per-module classification (A/B/C/D plus
-  any named concession), the scale factor, the brand foundations, and the flags. Do not re-derive
-  what it already settled; do re-verify anything that looks wrong when you meet the actual nodes.
+- **The audit report is required input.** It carries the source fidelity tier, the per-module
+  classification (A/B/C/D plus any named concession), the scale factor where one applies, the
+  brand foundations, and the flags. Do not re-derive what it already settled; do re-verify
+  anything that looks wrong when you meet the actual nodes.
+- **The SOURCE FIDELITY TIER decides where your numbers come from, so read it first.** The audit
+  classifies whether the source's geometry is a specification at all, and every phase below
+  branches on the answer:
+  - **AUTHORITATIVE:** the geometry IS the spec. Preserve the source's widths, margins, type
+    sizes, and spacing. Deviating from a source number needs a reason, written down.
+  - **PARTIAL:** preserve what the audit proved consistent, standardise what it did not, and flag
+    each standardisation as a place the build differs from the source on purpose.
+  - **REFERENCE ONLY:** take the brand (palette, typefaces, logo), the copy, and the module
+    structure. **Build the geometry to email standards, and do not scale anything.** There is no
+    factor to read, no source proportion to preserve, and no ratio of the source's to check
+    against. A source measurement is not evidence here: it is an artefact of how the file happened
+    to get made.
+
+  A tier is a judgement the audit recommends and the customer's designer can overrule. If they
+  overrule it, build under the tier they give you and record whose call it was.
 
 ## Inputs
 
@@ -42,20 +58,50 @@ the two halves of the migration stay one conversation:
   component name), category, the designs it appears in, the source ref, verdict, concession,
   build constraints, and effort. The source ref is the appearance to convert from and the
   boundary to crop at, so you never re-derive a split the audit already made; a row's build
-  constraints bind how that module is built (Phase 3). This is what Phase 3 iterates over. There
+  constraints bind how that module is built (Phase 3). This is what Phase 3 iterates over, and its
+  category ORDER is what Phase 2 builds the component pages in. There
   is no per-design conversion pass: the report's Per-design roll-up is context for the customer,
   not a work list.
-- **Scale factor** (required in the report): the number every geometry decision is divided by.
-  Read it; never re-derive it (see Phase 2).
+- **Source fidelity** (required in the report): the tier, plus the signals behind it. **Read this
+  before any other section**, because it tells you whether the sections below are measurements to
+  carry across or evidence about a file whose proportions you are deliberately not reusing. State
+  the tier in your first line to the user, so nobody discovers it halfway through a type ramp.
+- **Scale factor** (required unless the source is REFERENCE ONLY): the number every geometry
+  decision is divided by. Read it; never re-derive it (see Phase 2). On a REFERENCE ONLY source
+  this section carries no number and states email standards instead. **That is a finished answer,
+  not a gap to fill:** do not derive a factor of your own, not from the width, not from the ramp,
+  and not "for information", because whoever builds applies the number that is there.
 - **Brand foundations:** the type ramp on email-safe fallbacks, the proposed theme colors, the
-  spacing scale, the button styles, and the target email width. Phase 2 builds from these.
-- **Flags:** the gates. Two of them block work rather than describe it: the scale factor when
+  spacing scale, the button styles, the target email width, and the source's content margin as a
+  percentage of source width with the content width it converts to. Phase 2 builds from these, and
+  it SETS the library's one content width from that derived value rather than inventing one. An
+  older audit may carry no margin percentage; then Phase 2 decides the content width itself and
+  says so. **On a REFERENCE ONLY source, only the brand half of this section is source material:**
+  the palette, the typefaces, the logo, the copy. The geometry half (ramp sizes, spacing scale,
+  content width) is the email standards the audit stated, and the source's own numbers stay in the
+  report as evidence for the tier rather than as a specification to build.
+- **Flags:** the gates. Two always block work rather than describe it: the scale factor when
   the audit's two derivations disagreed, and each named concession. Both need a human "yes"
-  before the affected modules get built.
+  before the affected modules get built. **A third joins them whenever Flags carries the source
+  fidelity tier**, which the audit does whenever that call was a judgement rather than a reading
+  (audit Step 8): the tier needs the same yes, because it decides whether the customer's geometry
+  comes across at all. Where the tier is REFERENCE ONLY the yes is cheap rather than deliberative,
+  so ask it as one confirming sentence at the start of foundations: their brand comes across and
+  the geometry will be ours.
 
-If the report has no Module inventory or no Scale factor, it predates this contract. Do not
-improvise a module list out of a per-design table: go back and run the audit skill again, which
-is minutes of work and saves rebuilding a batch against the wrong boundaries.
+If the report has no Module inventory, it predates this contract. Do not improvise a module list
+out of a per-design table: go back and run the audit skill again, which is minutes of work and
+saves rebuilding a batch against the wrong boundaries.
+
+A report with a Module inventory but **no Source fidelity section** predates the fidelity contract,
+and that one you can settle in a question instead of a re-run. Ask the audit's own signals: is the
+source at a standard email width with a mobile variant, are equivalent margins identical rather
+than merely similar, and does it have local text styles, paint styles, variables, components, and
+auto layout. Most of those present is AUTHORITATIVE, almost none is REFERENCE ONLY, a mix is
+PARTIAL, and a source at neither a standard width nor consistent margins cannot be AUTHORITATIVE
+whatever the rest says. Record the tier you settled on and that you settled it here rather than
+reading it. **A missing Scale factor is only a gap on an AUTHORITATIVE or PARTIAL source.** On a
+REFERENCE ONLY one there is nothing missing, so do not go back for the number.
 
 ## How long this takes
 
@@ -108,7 +154,10 @@ of these five points, and nowhere else:
 
 1. **After the source census** (your read of the audit's Module inventory plus your first look at
    the source file): the counts found. Modules in the inventory, modules in this batch, designs
-   they come from.
+   they come from. **Add the source fidelity tier you are building under**, and on a REFERENCE ONLY
+   source the one clause that follows from it, that the geometry is being built to email standards
+   and their brand is what comes across. A user who hears that up front reads a module whose
+   margins do not match their file as the plan rather than as a mistake.
 2. **Before a batch starts:** what IS in it by module name, what is NOT and why (deferred,
    blocked on an unconfirmed concession, out of scope), and the opening estimate.
 3. **After each module completes:** count, percentage, module name, revised remaining time.
@@ -145,14 +194,85 @@ One worked example, the format to copy:
 
 ## Phase 2: Foundations (run once per customer)
 
-**Everything you build, here and in Phase 3, is at email scale.** Take the factor from the
-audit's Scale factor section and divide the source numbers by it: type sizes, widths, paddings,
-image dimensions. Do not re-derive the factor from the file, even when the arithmetic looks
-obvious to you: the audit computed both derivations, and where they disagreed a human chose
-between them, so a fresh derivation here quietly overrules that decision. When the audit says
-the factor is still a designer decision and nobody has confirmed it, get the yes before you
-build, because the factor changes every module. State the factor you built at in the foundations
-report, so batch 1 and every batch after it inherits one number.
+**Start by reading the audit's Source fidelity tier, and say which tier you are building under
+before you create a node.** It decides where every number below comes from, so it is not something
+to discover in the middle of a type ramp.
+
+**Everything you build, here and in Phase 3, is at email scale.** How you get there is the tier's
+answer, not a single procedure:
+
+- **AUTHORITATIVE or PARTIAL: build from the source, through the factor.** Take the factor from the
+  audit's Scale factor section and divide the source numbers by it: type sizes, line heights, the
+  spacing scale, paddings, spacer heights. **Widths are not the factor's to divide**: the body width
+  and everything measured across it (content width, column splits, image widths) come from the target
+  email width, which is the width-versus-type check below and render spec 0.6's two factor tension.
+  Do not re-derive the factor from the file, even when the arithmetic looks
+  obvious to you: the audit computed both derivations, and where they disagreed a human chose
+  between them, so a fresh derivation here quietly overrules that decision. When the audit says
+  the factor is still a designer decision and nobody has confirmed it, get the yes before you
+  build, because the factor changes every module. State the factor you built at in the foundations
+  report, so batch 1 and every batch after it inherits one number. On a PARTIAL source the factor
+  came from the deliberate part of the file and the audit said which part that was: preserve what
+  it proved consistent, standardise the rest onto the defaults below, and give every
+  standardisation its own line in the report.
+- **REFERENCE ONLY: build to email standards, and scale nothing.** There is no factor, you do not
+  derive one, and there is no source measurement to divide. **The defaults, stated rather than
+  derived:** a **600** body width; **one content width for the whole library**, 560 on a 600 body,
+  so no module invents its own; a conventional type ramp with **body at 16** (12 fine print, 14
+  secondary, 16 body, 20 subhead, 24 to 30 headline, line height around 1.4 to 1.5 on body copy and
+  tighter on headings); and a **spacing scale in multiples of 8** (8, 16, 24, 32, 40, 48), with one
+  section padding chosen off that scale and used library-wide. From the source take the palette, the
+  typefaces, the logo, the copy, and the module structure and its order: nothing else.
+  **Record in the foundations report that the geometry is ours**, in those words, because otherwise
+  somebody downstream compares a module to the source, reads the difference as a defect, and
+  "fixes" the library back toward the guesses this tier exists to discard.
+
+Everything below that reads a source number, the ramp in step 3 and the spacing scale in step 5
+above all, is an AUTHORITATIVE and PARTIAL instruction. On a REFERENCE ONLY source it is the
+defaults above that get built, and the source's numbers stay in the audit as evidence.
+
+**Foundations also SETS the content width, once, for the whole library, and records it.** This is
+the same shape as the scale factor rule above, so treat it the same way: one number, decided here,
+applied by every later batch, never re-derived per module. Content width is the width text
+actually occupies inside a module (the body width minus the side margins), and it decides where a
+reader's eye finds the left edge of every line in every email built from this library. On an
+AUTHORITATIVE or PARTIAL source, take the audit's derived content margin and content width from its
+**Brand foundations** section as the starting value, decide the number, and state it in the
+foundations report and on Getting Started. **On a REFERENCE ONLY source the number is 560 on a 600
+body**, straight off the defaults, with no derivation from a source margin: a margin nobody chose
+carries no information, and converting a percentage of an arbitrary canvas width is how a library
+ends up with 20px margins that came out of arithmetic rather than out of a decision.
+With a 600 body and a 560 content width, every text-bearing section carries 20/20 padding.
+Full-bleed image bands at the body width are the only exception. You may overrule a derived value,
+but say so and say why, exactly as you would for a type size.
+
+Why this needs saying: the design-converter worker in Phase 3 returns a section padding per
+screenshot, it sees one module at a time, and it has no knowledge of the module's siblings, so its
+side margin is a per-module guess BY CONSTRUCTION. Accepting it per module does not risk drift, it
+guarantees it. Measured on one assembled email: side margins of 48, 40, and 20 across six modules,
+which is three content widths in one email and a text left edge that moves as the reader scrolls,
+with every individual padding value looking perfectly reasonable on its own. Render spec section
+0.3.1 has the measured table and the failure signature. Foundations fixing one number is half the
+remedy; Phase 3 applying that number instead of the worker's is the other half.
+
+**And run the width-versus-type factor check, once, here, on an AUTHORITATIVE or PARTIAL source.**
+Divide the source width by the target
+email width and compare that ratio to the scale factor you are building at. If they differ by more
+than a couple of percent, the library carries two factors whatever the audit recommended, so say so
+in the foundations report and name which one governs which quantities: type factor for type sizes,
+line heights, and the spacing scale, target width for the body width and everything measured
+across it (content width, column splits, image widths). Measured case: a 1092 wide source built to
+600 is 1.82 across the width while the confirmed type factor was 2.2, and nobody wrote that down,
+so the content-width decision had no traceable derivation. This is a tension to declare, not a bug
+to fix (render spec 0.6, audit Step 4).
+
+**On a REFERENCE ONLY source this check does not run**, and the reason is worth stating rather than
+leaving as an omission: the tension it exists to declare is between two ways of preserving a source
+proportion, and this tier preserves none. There is one factor to disagree with nothing, which is no
+factor. Record in the report that you skipped it because the geometry is built to standards. Do not
+compute the ratios anyway as background: the measured failure this whole branch exists to prevent
+began with two derivations on a file where neither belonged, and ended as a 16px body inside 20px
+margins that nobody had chosen.
 
 Build the scaffold every later batch depends on:
 
@@ -227,8 +347,16 @@ Build the scaffold every later batch depends on:
      and spacing come from the tokens on Foundations and Type rather than from hand-typed values;
      and where to look when something does not export as expected (confirm the block is still an
      instance and not detached, confirm the copy was changed through its property rather than in
-     place, then hello@emaillove.com). Name the email width and the scale factor here too, so the
-     page stands alone.
+     place, then hello@emaillove.com). Name the email width, the content width, and the scale
+     factor here too, so the page stands alone. **On a REFERENCE ONLY source there is no factor to
+     name, so say instead, in one sentence, that the geometry is built to email standards and the
+     brand is what came from the source file.** That sentence is what stops somebody opening this
+     file in six months, comparing a module to the old one, and correcting the library back toward
+     it. **The content width is required here** because it
+     is the number every later module is measured against and the one a module dropped in from
+     elsewhere will get wrong: state it as the number plus the side margin it implies (for example
+     `560px content width, 20px side margins on a 600px body`), and say that full-bleed image bands
+     at the full body width are the only exception.
    - **Foundations.** The token sheet. Required: a swatch per color, each labeled with BOTH its
      hex and its variable name, with primitives and semantic aliases in two clearly separated
      groups so a reader can see which name to reach for; the spacing scale rendered as visible
@@ -244,7 +372,9 @@ Build the scaffold every later batch depends on:
      step 3 catches arithmetically, and which presents downstream as a padding bug rather than a
      type bug (the single-factor rule: step 3 here, render spec section 0.6). Run both checks
      every time: the arithmetic catches what the eye misses on a long ramp, and the eye catches
-     what a passing ratio hides in the middle of one.
+     what a passing ratio hides in the middle of one. On a REFERENCE ONLY source there is no ratio
+     check to pair it with, so the page carries the whole load: look at the specimen sheet and
+     confirm the standard ramp reads as a ramp.
    - **Buttons.** One component per button style the audit listed, built as step 4 specifies, each
      visibly labeled with its name, each with its fill bound to the semantic token that style
      actually uses. Where the inventory has a Buttons category, its modules land here too, below
@@ -273,7 +403,10 @@ Build the scaffold every later batch depends on:
      default values are 4, 8, 16, 24, 32, 48. Where the audit carried the customer's own spacing
      scale, its values win and keep these names. **Do not round the audit's values onto the
      default ladder** to make them look tidier: that is step 5's rule, and rounding a customer's
-     14 up to 16 is a second scale factor wearing a friendly number.
+     14 up to 16 is a second scale factor wearing a friendly number. **That rule is about a source
+     whose spacing was chosen, so it binds on an AUTHORITATIVE or PARTIAL source only.** On a
+     REFERENCE ONLY source the values are the multiples of 8 from the top of this phase (8, 16, 24,
+     32, 40, 48) and no source spacing is carried across at all.
    - **A radius token for the pill,** `radius/pill`, FLOAT, at the radius the customer's button
      styles actually use.
    - **Set `scopes` explicitly on every variable.** The default `ALL_SCOPES` puts every token in
@@ -298,10 +431,25 @@ Build the scaffold every later batch depends on:
      equals intended. And the email template root's theme keys are shared plugin data STRINGS,
      not fills (step 7), so they cannot be bound at all: they carry literal hex, and repointing a
      semantic token means updating the matching theme key by hand.
-3. **Type mapping. Build the ramp from the audit's table VERBATIM.** Recreate the customer's
-   type ramp as Figma text styles in the target file using their email-safe fallback choices
-   from the audit (never the unlicensed brand font unless the user confirms web-font hosting).
-   Name styles as the customer named theirs. Take the Email size column of the audit's Brand
+3. **Type mapping.** Recreate the type ramp as Figma text styles in the target file using the
+   customer's email-safe fallback choices from the audit (never the unlicensed brand font unless
+   the user confirms web-font hosting). Name styles as the customer named theirs. **The typefaces
+   come from the source on every tier. Where the SIZES come from is the tier's answer.**
+
+   **REFERENCE ONLY: build the conventional ramp, and do not divide anything.** 12 fine print, 14
+   secondary, 16 body, 20 subhead, 24 to 30 headline, line height 1.4 to 1.5 on body copy and
+   tighter on headings. These are the defaults from the top of this phase, stated rather than
+   derived, and the source's authored sizes play no part in them: a ramp that was eyeballed style by
+   style is not a ramp, so there is nothing in it to scale down. Keep the customer's style names
+   where they map onto that ramp so the file still reads as their library, and where their ramp had
+   more steps than this one, collapse rather than invent: two headline sizes 2px apart in a source
+   nobody built to a scale are one headline. **The ratio check below does not apply on this tier**,
+   because it exists to prove a single factor was applied uniformly and there is no factor here.
+   What replaces it is a read-back: confirm the built ramp is the ramp above, body at 16, each step
+   present once.
+
+   **AUTHORITATIVE or PARTIAL: build the ramp from the audit's table VERBATIM.** Take the Email size
+   column of the audit's Brand
    foundations table exactly as written: every value in it is already the authored size divided
    by the one confirmed factor. Do not re-derive it, do not re-round it, and above all do not
    map a style toward a size that looks like a number email usually uses. A 65 the table says
@@ -310,9 +458,12 @@ Build the scaffold every later batch depends on:
    how a per-style factor gets back in after the audit removed it, and it is the defect this
    instruction exists to prevent. Render spec section 0.6 carries the measured case: a module
    that came out with 1.83 on its headline and 2.19 on its body, from a ramp built one round
-   number at a time, and it read as a padding bug.
+   number at a time, and it read as a padding bug. On a PARTIAL source, a size the audit could not
+   prove was deliberate gets standardised onto the conventional ramp above instead, and that
+   substitution is one line in the report.
 
-   **Then run the ratio check, before anything gets built on top of these styles.** Divide the
+   **Then run the ratio check, before anything gets built on top of these styles**, on those two
+   tiers. Divide the
    largest size in the ramp you just built by the smallest, divide the largest authored source
    size by the smallest, and compare the two. More than a couple of percent apart means a style
    has drifted off the factor: find it, fix it, check again. If a size still looks wrong once
@@ -325,10 +476,15 @@ Build the scaffold every later batch depends on:
    the INSTANCE_SWAP targets for module-level "Button Style" properties later. Put the
    label's TEXT property on the button component itself: a label living inside a nested
    instance cannot be bound from the module that uses it (render spec, section 8.5).
-5. **Spacing.** Recreate their spacer scale as components if they had one, at the email-scale
+5. **Spacing.** On an AUTHORITATIVE or PARTIAL source, recreate their spacer scale as components if
+   they had one, at the email-scale
    values from the audit, taken verbatim like the type ramp: the same one factor, whole-pixel
    rounding only, never rounded onto a friendlier multiple of 8 because it reads better. Run the
-   ratio check across the ends of the scale the same way.
+   ratio check across the ends of the scale the same way. **On a REFERENCE ONLY source the scale is
+   multiples of 8**, 8, 16, 24, 32, 40, 48, and here rounding onto a multiple of 8 is not a second
+   factor sneaking in, it IS the specification: pick one section padding off that scale and use it
+   library-wide rather than a different value per module. There is no ratio check, because there is
+   no scale in the source to preserve the shape of.
 6. **Assets.** Export the logo and any recurring imagery from the source file
    (download_assets) and upload into the target file (upload_assets). Logos become images,
    never vectors. Export the RENDERED node every time, never the raw image fill behind it: a
@@ -336,7 +492,8 @@ Build the scaffold every later batch depends on:
    asset, and you get the whole photograph instead of the picture the designer composed
    (render spec 4.2.1, which also has the aspect-ratio rule).
 7. **Root EMAIL TEMPLATE frame** on Campaigns at the audit's target email width (600 or 640,
-   never the source canvas width when the source was not at email scale): vertical
+   never the source canvas width when the source was not at email scale; 600 on a REFERENCE ONLY
+   source unless the customer's ESP or brand asks for 640): vertical
    auto-layout, width FIXED at that email width, height Hug, the shared marker, and the theme
    colors from the audit's proposal:
    `setSharedPluginData('emaillove', 'nodeType', 'mainFrame')` plus backgroundColor,
@@ -349,13 +506,24 @@ Build the scaffold every later batch depends on:
    themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
    each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker and no theme keys.
    Do not copy this frame as a starting point for a module.
-8. **Report** what was built, the scale factor and target email width you built at, the ratio
-   check result with the two ratios you compared, the completion checklist result below, what the
+8. **Report** what was built, **the source fidelity tier you built under and one clause of why**,
+   the target email width, and the content width you built
+   at, the completion checklist result below, what the
    audit proposed that you changed, and
    what needs the designer's eye before batch 1 (theme colors especially: they are a proposal
-   until a human confirms). If you changed a type size or a spacer away from the audit's table,
-   that is not a foundations detail, it is a change to the factor: say so explicitly and say
-   who agreed to it.
+   until a human confirms). Then the tier's own numbers:
+
+   - **AUTHORITATIVE or PARTIAL:** the scale factor, the width-versus-type factor check with both
+     ratios and which factor governs which quantities, and the ratio check result with the two
+     ratios you compared. If you changed a type size or a spacer away from the audit's table,
+     that is not a foundations detail, it is a change to the factor: say so explicitly and say
+     who agreed to it. On PARTIAL, list every value you standardised, one line each.
+   - **REFERENCE ONLY:** that there is no scale factor and why not, the email standards you built
+     to (600 body, 560 content width, the ramp with body at 16, the spacing scale in multiples of
+     8), and what came from the source, which is the palette, the typefaces, the logo, the copy,
+     and the module structure. **Then the sentence that has to survive this document: the geometry
+     is ours, by decision, and a module whose margins do not match the source file is correct.**
+     Without it the next person to open both files reads the difference as a bug.
 
 ### Phase 2 completion checklist
 
@@ -381,19 +549,23 @@ Pages, in canonical order:
       width the root frame was actually built at. Its frame fill is bound to `color/bg/brand`.
 - [ ] **Getting Started:** instancing rather than copying, editing through component properties,
       styling from the tokens, and the "does not export as expected" path are all four present,
-      plus the email width and the scale factor.
+      plus the email width, the content width with its side margin, and the scale factor, or, on a
+      REFERENCE ONLY source, the sentence that the geometry is built to email standards and the
+      brand came from the source.
 - [ ] **Foundations:** every swatch labeled with hex AND variable name, primitives and semantics
       visibly separated, the spacing scale rendered and labeled with token names and values, the
       radius token present. No hex anywhere on the page that no variable carries.
 - [ ] **Type:** one specimen row per style, each with the style name, a sample line actually set
       in that style, and a caption naming family, weight, and size, ordered largest to smallest.
       Then look at it: does the ramp step evenly? A step that reads wrong beside its neighbors is
-      a factor problem, not a style problem (step 3).
+      a factor problem, not a style problem, on a source built through a factor, and a mis-built
+      standard ramp on one that was not (step 3).
 - [ ] **Buttons:** one component per audit button style, each labeled, each a styled frame with a
       single text node, the label's TEXT property on the component itself, no loose instances left
       on the page.
 - [ ] **Campaigns:** exactly one root frame, `nodeType = 'mainFrame'`, at the target email width,
-      with all nine theme keys set and not one of them empty.
+      with all eight theme keys set (the nine of step 7 less the `nodeType` marker itself) and not
+      one of them empty.
 
 Variables and bindings:
 
@@ -410,11 +582,28 @@ Variables and bindings:
 - [ ] The root frame's theme keys carry literal hex matching the semantics they mirror, because
       plugin data cannot be bound.
 
-Scale, checked last because it invalidates everything above it:
+Scale, checked last because it invalidates everything above it. **The first line decides which of
+the next two you run:**
 
-- [ ] The ratio check passed, with both ratios recorded (step 3).
-- [ ] Every number on every page is at email scale: the root frame is 600 or 640, the type sizes
-      are the audit's Email size column verbatim, the spacing values are the audit's.
+- [ ] The source fidelity tier is stated in the report, with the signals behind it, and it is the
+      tier the audit gave or the one a named person overruled it with.
+- [ ] **AUTHORITATIVE or PARTIAL only:** the ratio check passed, with both ratios recorded (step 3),
+      and every number on every page is at email scale, meaning the root frame is 600 or 640, the
+      type sizes are the audit's Email size column verbatim, and the spacing values are the audit's.
+      On PARTIAL, every standardised value is listed in the report.
+- [ ] **REFERENCE ONLY only:** no scale factor appears anywhere in the report, the pages, or the
+      built values. The root frame is 600, the ramp reads 12/14/16/20/24 to 30 with body at 16, the
+      spacing scale is multiples of 8, the content width is 560, and the report says in words that
+      the geometry is ours. A factor that has crept back in as a caption or an aside is a failure of
+      this line, because the next reader applies whatever number is on the page.
+- [ ] **The library's ONE content width is decided and recorded**: in the report and on Getting
+      Started, as a number plus the side margin it implies. Every text-bearing module in every
+      later batch is measured against this, so an unrecorded content width means batch 1 inherits
+      the worker's per-module guess and the drift in render spec 0.3.1 starts on the first module.
+- [ ] The width-versus-type factor check is in the report: source width divided by target email
+      width, compared to the scale factor, with which factor governs which quantities stated in
+      words when the two differ (render spec 0.6). **On a REFERENCE ONLY source this line is
+      satisfied by recording that the check was skipped and why**, not by running it.
 
 ## Phase 3: Module conversion (run per batch)
 
@@ -437,8 +626,32 @@ build constraints, and its effort. Where a module appears in several designs, th
 names the one appearance to convert from, so convert it ONCE from there and note that design; the
 other appearances are the same component placed again, not more work. When a row has no source
 ref, pick the cleanest appearance yourself and record which one in the batch report, so a
-reviewer can tell your boundary from the audit's. Build every number at the audit's scale factor, dividing source pixels by it as you go
-(Phase 2 has the rule; render spec section 0.6 has it at the geometry level).
+reviewer can tell your boundary from the audit's.
+
+**Where this phase's numbers come from is the fidelity tier's answer, and foundations already
+settled it.** On an AUTHORITATIVE or PARTIAL source, build every type size, line height, and spacing
+value at the audit's scale factor, dividing source pixels by it as you go, while every width comes
+from the target email width and foundations' content width instead (Phase 2 has the rule; render spec
+section 0.6 has it at the geometry level). **On a REFERENCE ONLY source you scale NOTHING.** Build at the standards foundations
+recorded: the 600 body, the 560 content width, the ramp and the spacing scale that are already text
+styles and variables in the target file. Do not measure the source region and divide it by anything,
+do not reach for a factor because a module looks small beside the source, and do not reintroduce one
+per module. The source screenshot in step 1 is there to tell you which blocks exist, in what order,
+with what copy and what imagery: it is a content and structure reference, not a ruler. A module
+whose margins do not match the source is correct on this tier, and the batch report says so.
+
+**Build every module at foundations' CONTENT WIDTH; do not take the worker's.** This is the same
+discipline as the scale factor, one number decided once and applied everywhere, and it is the one
+padding in the worker JSON that is not authoritative. The worker sees one screenshot at a time with
+no knowledge of the module's siblings, so its side margin is a per-module guess by construction: a
+run that accepted it produced side margins of 48, 40, and 20 across six modules of one email, three
+content widths, and a text left edge that moved as the reader scrolled, with every individual
+padding value looking reasonable on its own. So transcribe the worker's paddings, then set the
+horizontal section padding to whatever foundations' content width requires (a 560 content width on
+a 600 body means 20/20), and re-derive any multi-column split so the columns plus gutters still sum
+to that content width. Full-bleed image bands stay at the body width and are the only exception.
+Render spec 0.3.1 is the rule and carries the measured case; list in the batch report every module
+whose worker padding you overrode to reach the library number.
 
 Before building any module whose inventory row carries a concession, check the audit's Flags for
 a human "yes" on it. If there is none, ask, and record the answer in the batch report. Building
@@ -466,13 +679,18 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    frame or node; on an unstructured source it is the region of a design the source ref bounds,
    cropped at the boundaries the audit set rather than at ones you decide now. Keep the PNG; it
    is also your visual reference for verification.
-   **Size the export so the PNG comes back at the target email width**, which means exporting a
-   source at scale factor 2.2 at roughly 0.45x. The worker infers its numbers from the pixels
-   you send it, so a PNG already at email scale returns email-scale widths, paddings, and type
-   sizes, and the render spec's rule that worker values are authoritative stays true as written.
-   If you did send a source-scale PNG, its numbers are authoritative only at that scale: divide
-   every one of them by the factor before it becomes geometry, and say in the batch report that
-   you converted that way.
+   **Size the export so the PNG comes back at the target email width.** Where a factor exists that
+   means exporting a source at scale factor 2.2 at roughly 0.45x; where none does, divide the source
+   region's own width by the target width and export at that, which is a framing decision about one
+   PNG rather than a scale factor entering the build. Do that because it is the input the worker was
+   tuned for, NOT because the numbers come back at the scale you sent. The worker is
+   scale-agnostic: it classifies at a canonical email scale and returns a 600 wide `mj-body`
+   with round email values whatever the input resolution (render spec section 0.6, measured on
+   a 768px PNG sent for a 600px target). So do not plan on dividing its output by the factor,
+   which is usually a no-op and invites a second factor into the build. Sanity check ONE number
+   instead, the root `mj-body` width against the width you are building to, and only if that
+   disagrees is the payload at another scale and every number in it in need of dividing. The
+   factor's real job in this phase is reading the SOURCE and sizing images taken out of it.
 2. **POST to the worker** at `https://design-converter.andy-30d.workers.dev`:
    - Headers: `Content-Type: application/json`, `Authorization: Bearer` with an EMPTY
      token, and `X-Auth-Provider: gumroad`. The worker treats empty Bearer + gumroad as
@@ -545,6 +763,18 @@ moduleRoot.setSharedPluginData('emaillove', 'name', 'mj-wrapper')
   columns and `mj-group` percentage math, and a button sized FILL is what makes it full width on
   mobile. `mj-spacer` is the single node allowed a fixed height. Read section 0 before you
   transcribe, not after.
+- **Horizontal section padding comes from foundations' content width, not from the worker.**
+  Every other padding in the worker JSON is authoritative and gets transcribed exactly; this one is
+  not, because it is the only padding whose correctness depends on modules the worker never saw.
+  Set the section's left and right padding so the column resolves to the library content width, and
+  leave the outer column's horizontal padding at 0 unless the design needs an inner gutter, because
+  the worker often puts the side margin at column level instead and the two add up. Then
+  where the row has two or more columns, re-derive the split so the columns plus their gutters still
+  sum to it: hold the image column and the gutter, and give the difference to the column that has
+  slack, normally the text column. Widening a 520 row to 560 is
+  `20 margin + 136 image + 24 gutter + 400 text + 20 margin`, not a new margin invented for this
+  module. Full-bleed image bands keep the full body width, and they are the only exception
+  (render spec 0.3.1).
 
 **Start from the visual pattern, not the layer name.** Most conversion mistakes come from
 rebuilding what a design *looks like* instead of reaching for the primitive that produces it.
@@ -593,7 +823,9 @@ This mapping covers almost everything you will meet:
 - **Unpinned colors, radii, and fonts drift** between runs, and unpinned fonts flatten to
   Arial. Correct them against the foundations rather than accepting what came back.
 - Map every text node to the type styles from foundations.
-- Images: one image fill per `mj-image-Frame`, assets round-tripped from the source file.
+- Images: one image fill on each `mj-image` RECTANGLE, from a render of the source node (render
+  spec 4.2.1). Its `mj-image-Frame` keeps `fills = []` always; a fill on the frame exports as an
+  empty cell.
 - Buttons: `mj-button-Frame` wrapping an instance of the foundations button component.
 - **Honor the inventory row's verdict.** Verdict A: live text throughout. **Verdict
   `A (concession: ...)`: build it as live text like any other A and apply the named substitute,
@@ -616,9 +848,9 @@ This mapping covers almost everything you will meet:
   past its band, email has neither z-order nor absolute positioning, and the audit has already
   settled the substitute. **Build one `mj-section` with two `mj-column` children, the image column
   and the text column in the same source order the design implies**, and:
-  - Both columns **FIXED**. Their widths plus the section's horizontal padding sum to the section
-    content box (a 600 section with 20/20 padding takes columns summing to 560), and the exporter
-    derives the percentages from those pinned numbers.
+  - Both columns **FIXED**, with their widths summing to the section content box (a 600 wide
+    section carrying 20/20 padding takes columns summing to 560), and the exporter derives the
+    percentages from those pinned numbers.
   - **Derive the widths in this order:** pin the text column first with the slack from render spec
     3.3.1, give the image column the remainder, size the image last. Worked example from the spec:
     text hugs at 260 and pins to 292, so the image column is 268.
@@ -729,22 +961,36 @@ checklist at the end of `references/render-spec.md`:
   carries text has slack (render spec section 3.3.1), and each button's width sizing was
   chosen for its mobile behavior (render spec section 0).
 - Concession honored, where the row carried one: on a module built with the Two Column Swap, both
-  columns are FIXED and their widths plus the section's horizontal padding sum to the section
-  content box, the text column's pin has slack, the `mj-image` rectangle is at the image column's
+  columns are FIXED and their widths sum to the section content box, the text column's pin has
+  slack, the `mj-image` rectangle is at the image column's
   content width with the crop's natural aspect for its height, there is no `mj-group` around the
   pair, and nothing in the block was flattened to an image (render spec 3.4.1). Confirm too that
   the overlap was not reproduced by some other means.
 - Scale: the module root is at the audit's target email width, and its type sizes, paddings, and
   image dimensions are at email scale rather than source scale (render spec section 0.6). A
   module built at source scale looks correct in isolation and wrong the moment it sits next to
-  another module, so check it before the batch grows.
+  another module, so check it before the batch grows. **On a REFERENCE ONLY source, the check is
+  that no source measurement reached the module at all:** every type size is one of the ramp's,
+  every padding is off the spacing scale, and the text column resolves to the library content width.
+  Do not check the module against the source's proportions, because matching them is not the goal
+  and a mismatch is not a finding.
+- **Content width: read the resolved x and width of the text-bearing column off the built module
+  and confirm it equals the library content width from foundations**, not the worker's number. On a
+  multi-column row confirm the columns plus gutters sum to it. This is a cross-module check by
+  nature, so it cannot be judged from the module in front of you: compare the number against
+  foundations, never against how the module looks. A module with the wrong content width passes
+  every other line in this list, which is why it reaches a reviewer as a text edge that moves while
+  scrolling (render spec 0.3.1).
 - Naming: every layer carries the display name for its tag, and no friendly string leaked
   into the plugin data `name` key.
 - Component: the module root is a direct child of its category page, not inside a component
   set or a Figma section, with no stray instances of it left loose on the page. Every property
   binding re-read and confirmed.
 - Visual: screenshot the rebuild next to the source screenshot from step 1; flag
-  divergences rather than silently accepting them.
+  divergences rather than silently accepting them. **On a REFERENCE ONLY source, read that
+  comparison for content and structure only:** the same blocks, in the same order, with the same
+  copy and the same imagery. Margins, type sizes, and spacing are expected to differ, and listing
+  them as divergences buries the ones that matter under noise a reviewer will then try to fix.
 - Mobile: list the mobile keys you set per node.
 
 ### 6. Batch report and gate
@@ -753,9 +999,13 @@ One report per batch: per module, keyed by its Module inventory row name, what w
 design you converted it from, verdict honored or changed (with reason), any concession and
 whether it was accepted and by whom (and for a bleed concession, the two column widths you landed
 on, so a reviewer can check the sum), mobile decisions, divergences flagged, component properties
-added and the evidence for each, the category you kept or changed. Open with the scale factor and
-target email width the batch was built at, so a reviewer can check one number instead of
-measuring modules. End with the open questions for the design review. Do not start the next batch
+added and the evidence for each, the category you kept or changed. **Open with the source fidelity
+tier, the target email width, and the content width the batch was built at, plus the scale factor
+where one applies**, so a reviewer can check three or four numbers instead of measuring modules. On a
+REFERENCE ONLY source, open instead with the tier and the standards, and repeat the one sentence that
+the geometry is ours: a batch report is the document a reviewer reads with the source file open
+beside it, so it is exactly where the difference gets mistaken for a defect. Name every module whose worker side margin you overrode
+to reach the content width (plus the re-derived column sum where the module was multi-column). End with the open questions for the design review. Do not start the next batch
 until the user says the review happened.
 
 ## Hand-off after the final batch
@@ -773,7 +1023,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.16.0 of this skill. If you have web access, check once per conversation
+This is version 1.19.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

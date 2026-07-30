@@ -47,8 +47,10 @@ this by setting **both axes to the same value**. Verified on plugin-built nodes:
 is what exports. Note `mj-text-Frame` is HORIZONTAL, not vertical.
 
 Buttons read alignment from their **parent**: `extractButtonJson` calls
-`getPrimaryAlign(node.parent, 'row')`, so a button's alignment comes from the column, not the
-button frame.
+`getPrimaryAlign(node.parent, 'row')`, and an `mj-button`'s parent is its `mj-button-Frame` pair
+wrapper, so the exported `align` comes off that wrapper rather than off the `mj-button` node
+itself. Mirror the same value on the containing column when all of the column's content shares it
+(`render-spec.md` section 4.3); the two must not fight.
 
 ## Node types
 
@@ -140,14 +142,17 @@ already set in **private** data always wins; agent values apply only where nothi
 | `nodeType` = `mainFrame` | **email template root only** | marks an email template. **Never write it on a design-system module root**: the upload still runs and archives the block as a whole email |
 | `name` | any node, **including a module root** (`mj-wrapper`) | the MJML tag |
 | `backgroundColor`, `contentColor`, `textColor`, `linkColor`, `buttonTextColor`, `buttonContentColor` | email template root | theme colors. On a **child** node, including a module's own `mj-wrapper` component, the same keys are per-node **dark mode** overrides, not theme, and `buttonContentColor` / `buttonTextColor` export unconditionally rather than only when they differ from the enclosing email. Leave them off a module unless a designer asked for a dark-mode treatment on that block |
-| `href` | element frame | link (buttons, images, heroes) |
-| `altText` | image frame | alt text |
+| `lightThemeBackgroundColor` | email template root | the `mj-body` background hex; defaults to `#ffffff` when empty (`code.ts:1137`) |
+| `fallBackFontName` | email template root | the font the exported stack falls back to, `Arial` unless set (`code.ts:1148`). It is also what decides how much slack a pinned column needs (`render-spec.md` 3.3.1) |
+| `href` | the tagged INNER node, never its `-Frame` wrapper: the `mj-button` frame, the `mj-image` rectangle, the hero | link. Each extractor is dispatched on the inner node's own tag and calls `getPD(node, 'href')` on it (`nodeJsonExtractor.ts:133` and `3687` for images, `209` and `3291` for buttons) |
+| `altText` | the `mj-image` RECTANGLE, same as `href` | alt text |
 | `emailSubject`, `emailPreHeader` | root | subject and preheader |
 | `mobileStylesPaddingTop/Right/Bottom/Left` (+ `Inner*`) | element frame | mobile padding |
 | `mobileStylesHideInMobileDevice` / `HideInDesktopDevice` = `'true'` | element frame | per-device visibility |
 | `mobileStylesTextAlign`, `mobileStylesAlign` | element frame | mobile alignment |
 | `stackColumns`, `reverseStack` | section/wrapper | mobile stacking |
 | `breakpoint` | root | when mobile styles switch on (defaults to frame width) |
+
 There is **no** plugin data key that saves a component into a plugin section. Do not write
 `saveName` or `saveCategory`; the plugin reads neither. See "Promoting a frame: an EMAIL
 TEMPLATE and a MODULE are different shapes".

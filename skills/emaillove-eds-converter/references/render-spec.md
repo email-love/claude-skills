@@ -58,7 +58,10 @@ Every other section of this spec assumes these rules. Where a section gives you 
   RECTANGLE and the `mj-divider` LINE carry intrinsic geometry from `resize()`
   and have no hug at all. Their pair wrapper FRAMES still hug, and that is what
   keeps them from being clipped.
-- `mj-spacer` is the single exception in this spec, and 0.2 says why.
+- `mj-spacer` is the single node that ENDS with a fixed height, and 0.2 says why.
+  A frame passes through a fixed vertical size in exactly one other place, the
+  instance-resize remedy in 0.8, which requires it and puts it back; nothing else
+  is ever left FIXED.
 
 ### 0.2 Vertical rhythm is auto layout padding, never a height
 
@@ -86,9 +89,9 @@ is load bearing.
 
 | Sizing | Where it belongs |
 | --- | --- |
-| FILL | `mj-wrapper` under the root; `mj-section` under a wrapper; a single `mj-column` in its section; `mj-column-inner`; every leaf pair wrapper as a column child; the `mj-text` TEXT node inside its frame; the `mj-divider` LINE for a full-width rule |
-| HUG | `mj-group` (its width comes from the fixed columns inside it); the `mj-button` frame (auto-width button); `mj-button-text`; and the transient state of any frame you have created but not yet appended and set to FILL |
-| FIXED | the four cases below, and nothing else |
+| FILL | `mj-wrapper` under the root; `mj-section` under a wrapper; a single `mj-column` in its section; `mj-column-inner`; every leaf pair wrapper as a column child; the `mj-text` TEXT node inside its frame; the `mj-divider` LINE for a full-width rule; an `mj-button` frame chosen full width (0.4) |
+| HUG | `mj-group` (its width comes from the fixed columns inside it); the `mj-button` frame when it is auto-width, which is 0.4's default rather than a rule of this table; `mj-button-text`; and the transient state of any frame you have created but not yet appended and set to FILL |
+| FIXED | the four cases below, and nothing else except a button deliberately pinned per 0.4 |
 
 FIXED width is correct for:
 
@@ -117,6 +120,74 @@ you measured is measured in the font Figma rendered; the email declares a
 different stack and a pinned column cannot grow. Section 3.3.1 has the rule, the
 numbers, and the failure signature.
 
+#### 0.3.1 CONTENT WIDTH is a foundation, decided once for the library
+
+Content width is the width text actually occupies inside a module: the body width
+minus the side margins that hold the copy off the edge. **It is a FOUNDATION,
+decided once for the whole library and used by every module, not a per-module
+value taken from whatever the worker returned for that screenshot.** The sizing
+modes above say which node owns the width; this says what the number is, and it is
+the same number in every text-bearing module in the file.
+
+**The mechanism of the failure, stated plainly, because it is structural rather
+than careless.** The design-converter worker sees ONE screenshot at a time. It has
+no knowledge of the module's siblings, no memory of the module converted before
+it, and no access to the library's foundations, so the section and column padding
+it returns is a guess made per module BY CONSTRUCTION. Each guess is individually
+defensible. Accepting each one as authoritative therefore does not risk drift, it
+guarantees it: six modules converted from six screenshots will carry several
+different content widths unless something outside the worker fixes one number.
+
+**Measured, across the modules of one assembled email:**
+
+| Module | Content width | Side margin |
+| --- | --- | --- |
+| Logo header | 504 | 48 |
+| Hero, text led | 560 | 20 |
+| Testimonial | 520 | 40 |
+| Cream section | 520 | 40 |
+| Copy Block | 560 | 20 |
+| Footer | 560 | 20 |
+
+Three content widths in one email, out of six independently reasonable guesses.
+
+**The failure signature, which is what a reviewer actually notices: the text left
+edge MOVES as you scroll.** 20px in, then 40px, then back to 20px. Nobody reads
+that as a padding value being wrong, because no individual padding value IS wrong:
+48, 40, and 20 are all ordinary column paddings, and each one looks correct inside
+the module it belongs to. What is wrong is that they are not the same number, and
+that is only visible ACROSS modules. So it survives a per-module review, passes
+every other check in this spec, and gets caught the first time somebody scrolls a
+finished email, which is the most expensive moment to find it.
+
+**The remedy: the foundations phase fixes ONE content width, and every module uses
+it.** Foundations decides the number and records it (converter Phase 2); Phase 3
+applies that number instead of the worker's. Section padding then follows from the
+content width rather than the other way round, and what has to equal the library
+number is the TOTAL side inset, the section's horizontal padding plus the outer
+column's, because the worker splits that margin across the two levels however it
+likes. Carry it on the section and leave the outer column's horizontal padding at 0
+unless the design needs an inner gutter: with a 600 body and a 560 content width,
+every text-bearing section carries 20/20 and every module's text starts at the same
+x. Same discipline as the single scale factor in section 0.6 where a factor
+applies, and for the same reason: uniformity is the whole point, and it is lost the
+moment one value is arrived at some other way. **This rule holds on every fidelity
+tier**, because it is about agreement between modules rather than agreement with the
+source: on a reference-only source the number is simply 560 on a 600 body, taken from
+the standards instead of derived from a source margin.
+
+**Full-bleed image bands are the ONLY exception**, at the full body width. They are
+an exception because bleeding is the design intent, not a padding difference: a 600
+wide image band beside a 560 content width is correct, and a 600 wide text row is
+not.
+
+For a multi-column row the content width is still the number the columns sum to
+(sections 3.3, 3.4, 5.4): a 560 content width takes columns plus gutters summing to
+560. Widening a row from 520 to 560 means the added 40 goes to the column that has
+slack, normally the text column, holding the image column and the gutter fixed, so
+the sum is re-derived rather than the margin quietly re-invented. Worked:
+`40 + 136 + 24 + 360 + 40 = 600` becomes `20 + 136 + 24 + 400 + 20 = 600`.
+
 ### 0.4 Button width is a mobile behavior decision
 
 The plugin syncs a button's mobile width from how you sized it in Figma:
@@ -141,15 +212,22 @@ Never set the button frame's height. It comes from the text height plus
 | Level | Typical values | Notes |
 | --- | --- | --- |
 | `mj-wrapper` | 0 to 20 | Outer breathing room around a group of rows. This is where a visible gap between content and the outer background color comes from |
-| `mj-section` | 0 to 20, often 0 | Many designs keep section padding at 0 and control all spacing at column and element level. Horizontal section padding also defines the content box that column percentages are computed against (section 3.2), so reproduce the worker values exactly |
-| `mj-column` | 20 to 30 horizontal, 10 to 20 vertical | The most commonly adjusted level. This is what gives text, images, and buttons room from the column edge |
+| `mj-section` | 0 to 20, often 0 | Many designs keep section padding at 0 and control all spacing at column and element level. Horizontal section padding also defines the content box that column percentages are computed against (section 3.2), and its horizontal value comes from the library's one content width (0.3.1), not from the worker |
+| `mj-column` | 0 horizontal, 10 to 20 vertical | The most commonly adjusted level for VERTICAL room around text, images, and buttons. Horizontal is different: a column's side padding is part of the TOTAL side inset that 0.3.1 fixes, and 0.3.1 carries that inset on the section, so this stays 0 unless the design needs an inner gutter (a multi-column row's gutter is exactly that case) |
 | Leaf pair wrapper (`mj-text-Frame`, `mj-image-Frame`, `mj-button-Frame`, `mj-divider-Frame`) | sparingly | Fine tuning one element, for example 10px above a button but not above the text over it |
 | `mj-button` `inner-padding` | from the MJML, symmetric only | This is the button's tap target, not layout spacing. Asymmetric values round-trip wrong (section 4.3) |
 
-In a conversion the worker JSON paddings are authoritative: transcribe them
-exactly, at the scale of the screenshot they came from (section 0.6). The ranges
-above are for gaps you have to invent, and for judging when a converted value is
-obviously wrong.
+In a conversion the worker's paddings are authoritative with exactly ONE
+exception, and the exception is horizontal: **the side inset that holds copy off the
+body edge comes from the library's single content width (section 0.3.1), never from
+the worker**, because that number is a foundation and the worker's is a per-module
+guess by construction. That inset is the section's horizontal padding plus the outer
+column's, since the worker puts the margin at either level, and 0.3.1 says to carry
+it on the section. Every other padding in the JSON, every vertical value above
+all, is transcribed exactly, as the number it already is. They come back at email
+scale whatever resolution you sent the screenshot at, so there is no scale
+conversion to apply to them (section 0.6). The ranges above are for gaps you have
+to invent, and for judging when a converted value is obviously wrong.
 
 Four things that keep padding honest:
 
@@ -165,17 +243,55 @@ Four things that keep padding honest:
 ### 0.6 Every number here is at EMAIL scale, never source scale
 
 Widths, type sizes, paddings, radii, and image dimensions in this spec are email
-pixels: a 600 or 640 body, a 16px body copy, a 20px column padding. A source file
-that was never meant to export as email is often drawn at a multiple of that, and
-the migration audit settles the factor once (its **Scale factor** section, a
-number a designer confirmed) so every module in the library is built against the
-same one.
+pixels: a 600 or 640 body, a 16px body copy, a 20px section padding. **How you
+ARRIVE at those numbers has two answers, not one, and the audit's SOURCE FIDELITY
+tier says which one you are under.** Read that tier before you read the rest of
+this section, because half of what follows does not apply to a given migration.
 
-The worker's numbers are at the scale of the screenshot it was sent, so the
-cheapest way to stay honest is to send it a PNG already at the target email
-width; then "transcribe the worker paddings exactly" (section 0.5) and "build at
-email scale" are the same instruction. If the screenshot went in at source scale,
-divide every returned number by the factor first.
+- **AUTHORITATIVE or PARTIAL: the source's geometry is a specification, so you
+  divide.** A source file that was never meant to export as email is often drawn at
+  a multiple of email scale, and the migration audit settles the factor once (its
+  **Scale factor** section, a number a designer confirmed) so every module in the
+  library is built against the same one. Everything in this section about factors,
+  ratios, and the two factor tension is written for these two tiers.
+- **REFERENCE ONLY: the source's geometry is not a specification, so there is NO
+  FACTOR and nothing to divide.** The numbers are email standards, stated rather
+  than derived: a **600** body, **one content width for the whole library** at 560,
+  a ramp with **body at 16** (12, 14, 16, 20, 24 to 30), and a **spacing scale in
+  multiples of 8**. From the source you take the palette, the typefaces, the logo,
+  the copy, and the module structure. You take no measurement, so there is no
+  arithmetic to get wrong and no ratio to preserve. Skip to "REFERENCE ONLY: no
+  factor, and no missing number" at the end of this section.
+
+**The worker is scale-agnostic: its numbers do NOT arrive at the scale of the
+screenshot you sent.** It classifies semantically at a canonical email scale
+rather than measuring your pixels. Measured: a 768px wide screenshot sent for a
+600px build target came back with `mj-body` width 600 and round email-scale values
+throughout (24, 16, 40), with nothing in the payload tracking the input
+resolution. Still send a PNG at the target email width, because that is the input
+the worker was tuned for, but send it for reliability rather than as a lever on
+the arithmetic.
+
+Three consequences:
+
+- **Do not compute a scale conversion on the worker's returned numbers expecting
+  it to matter.** It is usually a no-op, and treating it as meaningful invites a
+  second factor into a system whose whole rule is one factor (this section, plus
+  the ratio test below).
+- **Where a factor exists it still matters enormously, just not for worker
+  output.** It is for reading the SOURCE, which is what the authored sizes divide
+  by, and for cropping and sizing images taken out of the source file (section
+  4.2.1). On a REFERENCE ONLY source it is the target width that does that second
+  job: an image comes across at the width of the column it lands in, at the crop's
+  natural aspect, with no factor in the arithmetic.
+- **Do not assume a future worker version behaves the same way.** Sanity check ONE
+  returned number against the target width before trusting the whole payload; the
+  root `mj-body` width is the cheapest. If that number is not the width you are
+  building to, the payload is at some other scale and every number in it needs
+  dividing.
+
+**The rest of this section, down to the REFERENCE ONLY heading, is for an
+AUTHORITATIVE or PARTIAL source.**
 
 So divide source measurements by that factor before they become geometry here,
 and never carry a source pixel across untouched. A module built at source scale
@@ -184,12 +300,16 @@ simply two or three times too big, which shows up as a body size no email uses
 and a root wider than the body, and it only becomes obvious next to a module
 built correctly. If you find yourself deriving the factor from the file rather
 than reading it from the audit, stop: a fresh derivation silently overrules the
-decision a human already made between two disagreeing derivations.
+decision a human already made between two disagreeing derivations, and on a
+REFERENCE ONLY source it manufactures a decision nobody made at all.
 
-**One factor, chosen once, applied to EVERY number.** Not type sizes only: line
-heights, widths, paddings, image dimensions, spacer heights, radii, border
+**One factor, chosen once, applied to EVERY quantity it governs.** Not type sizes
+only: line heights, the spacing scale, paddings, spacer heights, radii, border
 widths. Uniformity is the entire point of settling on a single number, and it is
-lost the moment any one value is arrived at some other way. Rounding is allowed,
+lost the moment any one value is arrived at some other way. **Widths are the one
+thing it does not govern, and THE TWO FACTOR TENSION below is why:** the body
+width, and everything measured across it (content width, column splits, image
+widths), comes from the target email width instead. Rounding is allowed,
 but only to the nearest whole pixel, and only after the division. What is not
 allowed is picking a converted value because it looks like a size email usually
 uses. That is a second factor, invented for one style, wearing the costume of a
@@ -229,6 +349,64 @@ leave the rest where they were. One style nudged is this bug; the whole ramp
 moved together is a decision, and it is a decision that belongs back with the
 audit and the designer who confirmed the factor.
 
+**THE TWO FACTOR TENSION: choosing a target email width AND a type factor
+independently reintroduces two factors.** This is the exception the single-factor
+rule above just named, and it has to be declared rather than resolved. The width ratio and the type ratio only agree when the source happens
+to have been drawn at an exact multiple of the target width, and a mockup drawn
+to present is not drawn to email proportions, so usually they do not agree.
+
+Measured on the migration this note comes from: a 1092 wide source built to a
+600px body has a width ratio of 1092/600 = 1.82, while the confirmed type factor
+was 2.2, and 1092/2.2 = 496 rather than 600. So the build carried 2.2 on its type
+and 1.82 across its width, and nothing in the process ever said so out loud. It
+surfaced in the margins: the source's consistent 115px text margin is 52px through
+the type factor and 63px through the width ratio, and the library was built at
+20px, which is neither. The single-factor rule had been applied to the type ramp
+and never to the width decision.
+
+**The check, run once in foundations and stated in the report:** divide the source
+width by the target email width, compare that ratio to the chosen type factor, and
+if they differ by more than a couple of percent, SAY SO and name which factor
+governs which quantities. Do not leave it implicit. The defensible split, and the
+one to state unless a designer decides otherwise, is that the type factor governs
+type sizes, line heights, and the spacing scale, while the target email width
+governs the body width and everything measured across it (content width, column
+splits, image widths). The reason is that the email width is a hard constraint from
+the clients rather than a choice, and legibility is a hard constraint on type, so
+neither quantity can be bent to make the two ratios meet. Write it down as a
+sentence with both numbers in it.
+
+**This is a genuine tension with no clean answer, not a bug with a fix.** No single
+factor both preserves the source's type ramp and preserves its proportions across a
+body width email can actually use, because the source was drawn at a width email
+cannot use. Naming the split is the honest outcome. Picking one factor and pretending
+it covered both quantities is how a converted library ends up with margins nobody
+can trace back to a decision, which is the defect section 0.3.1 exists to prevent.
+
+**REFERENCE ONLY: no factor, and no missing number.** On a source whose geometry was
+never a specification, the tension above does not arise, because it is a tension
+between two ways of preserving a proportion and this tier preserves none. So:
+
+- **Derive nothing.** Not from the width, not from the ramp, and not "for
+  information" beside the real numbers. A factor recorded anywhere gets applied by
+  whoever reads it next, whatever caption sits next to it.
+- **The numbers are the standards** listed at the top of this section: a 600 body,
+  560 content width, body at 16 on a 12/14/16/20/24-to-30 ramp, spacing in multiples
+  of 8, one content width for every module and one section padding library-wide. Rounding
+  onto a multiple of 8 is not a second factor here, it is the specification.
+- **There is no ratio check**, because the ratio test proves a single factor was
+  applied uniformly and there is no factor. A ramp that was eyeballed style by style
+  has no ratio worth matching. What replaces it is a read-back: the built ramp is the
+  standard ramp, body at 16, each step present once.
+- **A module whose margins do not match the source is CORRECT**, and the foundations
+  report and every batch report have to say so in words. Otherwise the next person to
+  open both files reads the difference as a defect and corrects the library back
+  toward the source, which reintroduces exactly what this tier discarded.
+- **The failure this branch exists to prevent, measured.** A factor was derived on a
+  reference-only source and applied faithfully, and the result was a 16px body inside
+  20px margins: both numbers correctly divided out of a source where nobody had chosen
+  either. Every arithmetic step was right. The premise was wrong.
+
 ### 0.7 DOUBLE PADDING: a gap belongs to ONE block, never to both
 
 The space between two stacked blocks is one decision, made once, on one node.
@@ -257,8 +435,50 @@ space on the next block used to be paid for by a neighbor that is now gone.
 This holds at every level, not just section to section: wrapper to section,
 section to column, column to leaf pair. Before writing any padding, read what
 the sibling above it already carries. In a conversion the worker JSON paddings
-are authoritative and already complete (section 0.5), so a padding you add on
-top of them is almost always this bug.
+are authoritative and already complete for vertical rhythm (section 0.5; the
+horizontal section padding is the one value foundations overrides, section 0.3.1),
+so a vertical padding you add on top of them is almost always this bug.
+
+### 0.8 A geometry write inside an INSTANCE can silently NO-OP, so read it back
+
+`resize()` on a node nested three or more levels deep inside a component instance
+does nothing. Measured while fixing an image band: no error is thrown, the call
+returns as though it worked, and the dimensions read back unchanged, even after
+explicitly setting `layoutSizingVertical = 'FIXED'` on that node first to rule out
+a sizing mode overriding the write. **Only the instance root accepts an explicit
+resize.**
+
+**The symptom is that it looks like the write succeeded**, and that is the whole
+cost of this bug. Nothing surfaces: no exception, no warning, no partial result.
+The time goes into re-checking the number you passed, the units, the order of the
+calls, and the parent's sizing, because the one thing that is actually wrong, that
+the write never landed at all, is the one thing the API did not tell you.
+
+**The working pattern**, in this order:
+
+1. Set `layoutSizingVertical = 'FILL'` down the whole descendant chain, from the
+   instance's own child to the node you actually want to resize.
+2. Set `primaryAxisSizingMode = 'FIXED'` on the top-level INSTANCE. On a VERTICAL
+   auto-layout frame that is the same property 0.1 forbids, and the API leaves no
+   way around it: a frame hugging its primary axis absorbs the resize and reads
+   back unchanged. So this is the one sanctioned transient FIXED height in the
+   spec, live only for steps 3 and 4, and step 5 is what makes it transient.
+3. `resize()` the INSTANCE. The height cascades to every FILL descendant.
+4. Read the target node's dimensions back and confirm they moved.
+5. Put the sizing back where section 0.1 wants it. The FILL chain and the FIXED
+   instance root are how the height TRAVELS, not the shape you hand off: once the
+   target node carries the height, set its own vertical sizing to FIXED (a
+   RECTANGLE carries its pixels and has no hug, section 4.2), then return the
+   descendant frames and the instance root to HUG, and read those back too. The
+   finished module still has to pass checklist item 7, where nothing but an
+   `mj-spacer` is left with a fixed height.
+
+**The habit this implies, and it is the part that generalizes past this one bug:
+after ANY geometry write inside an instance, READ IT BACK, and treat an unchanged
+value as a FAILED WRITE rather than as a no-op that did not matter.** The same
+holds for sizing modes and paddings written to instance internals. A build that
+verifies its own writes catches this in seconds; a build that trusts them catches
+it at design review, if at all.
 
 ---
 
@@ -287,7 +507,12 @@ top of them is almost always this bug.
    flattens the node AND its entire subtree into a hosted PNG. An untagged
    frame between a column and its leaves destroys every well-tagged leaf
    below it. An untagged button becomes a picture of a button with no href.
-   Never insert helper/group frames that are not one of the tags above.
+   Never insert helper/group frames that are not one of the tags above. **The one
+   sanctioned untagged frame is an editable-image region**, where a migration's
+   inventory row carries verdict B or C and the design content is placed in a
+   column deliberately untagged so the exporter flattens exactly that region. That
+   is a decision you record in the report, not a frame you forgot; everywhere else,
+   and in every email built outside a migration, untagged means broken.
 4. **Visibility.** `extractNodeJson` returns early on `!node.visible`. Every
    node you create must end `visible = true`.
 5. **Both axes, same value.** For horizontal alignment the exporter reads
@@ -546,7 +771,9 @@ and the node type change.
   (`UiParser.ts:1519-1522`), so a COMPONENT here is normal in either shape.
 - Shared `name` = `mj-wrapper`.
 - Auto-layout: `layoutMode = 'VERTICAL'`, vertical HUG (never FIXED, section
-  0.1), horizontal FILL (600 wide),
+  0.1), horizontal FILL under an email root or FIXED at the email width as a
+  module root (section 2.2, and 0.3 case 1: a module root has no auto-layout
+  parent to FILL against),
   `primaryAxisAlignItems = counterAxisAlignItems = 'MIN'`.
 - Attribute mapping:
 
@@ -580,8 +807,12 @@ and the node type change.
   `columnWidth / (section.width - section.paddingLeft - section.paddingRight) * 100%`.
   With the standard worker output (section 600 wide, padding-left/right 20,
   column width 560) that is exactly 100 percent. Make the section 600 wide
-  (FILL under the wrapper) and give it the exact worker paddings, and make
-  each column's pixel width match the worker `width` attr.
+  (FILL under the wrapper), then set its horizontal padding from the library's
+  content width rather than from the worker (section 0.3.1: a 560 content width
+  on a 600 body is 20/20), keep its vertical padding as the worker gave it, and
+  make each column's pixel width sum to that content width. Where the worker's
+  side margin and the library's disagree, the library wins and the column widths
+  are re-derived to the new sum (0.3.1 has the worked example).
 - Children: `mj-column` frames (or a single `mj-group`) left to right.
   Every child gets `layoutSizingHorizontal` per section 3.4 below.
 - Optional shared keys: `stackColumns` = `'false'` to prevent mobile
@@ -689,18 +920,20 @@ real design drift for no gain.
   off a column (section 0.1).
 - Horizontal sizing, per section 0.3:
   - **Single column in its section: FILL.** It resolves to the section content
-    box, which is the worker `width` when you have reproduced the section's
-    width and paddings exactly, and it exports `width: 100%`. FILL keeps
-    tracking that content box if a padding value is later corrected. An
-    explicit FIXED at the worker width is acceptable and exports identically;
-    never use HUG, which collapses the column to its content.
+    box, which is the LIBRARY's content width once you have set the section's
+    horizontal padding from it (section 0.3.1), and it exports `width: 100%`.
+    FILL keeps tracking that content box if a padding value is later corrected,
+    which is why a lone column takes FILL rather than a pixel. Never HUG, which
+    collapses the column to its content, and never FIXED, which exports the same
+    100 percent today and drifts silently the moment a padding changes (0.3).
   - **Two or more columns in one section, or any column inside an `mj-group`:
-    FIXED at the worker `width` (e.g. 280, 200).** This is load bearing. The
-    exported percentage is derived from the pixel number, so unequal splits and
-    group percentages only survive when every column is pinned. When you are
-    deriving the number from a Figma measurement rather than copying a worker
-    attr, and the column contains text, add slack per section 3.3.1 before you
-    pin it.
+    FIXED (e.g. 280, 200).** This is load bearing. The exported percentage is
+    derived from the pixel number, so unequal splits and group percentages only
+    survive when every column is pinned. Start from the worker's `width` attrs
+    for the RATIO between the columns, then re-derive the actual numbers so they
+    sum to the library content width rather than to the worker's (0.3.1 has the
+    worked example). When you are deriving a number from a Figma measurement,
+    and the column contains text, add slack per section 3.3.1 before you pin it.
 - **Axis alignment rule (the trap):** set BOTH axes to the dominant
   horizontal alignment of the column's content:
   - content `align="left"` (or mixed/default): `MIN` / `MIN`
@@ -763,10 +996,10 @@ is its own step rather than something you notice in passing.
 **The construction.** One `mj-section`, two `mj-column` children, image column
 and text column in source order.
 
-- Both columns FIXED (0.3 case 2, 3.4). Their widths plus the section's
-  horizontal padding must sum to the section content box: a 600 wide section with
-  20/20 padding takes columns summing to 560. Unequal splits only survive because
-  both numbers are pinned; the exporter derives the percentages from them.
+- Both columns FIXED (0.3 case 2, 3.4), with their widths summing to the section
+  content box: a 600 wide section carrying 20/20 padding takes columns summing to
+  560. Unequal splits only survive because both numbers are pinned; the exporter
+  derives the percentages from them.
 - **Derive the widths in this order.** Pin the text column first, with the slack
   from 3.3.1, then give the image column the remainder, then size the image last.
   Worked: text hugs at 260 and pins to 292, so the image column is 268.
@@ -785,10 +1018,10 @@ and text column in source order.
 
 **Mobile.** Two columns stack, so the image lands above the text, which is a
 normal email pattern and arguably better than a bleed that would have had to be
-abandoned on a 390 wide screen anyway. Stacking follows source order, so put the
-column you want first on mobile first. When the design reads text then image on
-desktop but should read image then text on mobile, set `reverseStack` = `'true'`
-on the section (3.2) rather than reordering the columns.
+abandoned on a 390 wide screen anyway. Stacking follows column order, and column
+order is the design's desktop order, not yours to choose: when the design reads
+text then image on desktop but should read image then text on mobile, set
+`reverseStack` = `'true'` on the section (3.2) rather than reordering the columns.
 
 **Why this is the default, so nobody relitigates it.** It keeps the text LIVE:
 the alternative, flattening the whole block to one editable image, gives up
@@ -926,8 +1159,10 @@ Inner RECTANGLE (direct child):
 
 - Sizing note: if the rectangle width is LESS than the column content width
   the exporter drops `fluid-on-mobile` (class `lf`); if equal it keeps it
-  (`nf`). So match the worker `width` exactly: a 560 image in a 560 column
-  stays fluid, a 134 logo does not. This is automatic; just get the px right.
+  (`nf`). So measure against the column content width you actually built, which
+  is the library's (section 0.3.1) rather than the side margin the worker
+  returned: an image meant to fill its column takes that number and stays fluid,
+  a 134 logo does not. This is automatic; just get the px right.
 
 ### 4.2.1 Bringing an image across from the source file: RENDER the node, never the raw fill
 
@@ -1019,12 +1254,10 @@ heights is correct here, and nothing in the export cares. Note it on the module
 so the next builder reads the master's height as a starting point rather than as
 a constraint to honor.
 
-Resizing a rectangle that sits several levels inside an instance has a bridge
-quirk worth knowing: the `resize()` can report success and change nothing. Read
-the dimensions back every time, and when they have not moved, set
-`layoutSizingVertical = 'FILL'` down the descendant chain and resize the instance
-itself, which cascades to the rectangle. Verify by re-reading the rectangle
-rather than by trusting the call.
+Resizing that rectangle per instance runs straight into section 0.8: a `resize()`
+on a node nested inside an instance reports success and changes nothing. Use the
+pattern there, FILL the descendant chain and resize the INSTANCE, and read the
+rectangle's dimensions back rather than trusting the call.
 
 **Width is a decision, so make it deliberately and state it.** A source image
 narrower than its canvas (995 in a 1089 wide design, so about 91 percent) is
@@ -1247,16 +1480,23 @@ counter axis to the same value as the primary on every one of these frames.
 ### 5.4 Column width handling
 
 - Single column: section 600 wide with `padding-left/right: 20px` and a FILL
-  column (which resolves to 560) exports `width: 100%`; a column pinned FIXED
-  at 560 exports the same thing. FILL is preferred because it keeps tracking
-  the content box (section 0.3). Always reproduce the worker's exact px on the
-  section so that content box is right.
+  column (which resolves to 560) exports `width: 100%`. A lone column is FILL,
+  never a pinned pixel, because FILL keeps tracking
+  the content box (section 0.3). Set the section's horizontal px from the
+  library's content width, per the last bullet in this list, so that content box
+  is the same in every module.
 - Multi column: widths export as percentages of the section content box.
   280 + 280 in a 560 content box gives 50% + 50%. The worker may bake gutters
   as column paddings (e.g. `padding-right: 10px` on the left column); keep
   those as paddings, do NOT convert them to itemSpacing.
 - Inside `mj-group`: same math against the group's content box; MJML gets the
   required percentage widths automatically.
+- **The content box itself is a library decision, not a per-module one.** The
+  number the single column resolves to, and the number a multi-column split sums
+  to, is the one content width foundations settled for the whole library, not the
+  side margin the worker happened to return for this screenshot (section 0.3.1).
+  Reproduce the worker's paddings everywhere else; this is the one padding you
+  override, and full-bleed image bands at the body width are its only exception.
 
 ### 5.5 href and alt
 
@@ -1382,6 +1622,13 @@ Reproduce these strings verbatim, including the stray space before the closing
 paren in the wrapper string; that is what the plugin writes, and matching it
 keeps diffs and comparison tooling clean. Any tag not listed uses the tag
 itself as the layer name.
+
+**Finding these nodes again later: `query()` does not match a layer name that
+contains a space.** Measured: `query('FRAME[name*=Text Block]')` returns nothing
+against frames genuinely named `Text Block`. Every display name in the table above
+contains a space, so `query()` is unusable for finding nodes by the names this spec
+prescribes, and the spec is what created the trap. Traverse `children`, or use
+`findAllWithCriteria` and filter on `node.name` yourself.
 
 You may append a short human qualifier when a module holds several of the same
 block and the distinction helps a reviewer ("Text Block / eyebrow"). Avoid the
@@ -1605,8 +1852,9 @@ the node.
      direct children are `mj-section` frames. Read `nodeType` back off the root
      and confirm it is empty; a leftover `mainFrame` uploads as a whole email.
 2. Every FRAME/RECT/LINE/TEXT you created has shared `name` set to exactly
-   one known tag; zero untagged frames anywhere in the tree. No node is
-   relying on the layer-name fallback.
+   one known tag; zero untagged frames anywhere in the tree, except a deliberate
+   editable-image region for a verdict B or C module (ground rule 3), which your
+   report names. No node is relying on the layer-name fallback.
 3. Every node's layer name is the display name for its tag (section 6.1), and
    no friendly string was written into the plugin data `name` key. The one
    exception is a module root, whose layer name is the module name (section 6).
@@ -1623,11 +1871,16 @@ the node.
    Outlook clip waiting to happen (section 0.1).
 8. **Every FIXED width is one of the four load-bearing cases** (root, columns
    in a multi-column section, columns in a group, the image rectangle). Lone
-   columns are FILL, groups and buttons are HUG (section 0.3).
+   columns are FILL and groups are HUG (section 0.3). A button is not one of the
+   four: its width is 0.4's mobile-behavior decision, so HUG, FILL, and a
+   deliberately pinned FIXED are all valid there, and item 10 is where it is
+   checked.
 9. **Every pinned-width column that contains text has slack, and every pinned
    string was sanity-checked against the exported font, not the canvas font**
    (section 3.3.1). Columns in a group above all, since those never stack on
-   mobile. `max(ceil(hug * 1.12), hug + 8)` plus horizontal padding, and the
+   mobile. `max(ceil(hug * 1.12), hug + 8)` plus horizontal padding, or 1.25 in
+   place of 1.12 where the root's `fallBackFontName` is Verdana, Tahoma, or
+   Georgia (section 3.3.1), and the
    inner group percentages still sum to 100. A label that fits exactly on the
    Figma canvas is a wrap in the plugin Preview, because the canvas font and the
    font the email loads are different binaries. FILL columns are exempt.
@@ -1637,11 +1890,19 @@ the node.
     `inner-padding` rather than a set height.
 11. All vertical spacing is padding: no gaps produced by a taller frame, by
     `itemSpacing`, or by a manually positioned node (which exports as nothing).
-12. Root width equals the mj-body width; column px widths equal the worker
-    attrs; section paddings equal the worker attrs. All of those numbers are at
-    email scale, from the audit's confirmed scale factor, not source scale
-    (section 0.6): the root is 600 or 640, and body copy is a size email
-    actually uses.
+12. Root width equals the mj-body width; vertical section paddings equal the
+    worker attrs. All of those numbers are at email scale (section 0.6), which on
+    an authoritative or partial source means the audit's confirmed factor was
+    applied and on a reference-only source means the email standards were built to
+    and no factor exists: either way the root is 600 or 640, and body copy is a
+    size email actually uses.
+    **And the text-bearing column resolves to the library's ONE content width**,
+    not to the side margin the worker returned for this screenshot (section
+    0.3.1): read the resolved width back off the column, compare it to the
+    foundations number, and check that a multi-column split still sums to it.
+    Full-bleed image bands at the body width are the only exception. That is the
+    check you cannot do by looking at the module, only by comparing it to the
+    library.
 13. If it is a module: the root is a COMPONENT tagged `mj-wrapper`, a direct
     child of its category page, not inside a COMPONENT_SET or a Figma SECTION,
     with no stray instances of it left on the page, and there is no second
@@ -1665,11 +1926,13 @@ the node.
     rectangle was sized to the asset, per instance where one component holds
     photos of different shapes. Look at the edges of each PNG you exported, since
     baked-in white reads on the canvas as a spacing bug nobody can find in the
-    auto layout.
+    auto layout. **Every per-instance resize was read back off the node**, because
+    a resize aimed inside an instance fails silently and reports success (section
+    0.8); an unchanged dimension is a failed write, not a harmless one.
 19. **Every overlap or edge bleed in the source became a two column row**
     (section 3.4.1), never an improvised container and never a flattened image.
-    Per swap: both columns FIXED and summing with the section padding to the
-    section content box, the text column pinned with section 3.3.1 slack, the
+    Per swap: both columns FIXED with their widths summing to the section content
+    box, the text column pinned with section 3.3.1 slack, the
     image column the remainder, the `mj-image` height the render's natural aspect
     at the image column's content width, no `mj-group`, and the gutter paid by
     one column only. Your report names the swap and states that the overlap is

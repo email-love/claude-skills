@@ -1,6 +1,6 @@
 ---
 name: emaillove-migration-audit
-description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, detects the source's scale factor, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
+description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, classifies how much of the source's geometry is a specification worth preserving, detects the source's scale factor when one applies, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
 ---
 
 # Email Love Migration Audit
@@ -8,14 +8,17 @@ description: Audit an existing Figma design system or template library for migra
 Audit an existing Figma design system for migration to Email Love, and produce a migration
 report the customer and the Email Love team can act on. This is Phase 1 of a migration: it
 tells everyone what they have, what converts, what needs design judgment, and how big the job
-is. Phase 2 is the conversion, and the report is its input: the emaillove-eds-converter skill
-runs it, or Email Love's team runs it for the customer as part of Enterprise onboarding. Step 7
+is. It also settles a question that reframes all of those: whether the source's geometry is a
+specification to preserve or only a reference to take brand and structure from. That is Step 3,
+and it decides how much of the rest of the audit even applies.
+Phase 2 is the conversion, and the report is its input: the emaillove-eds-converter skill
+runs it, or Email Love's team runs it for the customer as part of Enterprise onboarding. Step 8
 is the hand-off, and it is part of the job, not an afterthought.
 
 **This skill is strictly read-only.** Never create, modify, rename, or delete anything in the
 customer's file. Every Figma call you make must be an inspection. If the user asks you to start
 converting, that is Phase 2: it happens in a separate target file through the
-emaillove-eds-converter skill (Step 7 has the hand-off), and the source file stays read-only in
+emaillove-eds-converter skill (Step 8 has the hand-off), and the source file stays read-only in
 that phase too.
 
 ## How long this takes
@@ -32,7 +35,7 @@ where each module begins and ends before it can rebuild anything. A library of a
 modules runs across multiple sessions, which is why conversion is batched with a design review
 between batches. The time is dominated by round trips to Figma, one per node created or read,
 not by AI: the automated conversion of a design takes seconds. These are ranges from past runs,
-not guarantees, so keep the Step 6 effort estimate framed as a range too.
+not guarantees, so keep the Step 7 effort estimate framed as a range too.
 
 ### Report progress while you walk
 
@@ -43,13 +46,17 @@ so it earns far fewer updates than the conversion does.
 
 1. **After the census** (end of Step 2): the counts you found. Pages, candidate frames, designs
    after desktop/mobile twins are merged, text and paint styles. **The design count is the
-   denominator for everything after it**, so state it here even when it is obvious.
-2. **As you walk the designs** (Step 4, pass 1): one line per design. A count, a percentage, the
+   denominator for everything after it**, so state it here even when it is obvious. Add the
+   **source fidelity tier** you read off those same counts (Step 3) and one clause of why, because
+   it decides whether scale detection happens at all and the user should hear that before the
+   silence of the walk rather than in the report.
+2. **As you walk the designs** (Step 5, pass 1): one line per design. A count, a percentage, the
    design's name, and what it added to the inventory. Say a blocker at the design where you hit
    it rather than saving it for the report: a component library file you cannot see, a split you
    are inferring and need the designer to confirm, a type ramp that contradicts the width
    derivation.
-3. **At the end** (Step 6): the shape of the report. Modules by verdict, the scale factor, and the
+3. **At the end** (Step 7): the shape of the report. Modules by verdict, the scale factor (or, on a
+   reference-only source, that there is none and the build uses email standards), and the
    one or two flags that decide the next step.
 
 The format for the walking line, and it is a count and a percentage rather than prose:
@@ -107,22 +114,167 @@ Build the inventory with read-only calls:
    the audit concluded that a footer's six social icons "are not in the file", the converter
    built the footer with six empty rectangles, and the icons had been in the file the whole time
    inside one strip image. **So write which of the two it is, in those words, and write it on the
-   module's row rather than only in Flags** (Step 4's rule about build constraints): `build
+   module's row rather than only in Flags** (Step 5's rule about build constraints): `build
    constraints` reads `slice the fused N-item strip, do not treat as missing` for the fused case
    and `asset absent, blocked on customer` for the absent one. Say how many items are in the
    strip, since that count is what the converter checks its slice against. The verdict does not
    change either way; what changes is whether the module is buildable today, and by whom.
 
-Record the authored type sizes and the design widths verbatim, in the numbers the file actually
-carries. Step 3 divides both, and it cannot do that from rounded or remembered figures.
+5. **Fidelity signals, which Step 3 classifies from.** You are reading all of these already while
+   you do 1 to 4; the only new work is writing each one down as present or absent rather than
+   using it and moving on: a standard email width or not, local text styles, local paint styles,
+   variable collections, components or component sets (as opposed to loose frames and groups),
+   auto layout (as opposed to absolute positioning), mobile variants. Add one measurement the
+   census does not otherwise need: **the left content inset of three or four designs.** Whether
+   equivalent margins are identical or merely similar is the signal that separates a file somebody
+   designed from a file somebody eyeballed, and it is two reads per design.
 
-## Step 3: Detect the scale factor
+Record the authored type sizes and the design widths verbatim, in the numbers the file actually
+carries. Step 4 divides both when it runs, and it cannot do that from rounded or remembered
+figures. Record them even when you expect the source to be reference only, because they are also
+the evidence for the Step 3 classification.
+
+## Step 3: Classify the source fidelity
+
+Before deriving anything from the source's geometry, decide whether that geometry is a
+specification at all. This comes before scale detection because it decides whether scale
+detection is relevant, and it changes how every later section of the report should be read.
+
+Two sources can look equally finished in a screenshot and mean completely different things.
+
+- **A well organised email-native library** is drawn at real email widths, with a desktop and a
+  mobile variant, real text styles, real components, variables, and margins that repeat because
+  somebody chose them. Here **the geometry IS the specification**, and carrying it across is the
+  job.
+- **An old file drawn before the designer knew the tool** is at no particular width, with no
+  styles, no components, no auto layout, and margins that vary because each one was eyeballed on
+  its own. Here **the geometry is NOT a specification**, it is an artefact of how the file happened
+  to get made, and preserving its proportions faithfully reproduces guesses. What is worth taking
+  is the brand: palette, typefaces, logo, the copy, and the module structure, meaning which blocks
+  exist and in what order.
+
+**Classify from the census you already have** (Step 2, item 5). This step adds no new inspection
+work: the signals are the counts and the presence-or-absence notes you just wrote down.
+
+Two of the signals are load bearing and the rest are hygiene:
+
+- **Is the source at a standard email width** (600 or 640, with a mobile variant near 320 to 390)?
+- **Are equivalent margins consistent across designs** (the left content insets you measured are
+  identical, not merely similar)?
+
+The hygiene signals: local text styles, local paint styles, variable collections, components or
+component sets, auto layout, mobile variants of the designs.
+
+Two rules make the call cheap and keep it from drifting on feel: **a source at a standard email
+width whose equivalent margins are consistent cannot be reference only**, and **a source at
+neither cannot be authoritative**, whatever the hygiene signals say. Between those, most of the
+hygiene signals present reads authoritative, almost none of them reads reference only, and a mix
+reads partial.
+
+### AUTHORITATIVE: the geometry is the spec
+
+**Definition.** Widths, margins, type sizes, and spacing were chosen, and they are worth carrying
+into the email unchanged. Preserve them. Deviating from a source number needs a reason, written
+down in the report.
+
+**Signals.** Drawn at 600 or 640 with a mobile variant; text and paint styles applied consistently
+rather than ad hoc fills; components or variables in use; auto layout throughout; equivalent
+margins identical design to design.
+
+**Downstream.** Scale detection runs, and it should come out at 1.0 or within a few percent of it,
+because a source at email scale has nothing to scale. Brand foundations record the source's own
+ramp, spacing, and content width as measured. Module rows inherit source geometry.
+
+### PARTIAL: some of it is deliberate and some is not
+
+**Definition.** Preserve what is demonstrably consistent, standardise what is not, and flag each
+judgement so a reader can see which numbers came from the file and which came from us.
+**"Demonstrably consistent" has a test:** the same measurement appears in at least three places
+and is identical, not similar. A value that appears once, or three times with three values, is not
+a specification and gets standardised.
+
+**Signals.** Mixed, and mixed is the normal shape of a real library: real text styles but no
+components, auto layout on the newer designs and absolute positioning on the older ones, a
+standard email width on some designs and an arbitrary canvas on others, margins consistent inside
+one design and different in the next.
+
+**Downstream.** Scale detection runs. Derive the factor from the part of the file that is
+deliberate and say which part that was. Every standardisation gets its own line in Flags, since
+each one is a place the built system will not match the source on purpose.
+
+### REFERENCE ONLY: take the brand, build the geometry
+
+**Definition.** Take the palette, the typefaces, the logo, the copy, and the module structure.
+Build the geometry to email standards. Ignore every source measurement: widths, margins, type
+sizes, spacing, image dimensions.
+
+**Signals.** No standard email width; no local text or paint styles; no variables; no components;
+no auto layout; no mobile variants; equivalent margins that differ design to design.
+
+**Downstream, and this is the part that currently misbehaves:**
+
+- **Step 4 is SKIPPED, not attempted.** Do not derive a scale factor. Not from the width, not from
+  the ramp, and not "for information". There is no proportion to preserve, so a factor is a number
+  with nothing on the other side of it, and there is no gap between two derivations to agonise
+  over because neither derivation should exist.
+- **The report says so, in as many words.** The Scale factor section reads `Not applicable, source
+  is reference only` and states the email standards used instead. Write that rather than dropping
+  the section, so a reader can tell a decision from an omission, and so nobody supplies the
+  missing number themselves.
+- **Record that the geometry is ours.** A converted module that does not match the source's margins
+  is correct, and the report has to say that plainly, or somebody downstream will later "fix" the
+  built system back toward the source and reintroduce exactly what this tier exists to discard.
+- This is not a theoretical failure. Deriving a factor on a reference-only source and applying it
+  faithfully produced a 16px body sitting inside 20px margins: both numbers correctly divided out
+  of a source where nobody had chosen either.
+
+### What email standards mean for a reference-only build
+
+Defaults, stated rather than derived. Put these in the report as the geometry the build uses.
+
+- **A 600 body width**, and **one content width for every module**, 560 inside that 600 with 20/20
+  side padding: no module invents its own.
+- **A conventional type ramp with body at 16:** 12 fine print, 14 secondary, 16 body, 20 subhead,
+  24 to 30 headline. Line height around 1.4 to 1.5 on body copy, tighter on headings.
+- **A spacing scale in multiples of 8:** 8, 16, 24, 32, 40, 48. Pick one section padding off that
+  scale and use it library-wide rather than a different value per module.
+
+Take only the brand from the source alongside these: palette, typefaces, logo, copy, module
+structure and its order.
+
+### This is a judgement, and it has consequences
+
+Say so in the report rather than presenting the tier as a measurement. The two ways of getting it
+wrong are not equally recoverable:
+
+- **Calling an authoritative file reference-only throws away deliberate design decisions.** The
+  margins, the ramp, and the spacing that made their emails theirs get replaced with our defaults,
+  and the customer gets a system that is generically correct and not theirs. This is the worse
+  error, because the reasoning behind those numbers is not recoverable from the built file.
+- **Calling a reference-only file authoritative dresses guesses as decisions** and hard-codes them
+  into every module.
+
+So **when the signals are mixed, prefer PARTIAL and flag it.** Do not guess at either extreme to
+make the report tidier. PARTIAL is the accurate answer to a mixed file rather than a hedge: it
+preserves what the file proves and standardises what it does not, and it makes each of those
+calls visible one at a time. State the signals you saw, both the ones for and the ones against, in
+the report's Source fidelity section, and say that the tier is a recommendation their designer can
+overrule. One question at hand-off, "is this file a specification or a reference", is the entire
+cost of getting it right.
+
+## Step 4: Detect the scale factor (authoritative and partial sources only)
+
+**Run this step only when Step 3 classified the source AUTHORITATIVE or PARTIAL. On a REFERENCE
+ONLY source this step does not run at all:** derive nothing, report no factor, and go straight to
+Step 5, leaving the report's Scale factor section to record the email standards from Step 3.
+Deriving a factor anyway and captioning it as background does not work, because whoever converts
+applies the number that is in that section whatever sits next to it.
 
 Not every source library is drawn at email scale. A file that was never meant to export as
 email is often drawn at some multiple of it: a mockup enlarged for presentation, a web-first
-canvas, a slide artboard. The factor decides every number in every converted module (widths,
-type sizes, paddings, image dimensions), so getting it wrong makes the whole library uniformly
-wrong, and nobody notices until a converted module sits next to a real email.
+canvas, a slide artboard. The factor decides every type size, line height, and spacing value in
+every converted module, so getting it wrong makes the whole library uniformly wrong, and nobody
+notices until a converted module sits next to a real email.
 
 Compute BOTH derivations, always, and put both in the report:
 
@@ -135,6 +287,13 @@ Compute BOTH derivations, always, and put both in the report:
    2.21. Three styles landing near 2.2 is a signal; one style is a coincidence. Sanity check
    the candidate by dividing the ramp back by it: if 2.2 turns the authored sizes into 16, 12,
    and 24, the factor is real.
+
+**On an AUTHORITATIVE source, expect 1.0, and treat anything else as a contradiction.** The file is
+already at email scale, so both derivations should land at or within a few percent of 1 and this
+step is a confirmation rather than a derivation. A factor materially away from 1 on a file you
+called authoritative means two of your own findings disagree: re-read the width and the ramp, and
+if the factor is real, the tier is wrong. Fix the tier and re-run this step from it, rather than
+shipping a report that claims the geometry is the spec and then scales it.
 
 If the two derivations agree within a few percent, say so, give the one number, and move on:
 there is nothing to decide. When they disagree, and on an unstructured source they usually do,
@@ -159,14 +318,46 @@ design drawn at a different scale is a flag, not a second factor), and state the
 the TARGET width rather than the source canvas width. Conversion divides by the factor; it
 never carries source pixels across.
 
-Record the result in the report's **Scale factor** section (Step 6). Phase 2 reads that number
+Record the result in the report's **Scale factor** section (Step 7). Phase 2 reads that number
 instead of deriving its own, which is the whole point of settling it here.
+
+### The width factor and the type factor will not agree, and the report has to name which governs what
+
+Choosing a target email width AND a type factor independently brings a second factor back into a
+system whose whole rule is one factor. The two ratios agree only when the source happens to have
+been drawn at an exact multiple of the target width, and a mockup drawn to present is not drawn to
+email proportions, so on a real source they usually do not.
+
+**Run the check and put it in the report.** Divide the source width by the target email width,
+compare that ratio to the type factor you recommended, and state the gap. Measured on the migration
+this rule comes from: a 1092 wide source against a 600 target is 1.82, the recommended type factor
+was 2.2, and 1092/2.2 = 496 rather than 600, so the library was always going to carry 2.2 on its
+type and 1.82 across its width. Nobody wrote that down, and the cost landed on the margins: the
+source's own 115px text margin is 52px through the type factor and 63px through the width ratio,
+the converted library shipped 20px, and no reader of the report could trace which derivation the
+number came from, because neither of them produced it.
+
+**When the two differ, name which factor governs which quantities, in the report, in words.** The
+defensible split, and the one to state unless the designer decides otherwise, is that the type
+factor governs type sizes, line heights, and the spacing scale, while the target email width
+governs the body width and everything measured across it: content width, content margin, column
+splits, image widths. The reason is that the email width is a hard constraint from the clients
+rather than a choice, and legibility is a hard constraint on type, so neither quantity can be bent
+to make the two ratios meet. Write it as a sentence with both numbers in it rather than leaving a
+reader to infer it from two tables.
+
+**Be honest that this is a genuine tension, not a defect with a fix.** No single factor both
+preserves the source's type ramp and preserves its proportions across a body width email can
+actually use, because the source was drawn at a width email cannot use. The failure is not having
+two ratios. The failure is having two ratios and not saying so, which is how a converted library
+ends up with margins nobody can trace back to a decision (converter Phase 2, render spec 0.6).
 
 ### The factor is ONE number, and the ramp table has to prove it
 
 Recommending a factor is necessary and not sufficient. Phase 2 has to APPLY it, uniformly, to
-every number it writes: type sizes, line heights, widths, paddings, image dimensions, spacer
-heights. The report is what makes that auditable, so it shows the arithmetic per style rather
+every quantity it governs: type sizes, line heights, the spacing scale, paddings, spacer heights.
+Widths are the exception the section above just named, and they come from the target email width.
+The report is what makes that auditable, so it shows the arithmetic per style rather
 than only the conclusion.
 
 **Write the type ramp mapping as a four-column table, one row per style:**
@@ -198,7 +389,7 @@ problem rather than a type problem, so nobody thinks to look at the ramp.
 If a row's email size looks wrong, that is evidence the FACTOR is wrong, not licence to adjust
 the row. Revisit the factor, re-divide the whole ramp, re-run the test.
 
-## Step 4: Split the designs into modules, then classify every module
+## Step 5: Split the designs into modules, then classify every module
 
 Email Love design systems are built from modules, not from whole designs. A module is one
 reusable block that gets dropped into many emails: a hero, a copy block, a 2-up product row, a
@@ -374,61 +565,132 @@ inventory, not a second classification, so it introduces no verdict that is not 
 module row. It exists so a customer can still ask "what happens to this email" and get an answer,
 and Phase 2 does not work from it.
 
-## Step 5: Extract the brand foundations
+## Step 6: Extract the brand foundations
 
-From the survey, draft what the Email Love design system will carry:
+From the survey, draft what the Email Love design system will carry. **Where each number comes
+from depends on the Step 3 tier**, so say on every row which it was: measured from the source, or
+taken from the email standards. On an AUTHORITATIVE source the numbers are the source's. On
+PARTIAL they are the source's where it is demonstrably consistent and the standards' elsewhere. On
+REFERENCE ONLY only the brand comes from the file (palette, typefaces, logo) and every measurement
+comes from Step 3's email standards, with no factor involved anywhere.
 
 - **Type ramp mapping:** each of their text styles mapped to an email-safe equivalent, using
   their own fallback choices when a fallbacks page exists. Flag fonts that need web-font
-  hosting or substitution. When the Step 3 scale factor is not 1, use the four-column table Step
-  3 specifies (style, authored size, factor, email size), with the factor restated on every row,
-  so a reader can audit the arithmetic instead of trusting it. Run Step 3's ratio acceptance test
-  on the finished table.
+  hosting or substitution. When the Step 4 scale factor is not 1, use the four-column table Step
+  4 specifies (style, authored size, factor, email size), with the factor restated on every row,
+  so a reader can audit the arithmetic instead of trusting it. Run Step 4's ratio acceptance test
+  on the finished table. **On a reference-only source there is no factor and no such table:** state
+  the standard ramp (body 16, with 12, 14, 20, and 24 to 30 around it), map their typefaces onto
+  it, and label it as the email standard rather than as a measurement.
 - **Palette:** their named paint styles, and a proposed set of the six Email Love theme
   colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
   buttonContentColor) drawn from it, marked as a proposal for their designer to confirm.
 - **Spacing scale** from any padding/spacer components, stated at email scale (divided by the
-  Step 3 factor) rather than at source scale.
+  Step 4 factor) rather than at source scale. On a reference-only source, the multiples-of-8 scale
+  from Step 3 instead, since the source's paddings were not chosen.
 - **Buttons:** their button styles as candidates for the Email Love button component page.
-- **Target email width:** the width the converted system gets built at (600 or 640), which is
-  the source design width divided by the Step 3 factor when the source is not at email scale.
-  Label it as the target, and list anything in the file that contradicts it.
+- **Target email width:** the width the converted system gets built at, which is 600 or 640 and
+  nothing else. It is a hard constraint from the email clients rather than something the factor
+  derives, so do not divide the source width by the factor to get it: on the measured case that
+  arithmetic returns 496, which is not a width email can use, and the gap between it and 600 is
+  exactly the width-versus-type tension Step 4 declares. Take 640 only where their ESP or brand
+  asks for it, 600 otherwise. Label it as the target, and list anything in the file that
+  contradicts it.
+- **Content margin, extracted as a PERCENTAGE of source width, then converted, and the content
+  width it implies.** The audit already hands over a target email width; this is the other half of
+  the same measurement, and without it foundations has to invent the number. Measure where text
+  actually starts on several designs rather than one: the left inset of the headline, the body copy,
+  and the button label. Divide the inset by the source width to get a percentage, multiply that
+  percentage by the TARGET email width to get the email-scale margin, and state the content width it
+  implies (target width minus twice the margin). Worked, from the migration this rule comes from:
+  text starting between 109 and 118px in on a 1092 wide design is about 10.5 percent, which on a
+  600px target is a 63px margin and a 474px content width. Report the percentage, the converted
+  margin, the implied content width, and which designs you measured.
+  - **A consistent source margin is evidence worth carrying, and say so in those terms.** It means
+    the customer's own system has ONE margin, so the converted library should have one too, and
+    that is the finding foundations acts on. It is the same measurement the Step 3 margin-consistency
+    signal already asked for, so reuse those insets rather than re-measuring.
+  - **An inconsistent source margin is a FLAG.** List the values you found, say the source has no
+    single margin to inherit, and say that foundations will therefore pick one rather than derive
+    it. Do not average them into a number that looks derived.
+  - **Convert through the target width, not through the type factor**, and note in the report where
+    the two disagree (the width-versus-type check in Step 4). Same worked case: 10.5 percent of 1092
+    is 115px, which is 52px through a 2.2 type factor and 63px through the 1.82 width ratio. Those
+    are two different numbers for one margin, so state which factor you converted through.
+  - **On a REFERENCE ONLY source, measure nothing here:** the content width is Step 3's standard
+    (560 inside a 600 body, one content width for every module), labelled as the standard rather
+    than as a measurement.
+  This is a derived STARTING value for the converter's foundations phase, not the final decision.
+  Phase 2 fixes ONE content width for the library and may overrule this with a stated reason, and a
+  derived number it can accept or overrule is strictly better than a number it invents: a per-module
+  content width is what produces a text left edge that moves as the reader scrolls (render spec
+  0.3.1).
 
-## Step 6: Write the migration report
+## Step 7: Write the migration report
 
-Produce one markdown report, in this exact structure. **Scale factor and Module inventory are
-required sections**: they are what Phase 2 consumes, and a report missing either one cannot be
-converted from.
+Produce one markdown report, in this exact structure. **Source fidelity, Scale factor and Module
+inventory are required sections**: they are what Phase 2 consumes, and a report missing any one of
+them cannot be converted from. Source fidelity sits near the top because it changes how every
+section below it should be read.
 
 # Migration audit: [Design system name]
 ## Summary
 [Three sentences: what they have, how much converts cleanly, the one or two biggest items
-needing design judgment. If the source is not at email scale, say so here; it is the finding
-that changes the most work.]
+needing design judgment. Name the source fidelity tier here, since it reframes everything after
+it. If the source is authoritative or partial and not at email scale, say that here too; it is the
+finding that changes the most work.]
+## Source fidelity
+[REQUIRED, and it changes how every section below it should be read. State the tier, in these
+words: AUTHORITATIVE, PARTIAL, or REFERENCE ONLY. Then the signals you classified from, each as
+present or absent, so a reader can check the call rather than take it: standard email width, local
+text styles, local paint styles, variables, components, auto layout, mobile variants, and margin
+consistency with the left content insets you actually measured. Then what it means downstream, in
+a sentence or two, which is whether source geometry gets preserved, standardised, or replaced.
+- On AUTHORITATIVE: source widths, margins, type sizes, and spacing are carried across as
+  measured, and any deviation from a source number is called out with its reason.
+- On PARTIAL: which parts of the file you are preserving because they are demonstrably consistent,
+  and which you are standardising because they are not.
+- On REFERENCE ONLY: that scale detection was SKIPPED because it does not apply, that the built
+  geometry is Email Love's rather than the source's, and the email standards used (a 600 body with
+  one 560 content width for every module, body 16 with a conventional ramp around it, spacing in
+  multiples of 8). Add the sentence that a converted module not matching the source's margins is
+  correct and should not later be "fixed" back toward the source.
+Close with the honest framing: this is a judgement, not a measurement, it is a recommendation their
+designer can overrule, and when the signals were mixed say so here and carry the call into Flags.]
 ## Inventory
 [Pages, style counts, component counts, design count (with desktop/mobile pairs merged),
 distinct module count, fonts in play.]
 ## Scale factor
-[REQUIRED. Both derivations with their arithmetic, the gap between them in percent, the
-recommended factor, the reasoning for choosing it, and "designer decision" in as many words.
-State the target email width the factor is measured against. One factor for the library; note
-any design that contradicts it. When the two derivations agree, say so and give the single
-number.]
+[REQUIRED as a section; what goes in it depends on Source fidelity.
+On AUTHORITATIVE or PARTIAL: both derivations with their arithmetic, the gap between them in
+percent, the recommended factor, the reasoning for choosing it, and "designer decision" in as many
+words. State the target email width the factor is measured against. One factor for the library;
+note any design that contradicts it. When the two derivations agree, say so and give the single
+number. On an authoritative source expect 1.0 and say so.
+Also state the WIDTH-VERSUS-TYPE check (Step 4): source width divided by target email width,
+compared against the recommended type factor, the gap between them, and, when they differ, which
+factor governs which quantities in words (type factor for type sizes, line heights, and spacing;
+target width for the body width, content width, content margin, column splits, and image widths).
+Say plainly that this is a tension the conversion declares rather than resolves, so nobody reads two
+factors as an error to be corrected later.
+On REFERENCE ONLY: the words `Not applicable, source is reference only`, then the email standards
+the build uses instead, and nothing that reads as a factor. Never omit the section and never fill
+it with a number derived "for information": whoever converts applies whatever number is here.]
 ## Module inventory
 [REQUIRED, deduplicated, and this is the section Phase 2 works from. One row per DISTINCT
 module: module name | category | appears in (design names) | source ref | verdict A/B/C/D |
 concession | build constraints | effort S/M/L | notes. The name is the name the converted
 component will carry. **Source ref is REQUIRED on every row** and names the one appearance to
-convert from, precisely enough to screenshot without re-deriving the split (Step 4): a design
+convert from, precisely enough to screenshot without re-deriving the split (Step 5): a design
 name plus a node name or id, or, where there is no node to name, a position within that design
 ("top 0 to 480", "between the divider and the footer rule"). Every A row states either `none` or
 a named concession in the concession column, with what is lost and the proposed substitute in the
 notes; a bleed module carries `image bleed rebuilt as a two column row` verbatim rather than a
 substitute you worded yourself. **Build constraints is REQUIRED on every row
-and states either `none` or the short imperative constraints from Step 4** (for example "render
+and states either `none` or the short imperative constraints from Step 5** (for example "render
 nodes, not raw fills: images clipped by z-order" or "image is inset 91 percent, not full bleed"),
 so that nothing which changes how a module is built exists only in Flags. **Group the rows by
-category, in the top-of-email-to-bottom order Step 4 specifies, and order the rows within a
+category, in the top-of-email-to-bottom order Step 5 specifies, and order the rows within a
 category by reuse, highest first. The category order is load bearing:** Phase 2 creates one page
 per category in exactly the order they appear here, so an incidental order in this table becomes
 an incidental page list in the customer's library. The batch plan is read off Recommended next
@@ -441,26 +703,42 @@ appears here that is not already on a module row above.]
 [Type ramp mapping table (style, authored size, factor, email size, one row per style with the
 same factor on every row), proposed theme colors, spacing scale at email scale, button styles,
 target email width. State that the ratio acceptance test passed, with the two ratios you
-compared.]
+compared. Also REQUIRED here, because foundations otherwise invents it: the source's **content
+margin as a percentage of source width**, the email-scale margin it converts to through the target
+width, the **content width** that implies, the designs you measured, and whether the source margin
+was CONSISTENT (evidence the customer's system has one margin, which the converted library should
+keep) or INCONSISTENT (a flag, listed with the values found, and foundations picks one rather than
+inheriting it). Say which factor you converted the percentage through. On a REFERENCE ONLY source
+there is no factor column, no authored sizes, and no ratio
+test to run: give the standard ramp and the multiples-of-8 spacing scale, say they are the email
+standard rather than measurements, give the standard 600 body with its one 560 content width for
+every module, and take only the palette, typefaces, and logo from the file.]
 ## Flags
 [Everything a human should look at: fonts unavailable for email, naming typos, empty pages,
 inconsistent widths, accessibility risks from image-heavy modules, module boundaries you
-inferred rather than read. Plus two that are decisions rather than observations: every named
-concession from the Module inventory, for the designer to accept or reject, and the scale-factor
-recommendation when the two derivations disagreed. **Write a concession line as what it actually
+inferred rather than read. Plus three that are decisions rather than observations: every named
+concession from the Module inventory, for the designer to accept or reject; the scale-factor
+recommendation when the two derivations disagreed; and the source fidelity tier whenever the call
+was a judgement rather than a reading, which means any mixed-signal call and every REFERENCE ONLY
+one, since that tier discards the source's own geometry. State the signals for and against, the
+call you made, and the question "is this file a specification or a reference". On a PARTIAL source
+also give one line per standardisation, since each is a place the built system will deliberately
+not match the source.
+**Write a concession line as what it actually
 is.** A bleed concession is a known remedy the designer is confirming, not an open question, so
 state the loss (the overlap), the substitute (rebuilt as a two column row, image beside text,
 stacking image-above-text on mobile), and that this is Email Love's standard for the case, so the
 answer is yes or a deliberate exception. A concession whose substitute you proposed yourself is
 genuinely open, so ask it as a question and say what you would do absent an answer. Anything here
 that constrains how a specific module gets built must ALSO appear in that module's build
-constraints column (Step 4): Flags is
+constraints column (Step 5): Flags is
 where a human decides, the row is where a builder reads, and a build constraint that lives only
 here will be missed.]
 ## Effort estimate
 [Per-verdict counts over MODULES, not designs, and an S/M/L per module (the Module inventory
 already carries the per-module value; total it here). A modules are mechanical; C modules need a
-design pass; D modules need product decisions; a concession costs decision time, not build time.
+design pass; D modules need product decisions; a concession costs decision time, and the bleed
+concession below is the one that also costs a little build time.
 **Bleed modules count as A, so expect the A count to run higher and the C count lower than a first
 look at the library suggests.** That is correct rather than an under-count: say in one line that the
 standard two column substitute keeps those modules live-text, so a reader who expected a large C
@@ -471,12 +749,12 @@ after the first converted batch.]
 ## Recommended next step
 [The batch plan, naming modules by their Module inventory row names: foundations first, then
 batch 1 of about five of the highest-reuse modules, then the later batches, with a design review
-between batches. Then point at Step 7's two routes.]
+between batches. Then point at Step 8's two routes.]
 
 Numbers in the report come from your actual reads, never estimates presented as counts. Where
 you sampled instead of walking everything, say so.
 
-## Step 7: Hand off to conversion
+## Step 8: Hand off to conversion
 
 Deliver the report as a file or artifact the user can share internally. Then close the loop,
 because an audit that ends without naming what happens next leaves the customer thinking the
@@ -486,18 +764,29 @@ both:
 1. **Self-serve.** The **emaillove-eds-converter** skill runs Phase 2 from this report:
    foundations once, then modules in batches with a designer review between batches. It builds
    in a NEW target file and keeps this source file read-only. What it reads out of this report,
-   by section name: the **Module inventory** (one module per row, one batch per group of rows,
+   by section name: **Source fidelity** (which tells it whether to preserve the source's geometry,
+   standardise part of it, or build to email standards and take only the brand), the **Module
+   inventory** (one module per row, one batch per group of rows,
    with the source refs, verdicts, concessions, build constraints, categories, and effort, and
    its category ORDER, which becomes the order of the component pages in the converted file), the
-   **Scale factor** (every number it builds is at that scale), the **Brand foundations** (type
-   ramp on email-safe fallbacks, proposed theme colors, spacing, buttons, target email width),
+   **Scale factor** (every number it builds is at that scale, where there is a factor at all), the
+   **Brand foundations** (type
+   ramp on email-safe fallbacks, proposed theme colors, spacing, buttons, target email width, and
+   the content margin percentage with the content width it converts to, which is where foundations
+   gets its one library-wide content width),
    and the **Flags**.
 2. **Done for you.** Email Love's team runs the same process, design review included, as part
    of Enterprise onboarding: hello@emaillove.com.
 
-Two things need a human "yes" before either route starts, and both are in Flags: the scale
+Two things need a human "yes" before either route starts, three when the fidelity call was a
+judgement between tiers, and all of them are in Flags: **the source fidelity tier whenever Flags
+carries it**, the scale
 factor, and each named concession. They change what gets built, so getting them agreed now is
-cheaper than re-running a batch. **For a bleed concession that yes is a confirmation of a known
+cheaper than re-running a batch. **The tier is the cheapest of the three to ask about and the most
+expensive to get wrong**, since calling an authoritative file reference-only discards decisions the
+designer made on purpose: ask it as one question, "is this file a specification or a reference",
+and note that a reference-only tier means the built geometry is Email Love's and is not meant to
+match the source. **For a bleed concession that yes is a confirmation of a known
 remedy, not a design question**, so ask for it as one and expect it to be quick; only a concession
 whose substitute you proposed yourself needs the designer to actually deliberate. If the audit
 surfaced a missing component library file, that blocks conversion outright; say so rather than
@@ -508,7 +797,7 @@ they clean up anything the flags surfaced.
 
 ## Staying current
 
-This is version 1.8.0 of this skill. If you have web access, check once per conversation
+This is version 1.10.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's

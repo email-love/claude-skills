@@ -11,7 +11,7 @@
       "name": "emaillove-figma-builder",
       "source": "./skills/emaillove-figma-builder",
       "description": "Build export-ready marketing and lifecycle emails inside your Figma file, with a guided brief, visual component picker, and inspiration from 500,000+ real brand emails. Two paths: instance your Email Love design system, or start from scratch with AI Import when you do not have one yet",
-      "version": "2.7.0",
+      "version": "2.9.0",
       "author": {
         "name": "Email Love"
       }
@@ -19,8 +19,8 @@
     {
       "name": "emaillove-migration-audit",
       "source": "./skills/emaillove-migration-audit",
-      "description": "Read-only audit of an existing Figma design system for Email Love migration: a deduplicated module inventory with a verdict per module (live-text, editable-image, hybrid, not emailable), scale-factor detection, brand foundations, effort estimate, and a hand-off to the converter",
-      "version": "1.8.0",
+      "description": "Read-only audit of an existing Figma design system for Email Love migration: a deduplicated module inventory with a verdict per module (live-text, editable-image, hybrid, not emailable), source fidelity classification, scale-factor detection where it applies, brand foundations including the source's content margin and content width, effort estimate, and a hand-off to the converter",
+      "version": "1.10.0",
       "author": {
         "name": "Email Love"
       }
@@ -28,8 +28,8 @@
     {
       "name": "emaillove-eds-converter",
       "source": "./skills/emaillove-eds-converter",
-      "description": "Convert an audited legacy Figma design system into a working Email Love design system: foundations, then modules in batches with design review between batches. Works from the module inventory and scale factor in an emaillove-migration-audit report",
-      "version": "1.16.0",
+      "description": "Convert an audited legacy Figma design system into a working Email Love design system: foundations that fix one content width, plus one scale factor where the source's geometry is a specification and email standards where it is not, then modules in batches with design review between batches. Works from the module inventory, source fidelity tier, and brand foundations in an emaillove-migration-audit report",
+      "version": "1.19.0",
       "author": {
         "name": "Email Love"
       }

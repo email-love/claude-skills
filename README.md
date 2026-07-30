@@ -2,6 +2,23 @@
 
 Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.com). Install them to make Claude an expert at building emails with your Email Love design system.
 
+## Read the skills
+
+You do not have to install anything to read what these skills actually tell Claude to do. Each one is a single markdown file:
+
+| Skill | What it does | Read it |
+| --- | --- | --- |
+| **emaillove-figma-builder** | Builds emails in Figma from your design system | [SKILL.md](skills/emaillove-figma-builder/SKILL.md) |
+| **emaillove-migration-audit** | Read-only audit of an existing library | [SKILL.md](skills/emaillove-migration-audit/SKILL.md) |
+| **emaillove-eds-converter** | Converts that library into an Email Love design system | [SKILL.md](skills/emaillove-eds-converter/SKILL.md) |
+
+The converter also ships two reference documents, which are the most useful things here if you want to understand how Email Love's Figma structure actually works:
+
+- [references/structure.md](skills/emaillove-eds-converter/references/structure.md): the plugin's frame structure as ground truth, extracted from the plugin source rather than inferred. What each `mj-` tag is, how the exporter identifies a node, and the failure modes that are silent.
+- [references/render-spec.md](skills/emaillove-eds-converter/references/render-spec.md): the full specification for turning a design into frames the plugin exports correctly. Sizing, spacing, images, columns, component properties, and a checklist.
+
+Prefer prose to specifications? The same material is written for humans at [help.emaillove.com](https://help.emaillove.com/plugin/ai/agents-in-figma).
+
 ## Skills
 
 ### emaillove-figma-builder
@@ -34,6 +51,18 @@ Using **Codex**? Both migration phases ship as a project-scoped `AGENTS.md` at [
 The conversion engine. Takes a completed migration audit and rebuilds your legacy templates as a working Email Love design system in a new Figma file: foundations first (pages, type mapping on email-safe fallbacks, buttons, spacers, assets, a marked root template), then modules in batches through a full loop of rebuild, mobile merge, componentize and add properties, and side-by-side verification, with design review gating each batch. Your source file is treated as read-only throughout. Requires the audit report from emaillove-migration-audit.
 
 Prefer it done for you, design review included? That is Email Love Enterprise onboarding: [hello@emaillove.com](mailto:hello@emaillove.com).
+
+## Your file does not need to be tidy
+
+A common assumption is that a migration needs a well organised source library, and that a file drawn years ago before anyone knew the tool is a lost cause. It is not. Both cases work; what changes is which parts of the file get carried across.
+
+The audit judges this first and says so in the report, because everything after it depends on the answer.
+
+- **The file is authoritative about geometry.** Already drawn at real email widths, with text styles, components, variables, mobile variants, and consistent margins. The geometry is your specification, so it is preserved: widths, margins, type sizes and spacing all come across as drawn, and any deviation needs a reason.
+- **The file is a reference.** Not at an email width, no styles or components, no auto layout, spacing that was eyeballed rather than decided. Here the geometry is an artefact of how the file happened to get made, not a decision worth reproducing, so it is rebuilt to email standards. What comes across is the part that was deliberate: your palette, your typefaces, your logo, your copy, and the module structure, meaning which blocks exist and in what order.
+- **Mixed.** Most real libraries. What is demonstrably consistent is preserved, the rest is standardised, and every judgement of that kind is flagged for a designer rather than made silently.
+
+The reason this matters: faithfully preserving the proportions of a file that was guessing reproduces the guesses. A migration should give you your brand on a sound email foundation, not a pixel-accurate copy of an old mockup.
 
 ## Installation
 

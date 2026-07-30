@@ -1,8 +1,8 @@
 {
   "name": "emaillove-migration-audit",
   "displayName": "Email Love Migration Audit",
-  "version": "1.8.0",
-  "description": "Audit an existing Figma design system for migration to Email Love: read-only module inventory with a verdict per module, scale-factor detection, brand foundations, and an effort estimate",
+  "version": "1.10.0",
+  "description": "Audit an existing Figma design system for migration to Email Love: read-only module inventory with a verdict per module, source fidelity classification, scale-factor detection where it applies, brand foundations including the source's content margin and content width, and an effort estimate",
   "author": {
     "name": "Email Love",
     "email": "hello@emaillove.com"

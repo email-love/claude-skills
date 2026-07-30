@@ -245,6 +245,12 @@ The complete list of edits you may make to an instance:
   node rather than assuming. Skipping the font load is the most common build failure.
 - **Image fills** on the component's image blocks, at their existing dimensions, 2x resolution,
   watching crop and focal point. The plugin picks up image fills at export and handles hosting.
+  If a geometry write inside the instance is ever unavoidable (an image band whose height has to
+  match a photo's aspect), know that `resize()` on a node nested inside an instance silently does
+  nothing: no error, and the value unchanged when you read it back. Render spec section 0.8 has
+  the working pattern, FILL the descendant chain then resize the INSTANCE, and the habit it
+  implies, which is to read every geometry write back and treat an unchanged value as a failed
+  write.
 - **Component properties**: toggle booleans to hide optional regions, swap instance-swap slots,
   set text properties. Because the plugin exports what is visible, a boolean that hides a region
   genuinely removes it from the sent email.
@@ -321,25 +327,63 @@ Four questions, one batch, on top of the Step 1 brief:
   convert that render. Let the Step 2 inspiration decide the section order and pacing; let the
   brand interview decide every color and typeface.
 
+**First judge whether the design you were handed is AUTHORITATIVE about geometry, because only then
+are its proportions worth preserving.** This is the short version of a question the migration audit
+asks in full, and Path B meets it every time somebody hands over a Figma frame. Their own past email,
+or a comp you wrote at the email width, is authoritative by construction: it was made to send. An old
+mockup drawn to present usually is not. Four cheap signals answer it: is the design at a standard
+email width, does it use real text styles rather than sizes typed per layer, is it built with auto
+layout rather than absolute positioning, and are its equivalent margins identical rather than merely
+similar.
+
+- **Mostly yes: the geometry is a specification.** Derive the scale factor as below, carry the
+  source's margins, ramp, and spacing across, and tell the user what you preserved. Convert its
+  side margin ONCE, through the target email width, and use that one content width in every
+  section (render spec 0.3.1), because the worker returns a side margin per screenshot and three of
+  those in one email is a text edge that moves as the reader scrolls.
+- **Mostly no: take the brand and build to email standards.** What you keep is the palette, the
+  typefaces, the logo, the copy, and the order the blocks come in. **Do not derive a scale factor at
+  all**, and do not preserve a source proportion: build a 600 wide email with body copy at 16 on a
+  conventional ramp (12, 14, 16, 20, 24 to 30), spacing in multiples of 8, and one content width for
+  every section, normally 560 with 20/20 padding. Scaling the screenshot to 600 before you send it is
+  still right, but that is framing one PNG rather than a factor entering the email. Say so to the
+  user in a sentence, because it is good news rather than a compromise: a margin nobody chose carries
+  no decision, and dividing it faithfully reproduces a guess more precisely than it was made.
+
+**The rest of this section is for a design you judged authoritative.**
+
 **Check that the source is at email scale before you convert it.** A past email or a comp you wrote
 yourself is at email width by construction. A Figma design drawn for presentation, or a web-first
-canvas, is often some multiple of it, and the worker reads its numbers off the pixels you send, so a
-1320px-wide frame comes back as a 1320px-wide email with 35px body copy. Two cheap derivations catch
+canvas, is often some multiple of it, which means every size authored in it (a 35px body, a 53px
+headline) carries that multiple, and anything you read off it or hand the worker in `promptInputs`
+carries it too until you divide it out. Two cheap derivations catch
 it: the frame width divided by the email width from B1, and the authored type sizes divided by the
 sizes email actually uses (a 35px body over 16, a 53px headline over 24). Land near 1 and the source
 is at email scale. Land near some other number and that number is your scale factor. When the two
 derivations disagree by more than a few percent, trust the type ramp: a designer picks type sizes
 deliberately off a ramp, while a canvas width absorbs bleed, margins, and whatever artboard someone
 happened to start on. Then do two things: scale the screenshot down to the email width before you
-send it, so the worker returns email-scale numbers in the first place, and pin `emailWidth` in
-`promptInputs` (B3). Tell the user the factor you derived; it is a judgment they may want to
-correct. Render spec section 0.6 is the rule this protects.
+send it, because that is the input the worker was tuned for rather than a lever on its output (the
+worker classifies at a canonical email scale and returns email numbers whatever resolution you send,
+so do not expect its payload to carry the factor either way: render spec section 0.6), and pin
+`emailWidth` in `promptInputs` (B3), which is the setting that actually fixes the body width. Tell
+the user the factor you derived; it is a judgment they may want to correct.
 
-**A factor you derive here is ONE number, applied to EVERY number.** Whether you scale the
-screenshot before sending it or divide the worker's output afterward, the same factor governs type
-sizes, line heights, widths, paddings, image dimensions, and spacer heights. Rounding is allowed,
+**A factor you derive here is ONE number, applied to EVERY quantity it governs.** Whether you scale
+the screenshot before sending it or divide a source measurement you carry across by hand, the same
+factor governs type
+sizes, line heights, the spacing scale, paddings, and spacer heights. Rounding is allowed,
 to the nearest whole pixel, after the division. Choosing a converted value because it looks like a
 size email usually uses is not rounding; it is a second factor invented for one element.
+
+**Widths are the exception, and the render spec's two factor tension (0.6) is why.** Divide the
+source width by the target email width and compare that ratio to the type factor you just derived.
+They agree only when the source was drawn at an exact multiple of the email width, so usually they
+do not: a 1092 wide source at a 600px body is 1.82 across the width against a 2.2 type factor. When
+they differ by more than a couple of percent, say so to the user and name the split rather than
+picking one: the type factor governs type sizes, line heights, and the spacing scale, and the target
+email width governs the body width and everything measured across it (content width, column splits,
+image widths).
 
 **Check it against the source's own ratios.** Divide the largest type size you ended up with by
 the smallest, do the same in the source, and compare. More than a couple of percent apart means
@@ -445,7 +489,7 @@ The worker returns structure, not a finished email. Five gaps, all observed repe
    the flat composite, so it returns the band as one image or as text over an image that would have
    to extend past its column. **Rebuild it as a two column row per render spec 3.4.1, the Two
    Column Swap**: one `mj-section`, two `mj-column`s, image in one and text in the other in source
-   order, both columns FIXED and summing with the section padding to the content box, the image a
+   order, both columns FIXED with their widths summing to the section content box, the image a
    rendered crop at its column's content width, no `mj-group` (the stack is the point, and it puts
    the image above the text on mobile). This is Email Love's standard substitute rather than a
    judgment call, so do not attempt the overlap and do not leave the band as a flattened image. When
@@ -658,15 +702,17 @@ voice from existing copy in the file, informed by any Step 2 inspiration.
 Screenshot every email and inspect it: no clipped text, no overlapping elements, spacing
 consistent with the file's real campaigns. Then check structure:
 
-- Root frame is a duplicated Email Love frame, or carries `nodeType = mainFrame` plus all nine
-  keys. It is an email, so the marker belongs there; the only nodes that must NOT carry it are
+- Root frame is a duplicated Email Love frame, or carries `nodeType = mainFrame` plus the eight
+  theme keys, which is the nine of "Root frame" less the marker itself. It is an email, so the
+  marker belongs there; the only nodes that must NOT carry it are
   any reusable modules you split out in A5 or B6.
 - **Path A:** every section is a component instance (raw footer excepted), including inherited
   ones. No detached instances. No hand-built frames survived the donor vetting. No instance
   internals were restructured.
 - **Path B:** the render spec's post-build checklist passes: every node tagged, every leaf a
   complete pair, every `mj-button` with a direct TEXT child, both alignment axes equal on every
-  auto-layout frame, all nodes visible, column widths matching the worker JSON. Plus the five B5
+  auto-layout frame, all nodes visible, and column widths summing to the email's one content width
+  rather than to the side margin the worker returned per screenshot (render spec 0.3.1). Plus the five B5
   repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4. If the
   source had an overlapping or bleeding photo, that band is a two column row per render spec 3.4.1,
   not a flattened image and not an attempted overlap.
@@ -731,12 +777,15 @@ from memory: reconstructing those rules is hand-authoring by another name.
 
 One framing note when you read the render spec. It was written for migrations, where a customer's
 legacy file is a read-only source and a separate file is the target. Here the target is the user's
-own build file, and the read-only source is whatever design you converted from in B2. Every other
-rule in it applies to this skill unchanged.
+own build file, and the read-only source is whatever design you converted from in B2. One rule reads
+in migration vocabulary and still binds here: its **section 0.3.1**, the single content width, says
+a migration's foundations phase fixes that number for the whole library. On Path A the design system
+already fixed it, so read it off the components you are instancing; on Path B you fix it in B2 and
+use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.7.0 of this skill. If you have web access, check once per conversation
+This is version 2.9.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
 newer version exists, mention it once at hand-off with the right update path for the user's
