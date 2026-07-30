@@ -120,6 +120,48 @@ Path B, before the worker:
 > Sending the hero comp to the design converter now. It takes a few seconds to about half a
 > minute, then transcribing what comes back is the longer part.
 
+### Say when you STOP, too
+
+Those four points cover a build that is still building. Nothing in them covers a build that has
+stopped, and that asymmetry is worse than having neither half: **an agent that reports progress but
+not its own stop is worse than one that does neither, because the user infers continuation from the
+last progress line.** Line 2 fires at every section boundary, so its absence reads as the next
+section being written right now. Silence is indistinguishable from still working.
+
+**Never stop silently.** If you stop, for any reason, say so in the SAME message as the last of the
+work, not in a later reply and not only once the user asks. Four things, every time: what you
+completed in the line 2 format so it reconciles with what came before, what remains by section name,
+why you stopped, and the exact thing needed to resume, phrased so the user can send it straight back.
+The reasons that qualify are a blocker, a decision only the user can make, a limit you have hit, or
+reaching the end of a unit of work. Finishing the email is that last one, and line 4 is how it gets
+announced.
+
+**Do not stop between the sections of one email.** The email is the unit of work, so the section plan
+you gave at line 1 is a plan to finish, not a menu to stop partway down. In a sequence the unit is
+still the email: between emails is a defined boundary, mid-email is not, so finish the one you are in
+before you stop and report it with both counters. The exceptions are the two this file already names,
+and both are a question put to the user at the section it belongs to rather than a build abandoned
+quietly: A5, where no component fits and they are the one who knows, and "The one rule" at the top,
+where neither path can produce the section at all. Announce either in the shape below rather than
+trailing off.
+
+**If you wrote resumable state, name its path in that message.** Write one whenever the build is a
+sequence or you expect it to cross a session boundary, alongside the converter JSON you already save
+on Path B, and treat it as expected behaviour rather than extra credit. On a one-off email the
+sections already on the canvas are most of the state, so name the frame instead. Either way the user
+has to be told where it is: state they cannot see does not make the build resumable, it only makes
+you feel that it is.
+
+One worked example, the format to copy. It is one message, sent unprompted, not an answer to "are you
+still working on it":
+
+> Stopped, not still building. Email 2 of 4, 5 of 7 sections done, 71 percent: preheader, logo header,
+> hero, two product cards, all in the `Email 2 - Winback` frame. Remaining in this email: countdown
+> banner and footer. Why I stopped: no component in the design system covers a countdown banner and
+> the converter flattens it to a single image, so neither path can produce it and I am not
+> hand-building the structure. To resume, point me at a component to use, or say "place it as a static
+> image with a fallback line", and I will finish from the saved state at `./build-state.json`.
+
 ## Step 1: The brief (adaptive interview)
 
 Collect the essentials before touching the canvas. If the user's message already answers a

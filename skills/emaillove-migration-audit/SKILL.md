@@ -70,6 +70,35 @@ that stays quiet, and it is the failure mode to avoid here. If the library turns
 it looked and the walk is running well past the minutes you promised up front, say so at the next
 design boundary with a revised number rather than letting the user work it out.
 
+### Say when you STOP, too
+
+Those three lines cover a walk that is still walking, and line 2 fires per design, so its absence
+reads as the next design being read right now. **An agent that reports progress but not its own stop
+is worse than one that does neither, because the user infers continuation from the last progress
+line.** Silence is indistinguishable from still working.
+
+So **never stop silently.** If you stop, for any reason, say so in the SAME message as the last of
+the work, not in a later reply and not only once the user asks: what you walked, what remains by
+design name, why you stopped, and the exact thing needed to resume. The reasons that qualify are a
+blocker, a decision only the user can make, a limit you have hit, or reaching the end of a unit of
+work. Finishing the audit is that last one, and line 3 plus the Step 8 hand-off are how it gets
+announced. There is no batch here, so the only mid-walk stop is a real blocker, and Step 1 names the
+usual one: a component library file you cannot see.
+
+**If you saved state, name its path in that message.** On a library big enough to span a session,
+writing the partial inventory to a small JSON file as you walk is expected behaviour rather than
+extra credit, and it is not a Figma write, so the read-only rule above is untouched. State the user
+cannot see does not make the walk resumable, it only makes you feel that it is.
+
+One worked example, the format to copy:
+
+> Stopped, not still walking. 7 of 11 designs walked, 64 percent: 14 modules in the inventory so far.
+> Remaining: 4 designs, starting with Winback. Why I stopped: the component masters for the product
+> card live in a separate library file I cannot open, and three of those four designs are built almost
+> entirely from it, so their verdicts would be guesses rather than findings. To resume, share that
+> library file, or say "audit what you can see and flag the rest", and I will pick up from the saved
+> inventory at `./audit-state.json`.
+
 ## Step 1: Scope the input
 
 You need the Figma file link. If several files hold the design system, audit each. Ask only

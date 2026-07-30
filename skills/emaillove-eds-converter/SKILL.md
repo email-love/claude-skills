@@ -192,6 +192,58 @@ One worked example, the format to copy:
 > putting the batch near 45 minutes total against the 30 I opened with. Next: Module 4 of 7,
 > Two column product row.
 
+### Say when you STOP, too
+
+The five checkpoints above cover a run that is still running. Nothing in them covers a run that has
+stopped, and that asymmetry is worse than having neither half: **an agent that reports progress but
+not its own stop is worse than one that does neither, because the user infers continuation from the
+last progress line.** Checkpoint 3 fires at every module boundary, so its absence reads as module 4
+being transcribed right now. Silence is indistinguishable from still working.
+
+**Never stop silently.** If you stop, for any reason, say so in the SAME message as the last of the
+work, not in a later reply and not only once the user asks. Four things, every time:
+
+- what you completed, in the checkpoint 3 format so it reconciles with the lines before it;
+- what remains, by module name from the audit's Module inventory;
+- why you stopped;
+- the exact thing needed to resume, phrased so the user can send it straight back.
+
+The reasons that qualify are a blocker, a decision only the user can make, a limit you have hit, or
+reaching the end of a unit of work. That last one is the common case rather than an exception:
+finishing a batch IS a stop, and checkpoint 5 plus the gate in Phase 3 step 6 are how that one gets
+announced.
+
+**Do not pause mid-batch.** The batch is the unit of work and the design review happens BETWEEN
+batches (Phase 3 step 6), so five modules of a five-module batch is a defined stopping point and one
+module of five is not. Either complete the batch, or stop AT the blocker and name it. An overrun is
+not a blocker: a batch tracking at double the estimate earns a revised number at the next module
+boundary, not a stop.
+
+A blocker specific enough to stop mid-batch is one this file already names: a concession with no
+human yes in the audit's Flags, a scale factor nobody has confirmed, an asset or component library
+file that is genuinely absent so the module cannot be built at all, or another decision only a
+designer can make. Having built some of the batch is not on that list, and neither is the batch
+feeling long.
+
+**Writing resumable state is correct, so say WHERE it is.** A batch that can span sessions needs
+state that survives one, so keep a small JSON state file beside the per-module MJML JSON you already
+save in Phase 3 step 1, and update it at the same module boundaries as checkpoint 3: the batch
+number, the modules completed and remaining by inventory name, the fidelity tier, and the scale
+factor and content width the batch is being built at. That much is expected behaviour rather than
+extra credit. **Then name its path in the stop message**, because state the user cannot see does not
+make a run resumable, it only makes you feel that it is.
+
+One worked example, the format to copy. It is one message, sent unprompted, not an answer to "are
+you still working on it":
+
+> Stopped, not still running. Batch 1 of 3, 4 of 5 modules done, 80 percent: Global header, Hero with
+> CTA, Two column product row, Testimonial, all built at the REFERENCE ONLY standards (600 body, 560
+> content width). Remaining in this batch: Global footer. Why I stopped: the footer's inventory row
+> carries the image bleed rebuilt as a two column row concession and there is no human yes on it in
+> the audit's Flags, so building it now means rebuilding it. To resume, confirm the two column
+> rebuild or say "defer the footer to batch 2", and I will finish the batch from the saved state at
+> `./migration-state.json`.
+
 ## Phase 2: Foundations (run once per customer)
 
 **Start by reading the audit's Source fidelity tier, and say which tier you are building under
