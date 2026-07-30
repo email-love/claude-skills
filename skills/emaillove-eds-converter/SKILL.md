@@ -1075,9 +1075,13 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.19.0 of this skill. If you have web access, check once per conversation
+This is version 1.19.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
-https://api.github.com/repos/email-love/claude-skills/releases/latest and compare the tag. If a
-newer version exists, mention it once at hand-off with the right update path for the user's
-surface: claude.ai users re-upload the .skill file from that release, Claude Code plugin users
-run the marketplace update. If you have no web access, skip this silently.
+https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
+and compare this skill's own version to its entry there. That file lists each skill's current
+version, so the check stays correct no matter which skill released most recently; the old
+repository-wide latest-release check reported whichever skill shipped last, which could be a
+different skill entirely. If a newer version exists, mention it once at hand-off with the right
+update path for the user's surface: claude.ai users re-upload the .skill file from the newest
+release, which attaches all three bundles, and Claude Code plugin users run the marketplace
+update. If you have no web access, skip this silently.

@@ -44,7 +44,14 @@ claude plugin install emaillove-migration-audit@email-love
 
 On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
 
-Using **Codex**? Both migration phases ship as a project-scoped `AGENTS.md` at [email-love/codex-agents/migration](https://github.com/email-love/codex-agents/tree/main/migration).
+Using **Codex**? Migration ships as one of two skills in the Email Love Codex plugin. Install it once:
+
+```bash
+codex plugin marketplace add email-love/codex-agents --ref v3.0.0
+codex plugin add email-love@email-love
+```
+
+Then start a new Codex session. See [email-love/codex-agents](https://github.com/email-love/codex-agents).
 
 ### emaillove-eds-converter
 
@@ -71,7 +78,7 @@ The reason this matters: faithfully preserving the proportions of a file that wa
 Works on every plan, including Free (web and desktop, not mobile).
 
 1. Enable **code execution** under **Settings → Capabilities** (Team/Enterprise: an org owner must enable code execution and skills in Organization Settings first).
-2. Download `emaillove-figma-builder.skill` from the [latest release](https://github.com/email-love/claude-skills/releases/latest).
+2. Download `emaillove-figma-builder.skill` from the [latest release](https://github.com/email-love/claude-skills/releases/latest). Every release attaches all three skill bundles, so grab the one named for the skill you want.
 3. Go to **Settings → Capabilities → Customize → Skills** and upload the file.
 4. Ask Claude to build an email in your Figma file.
 
@@ -116,7 +123,14 @@ Then ask Claude Code to build an email in your Figma file.
 
 ## Using Codex or ChatGPT instead?
 
-**OpenAI Codex** can run the same workflow, using an `AGENTS.md` instruction file instead of a skill: [email-love/codex-agents](https://github.com/email-love/codex-agents).
+**OpenAI Codex** can run the same workflow. It ships as the Email Love Codex plugin, with a builder skill and a migration skill Codex loads on demand:
+
+```bash
+codex plugin marketplace add email-love/codex-agents --ref v3.0.0
+codex plugin add email-love@email-love
+```
+
+See [email-love/codex-agents](https://github.com/email-love/codex-agents).
 
 **ChatGPT chat** cannot build emails in Figma. Its Figma app only creates FigJam diagrams, Slides, and Buzz assets, and cannot edit Figma Design files. See [`distribution/chatgpt-gpt-instructions.md`](distribution/chatgpt-gpt-instructions.md) for a companion GPT that plans emails and hands the build off to Claude or the plugin.
 
