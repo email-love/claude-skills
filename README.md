@@ -144,6 +144,13 @@ Related guides:
 - [Email Creation MCP](https://help.emaillove.com/plugin/ai/email-creation-mcp)
 - [Email Inspiration MCP](https://help.emaillove.com/plugin/ai/email-inspiration-mcp)
 
+## Security and data handling
+
+Most of what these skills do stays inside your own Figma file. One route, used only when there is
+no component to instance, sends a rendered design image to an Email Love service to get email
+structure back. [SECURITY.md](SECURITY.md) covers what is sent, when, and how to avoid it for
+sensitive material.
+
 ## Support
 
 Email [hello@emaillove.com](mailto:hello@emaillove.com) and we'll respond within a business day.

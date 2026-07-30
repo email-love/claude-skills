@@ -1,0 +1,32 @@
+{
+  "description": "Source-alignment record between the Claude skills in this repo and the Codex plugin port in email-love/codex-agents. Its job is to stop a fix from landing in one surface and silently never reaching the other. Update it whenever either surface ships a change that the other should mirror, and stamp lastAlignmentReview when you have checked the two are in sync.",
+  "lastAlignmentReview": "2026-07-29",
+  "claudeSkills": {
+    "repo": "email-love/claude-skills",
+    "currentCommit": "b34384685ecac397bbba29f1638099c52c12fdda",
+    "skillVersions": {
+      "emaillove-figma-builder": "2.9.1",
+      "emaillove-eds-converter": "1.19.1",
+      "emaillove-migration-audit": "1.10.1"
+    }
+  },
+  "codexPlugin": {
+    "repo": "email-love/codex-agents",
+    "currentRelease": "v3.0.0",
+    "portsClaudeCommit": "d0d88b62656f8c54cc66abb20368546544c110cc",
+    "note": "v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills. Its content was ported from the Claude skills as of the commit above."
+  },
+  "drift": [
+    {
+      "claudeCommit": "f41e11f",
+      "summary": "Stop-and-resume rules (never stop silently, do not pause mid-batch, name the state file) and the builder wrong-file guard.",
+      "codexStatus": "Content-equivalent already present in the Codex repo via its own edit before v3.0.0 packaging. No port owed; the provenance pin above is simply one commit stale on paper."
+    },
+    {
+      "claudeCommit": "b343846",
+      "summary": "Release download fix (all bundles on every release), patch version bumps, and the per-skill update check reading marketplace.json.",
+      "codexStatus": "Claude-repo-specific. This is GitHub release and marketplace plumbing for the Claude skills and has no equivalent in the Codex plugin."
+    }
+  ],
+  "renderSpecIsCanonical": "The render rules (structure.md and references/render-spec.md here) are the single source of truth. The Codex plugin carries mirrored copies. When a render rule changes, change it here first, then regenerate the Codex references rather than hand-editing them, so the two cannot disagree."
+}

@@ -1,0 +1,33 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate repo
+        run: python3 scripts/validate_repo.py
+
+      - name: Build bundles and confirm references ship
+        run: |
+          bash build.sh
+          # The converter delegates to its references at runtime. A bundle without them
+          # installs broken, which is a failure class we have hit. Assert they are inside.
+          for ref in references/render-spec.md references/structure.md; do
+            if ! unzip -l dist/emaillove-eds-converter.skill | grep -q "emaillove-eds-converter/$ref"; then
+              echo "FAIL: eds-converter bundle is missing $ref"
+              exit 1
+            fi
+          done
+          echo "OK: bundles built and references present"
