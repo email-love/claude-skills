@@ -1,13 +1,13 @@
 {
   "description": "Source-alignment record between the Claude skills in this repo and the Codex plugin port in email-love/codex-agents. Its job is to stop a fix from landing in one surface and silently never reaching the other. Update it whenever either surface ships a change that the other should mirror, and stamp lastAlignmentReview when you have checked the two are in sync.",
-  "lastAlignmentReview": "2026-07-29",
+  "lastAlignmentReview": "2026-07-31",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
     "currentCommit": "b34384685ecac397bbba29f1638099c52c12fdda",
     "skillVersions": {
-      "emaillove-figma-builder": "2.9.1",
-      "emaillove-eds-converter": "1.19.1",
-      "emaillove-migration-audit": "1.10.1"
+      "emaillove-figma-builder": "2.9.2",
+      "emaillove-eds-converter": "1.19.2",
+      "emaillove-migration-audit": "1.10.2"
     }
   },
   "codexPlugin": {

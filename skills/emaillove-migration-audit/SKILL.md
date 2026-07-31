@@ -21,6 +21,11 @@ converting, that is Phase 2: it happens in a separate target file through the
 emaillove-eds-converter skill (Step 8 has the hand-off), and the source file stays read-only in
 that phase too.
 
+**If your environment lets you choose a model, use your most capable one here too.** The whole
+conversion phase builds on this report's classifications, so a misjudged verdict or a wrong
+source fidelity tier compounds into every module built from it. This is also work a customer runs
+once per migration, not daily, which is exactly when the extra cost is worth paying.
+
 ## How long this takes
 
 **The audit is the quick part.** It is read-only and creates nothing, so it runs in minutes,
@@ -826,7 +831,7 @@ they clean up anything the flags surfaced.
 
 ## Staying current
 
-This is version 1.10.1 of this skill. If you have web access, check once per conversation
+This is version 1.10.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

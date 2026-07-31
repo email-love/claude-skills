@@ -37,6 +37,13 @@ Three hard rules:
   A tier is a judgement the audit recommends and the customer's designer can overrule. If they
   overrule it, build under the tier they give you and record whose call it was.
 
+**If your environment lets you choose a model, use your most capable one for this skill.** A
+migration runs once and holds a large rule set at once, the render spec alone is tens of
+thousands of tokens, and a rule dropped partway through becomes a component that silently
+breaks on export later, for someone who was not here to catch it. That is a different budget
+than the emails a customer builds afterward against an already-verified design system, where a
+faster model is usually the right call.
+
 ## Inputs
 
 1. The migration audit report from the emaillove-migration-audit skill (file or pasted).
@@ -1075,7 +1082,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.19.1 of this skill. If you have web access, check once per conversation
+This is version 1.19.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

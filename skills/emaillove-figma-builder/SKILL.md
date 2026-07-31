@@ -53,6 +53,24 @@ file (latest version). If the Figma MCP exposes a `figma-use` skill or a
 
 Tell the user which path you are on and why, in one line, before you build.
 
+## Which model to run this with
+
+The two paths carry very different risk, so they are worth different model budgets.
+
+**Path B, and the migration-audit and eds-converter skills, deserve your strongest model.** That
+work holds a large rule set at once (the render spec alone runs tens of thousands of tokens) and
+a dropped rule becomes a component that silently breaks on export later, for someone who was not
+in this conversation to catch it. This is also work a customer does once, not daily, so the extra
+cost is small next to the cost of getting it wrong.
+
+**Path A, once a design system is already synced and verified, is a smaller job.** Instance a
+component, load its font, set text, done. A faster, cheaper model handles routine campaign
+builds reliably here, because mistakes are cheap and obvious: wrong copy in a button is visible
+the moment you look at it.
+
+If your environment lets you choose a model per task: your most capable model to build or
+migrate a design system, once. A faster model for the campaigns you build on it, every day after.
+
 ## How long a build takes, and telling the user first
 
 Building an email in Figma is **minutes, not seconds**, and a user expecting an instant result
@@ -827,7 +845,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.9.1 of this skill. If you have web access, check once per conversation
+This is version 2.9.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

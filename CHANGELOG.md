@@ -5,6 +5,11 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-figma-builder
 
+### 2.9.2
+- A "Which model to run this with" note: strongest model for Path B (and for the
+  migration-audit/eds-converter skills), a faster model for routine Path A campaign builds once a
+  design system is already synced and verified.
+
 ### 2.9.1
 - The downloadable bundle now carries the stop-and-resume rules that shipped after 2.9.0.
 - The update check reads `marketplace.json` rather than the repo-wide latest release, so a
@@ -20,6 +25,10 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Runtime expectations stated up front, so a normal multi-section build does not read as a hang.
 
 ## emaillove-eds-converter
+
+### 1.19.2
+- A model-choice note: use your most capable model for this skill, since a migration runs once
+  and a dropped rule becomes a component that silently breaks on export later.
 
 ### 1.19.1
 - Bundle and update-check fixes as above.
@@ -40,6 +49,10 @@ independent per skill. Every release attaches all three `.skill` bundles.
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.10.2
+- A model-choice note: use your most capable model here too, since the whole conversion phase
+  builds on this report's classifications.
 
 ### 1.10.1
 - Bundle and update-check fixes as above.
