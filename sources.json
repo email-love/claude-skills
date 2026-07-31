@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-07-31",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "b34384685ecac397bbba29f1638099c52c12fdda",
+    "currentCommit": "c0719be926b6428f5141a181935907b696b1bb59",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.2",
@@ -17,6 +17,11 @@
     "note": "v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills. Its content was ported from the Claude skills as of the commit above."
   },
   "drift": [
+    {
+      "claudeCommit": "c0719be",
+      "summary": "Model-choice guidance added to all three skills: strongest available model for Path B / migration-audit / eds-converter (one-time, high rule-count work), a faster model for routine Path A campaign builds.",
+      "codexStatus": "Not yet ported. Codex has no equivalent note. When porting, keep it model-agnostic (\"your strongest available model/effort setting\", not Claude model names), since Codex users choose from a different model set."
+    },
     {
       "claudeCommit": "f41e11f",
       "summary": "Stop-and-resume rules (never stop silently, do not pause mid-batch, name the state file) and the builder wrong-file guard.",
