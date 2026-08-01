@@ -20,7 +20,7 @@
       "name": "emaillove-migration-audit",
       "source": "./skills/emaillove-migration-audit",
       "description": "Read-only audit of an existing Figma design system for Email Love migration: a deduplicated module inventory with a verdict per module (live-text, editable-image, hybrid, not emailable), source fidelity classification, scale-factor detection where it applies, brand foundations including the source's content margin and content width, effort estimate, and a hand-off to the converter",
-      "version": "1.10.2",
+      "version": "1.10.3",
       "author": {
         "name": "Email Love"
       }
@@ -29,7 +29,7 @@
       "name": "emaillove-eds-converter",
       "source": "./skills/emaillove-eds-converter",
       "description": "Convert an audited legacy Figma design system into a working Email Love design system: foundations that fix one content width, plus one scale factor where the source's geometry is a specification and email standards where it is not, then modules in batches with design review between batches. Works from the module inventory, source fidelity tier, and brand foundations in an emaillove-migration-audit report",
-      "version": "1.19.2",
+      "version": "1.19.3",
       "author": {
         "name": "Email Love"
       }

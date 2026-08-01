@@ -565,6 +565,16 @@ Build the scaffold every later batch depends on:
    themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
    each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker and no theme keys.
    Do not copy this frame as a starting point for a module.
+
+   **A wrapper is FIXED at the target email width, as a component and as every instance of it.**
+   When Phase 3 drops wrapper instances into this root frame, size each instance
+   `layoutSizingHorizontal = 'FIXED'` at the same width the component was built at, not FILL.
+   Section 0's FILL rule (prefer FILL, pin only when you must) is for frames INSIDE a wrapper,
+   not for the wrapper itself. A wrapper sized FILL inherits from whatever container it is in,
+   which reads correctly the moment its container is this 640-wide root and breaks the moment
+   the same instance is placed elsewhere or the root width changes. The plugin's export also
+   reads column widths from the pinned wrapper width, so a FILL wrapper leaves the export math
+   ambiguous. Step 5 of Phase 3 has the matching verification.
 8. **Report** what was built, **the source fidelity tier you built under and one clause of why**,
    the target email width, and the content width you built
    at, the completion checklist result below, what the
@@ -859,6 +869,22 @@ This mapping covers almost everything you will meet:
   containing a line, never a frame with a solid fill. Childless wrappers export as empty
   cells. Legacy designs almost always express images and rules as fills on a frame, so this
   is the most common thing you must actively restructure rather than copy.
+- **A lockup is an `mj-group`, not two loose columns.** A two-column row is a lockup when it
+  needs to stay side by side on mobile, and the design does not say that in words. Recognizing it
+  is its own step, because nothing in the source labels it and the desktop screenshot the worker
+  read is silent on mobile behavior. Three visual tells, any one is enough:
+  - **Unequal columns with one small and fixed.** A logo beside a headline. An icon beside a line
+    of copy. A price chip beside a product name. A date beside a badge. The small column reads as
+    an attribute of the larger one, not as its own row of content.
+  - **The two columns share a single continuous background.** A colored bar, a boxed panel, a
+    rounded card. Stacking would split the background in half and the visual identity collapses.
+  - **The block sits in the top or bottom strip of the email as a header or footer.** Headers and
+    footers are lockups by default, because they read as one strip of chrome rather than a stack
+    of content blocks.
+  Two roughly equal columns of *content*, image beside copy or two product cards, are not lockups
+  and should stack normally on mobile. When in doubt, err toward grouping headers and footers, and
+  err toward stacking content rows. Every case gets a recorded decision either way in step 3
+  Part A of this phase, and step 5's mobile verification confirms the decision is present.
 - **A badge, pill, or icon sitting beside text is an `mj-group`, not a loose frame inside
   `mj-text-Frame`.** A loose frame there flattens to an image and detaches from the text.
   Rebuild it as a group inside the section: `mj-group` containing one `mj-column` that holds
@@ -933,7 +959,31 @@ This mapping covers almost everything you will meet:
   it read, so the swap is always a rebuild you make: record it in the module's report line.
 - Text over a single background photo is mj-hero territory, live text, not an image.
 
-### 3. Merge the mobile twin
+### 3. Decide mobile behavior
+
+**This step always runs, whether the source has a mobile twin or not**, because the biggest
+mobile decision is structural (mj-group vs loose columns), made in step 2, and it does not live
+in Mobile Styles data. An earlier version of this skill made this step "merge the mobile twin"
+and skipped it silently on unstructured legacy sources with no mobile frames, which is where the
+Portsmouth batch shipped with header lockups that stacked on mobile. Do not repeat that. This is
+the ONE mobile checkpoint every module gets, twin or no twin.
+
+**Part A: for every multi-column section, record the stacking decision.**
+
+Read each section in the module you just built. If it has more than one column, ask: does this
+stay side by side on mobile, or does it stack? Apply the lockup tells from step 2 (unequal
+columns with one small and fixed, columns sharing a continuous background, header or footer
+strips are lockups by default). Then write the decision and the reason in the module's report
+line, per section, in this format:
+
+- `header row: mj-group (lockup: logo + headline sharing the dark bar)`
+- `product cards row: loose columns (two equal content blocks, stack expected)`
+- `footer top row: mj-group (lockup: logo + H6 headline in one strip)`
+
+A section with more than one column and no recorded decision is not done. Step 5's mobile
+verification fails a module where any multi-column section lacks a decision.
+
+**Part B: merge the mobile twin, if one exists.**
 
 Diff the source's mobile frame against its desktop sibling and express every intentional
 difference as Mobile Styles data on the rebuilt nodes, via shared plugin data:
@@ -949,6 +999,8 @@ Ignore differences that are just the 390px frame being narrower; capture only de
 changes (padding scale, hidden elements, alignment shifts, reordered stacks). When a
 difference cannot be expressed in these keys (different copy, different image crop), note it
 in the module's report line for the designer.
+
+When the source has no mobile twin, Part B is a legitimate skip. Part A is not.
 
 ### 4. Confirm the component shape, add properties, and pick its category
 
@@ -1018,7 +1070,11 @@ checklist at the end of `references/render-spec.md`:
 - Sizing: walk the tree and confirm every frame is vertical HUG, the only fixed height is an
   `mj-spacer`, every FIXED width is one of the load-bearing cases, every pinned width that
   carries text has slack (render spec section 3.3.1), and each button's width sizing was
-  chosen for its mobile behavior (render spec section 0).
+  chosen for its mobile behavior (render spec section 0). **The wrapper itself is FIXED at the
+  target email width, on the component AND on every instance placed in the root email frame.**
+  A wrapper set to FILL is a fail: it inherits from its container instead of pinning its own
+  width, so the export math is ambiguous and the same instance breaks the moment it is placed
+  somewhere else. Phase 2 step 7 has the rationale.
 - Concession honored, where the row carried one: on a module built with the Two Column Swap, both
   columns are FIXED and their widths sum to the section content box, the text column's pin has
   slack, the `mj-image` rectangle is at the image column's
@@ -1050,7 +1106,17 @@ checklist at the end of `references/render-spec.md`:
   comparison for content and structure only:** the same blocks, in the same order, with the same
   copy and the same imagery. Margins, type sizes, and spacing are expected to differ, and listing
   them as divergences buries the ones that matter under noise a reviewer will then try to fix.
-- Mobile: list the mobile keys you set per node.
+  **Then take a second screenshot pair at mobile width (390px)**, both source and rebuild, and
+  diff those too. The desktop pair is silent on stacking by construction, so any group-vs-loose-
+  columns mistake is invisible in it; the mobile pair surfaces it in one glance. On the rebuild's
+  mobile screenshot, walk every section that had more than one column and confirm its actual
+  stacking behavior matches the decision recorded in step 3 Part A.
+- Mobile: every multi-column section has an explicit stacking decision from step 3 Part A
+  (either `mj-group` with the lockup reason, or `loose columns` with why stacking is expected),
+  and the shared plugin data keys that produce it are listed. A section with more than one column
+  and no recorded decision is a fail. An empty mobile list is impossible for a module with any
+  multi-column section: even "loose columns, stack expected, no keys set" is a real answer with a
+  visible line.
 
 ### 6. Batch report and gate
 
@@ -1082,7 +1148,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.19.2 of this skill. If you have web access, check once per conversation
+This is version 1.19.3 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

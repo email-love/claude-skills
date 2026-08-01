@@ -26,6 +26,27 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.19.3
+- **Mobile stacking now has a mandatory checkpoint** (Portsmouth batch 1 defect). Phase 3
+  step 3 renamed from "Merge the mobile twin" to "Decide mobile behavior" and split into
+  Part A (always runs: record a stacking decision per multi-column section) and Part B
+  (conditional: merge the mobile twin if one exists). The old skill silently skipped step 3
+  when there was no mobile twin, which is the common case on unstructured legacy sources,
+  and shipped header lockups that stacked on mobile as a result.
+- **The mj-group rule has concrete visual tells now** (Portsmouth defect same class). New
+  bullet in the "visual pattern" section names three tells for a lockup: unequal columns
+  with one small and fixed, columns sharing a continuous background, or the block being a
+  header or footer strip. Patterned on the bleed concession's "recognizing this is its own
+  step" treatment.
+- **Step 5 verification catches stacking defects.** Mobile check reworded from "list the
+  mobile keys you set" (empty list read as a pass) to require an explicit stacking decision
+  per multi-column section plus the keys that produce it. Visual check now takes a second
+  screenshot at mobile width so group-vs-loose-columns mistakes surface visually.
+- **Wrapper instance sizing documented** (Portsmouth defect 2). Phase 2 step 7 and Phase 3
+  step 5 both state: a wrapper is FIXED at the target email width, as a component and as
+  every instance of it. Section 0's FILL rule applies inside a wrapper, not to the wrapper
+  itself. Previously silent, so the inside-a-module default got misapplied one level up.
+
 ### 1.19.2
 - A model-choice note: use your most capable model for this skill, since a migration runs once
   and a dropped rule becomes a component that silently breaks on export later.
@@ -49,6 +70,15 @@ independent per skill. Every release attaches all three `.skill` bundles.
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.10.3
+- **Lockup rows are now a recognized build constraint** (Portsmouth batch 1 defect,
+  audit-side half). The build-constraints vocabulary now includes "a two-column row that
+  reads as a visual lockup" (logo + headline, icon + copy, shared background, header or
+  footer strips), which the row records as "`mj-group`; keep side by side on mobile".
+  Reason: the audit walks the whole library at once and is much better placed to notice
+  that six header rows across six emails are all the same lockup than the converter is,
+  meeting each one alone with only a desktop screenshot.
 
 ### 1.10.2
 - A model-choice note: use your most capable model here too, since the whole conversion phase

@@ -576,9 +576,16 @@ images that carry a crop transform or are clipped by overlapping siblings (the r
 the node, not the fill"), an image that is inset rather than full bleed and the percentage it is
 inset by, copy that has to stay outside an image for accessibility, a font this module in
 particular leans on, a pinned width this module cannot keep, spacing that has to come from one
-side only. Write each one short and imperative: one clause a builder can act on without reading
-anything else. A constraint that applies to the whole library belongs in Brand foundations or
-Flags instead of being repeated on twenty rows.
+side only, and **a two-column row that reads as a visual lockup** (a logo beside a headline, an
+icon beside a line of copy, columns sharing a single continuous background bar or card, header
+and footer strips): the row says "`mj-group`; keep side by side on mobile". This last one is
+worth calling out separately because the audit is walking the whole library and is much better
+placed to notice that six header rows across six emails are all the same lockup than the
+converter is, meeting each row alone with only a desktop screenshot in front of it. Two roughly
+equal content columns (image beside copy, two product cards) are not lockups and get no
+constraint; they stack on mobile normally. Write each constraint short and imperative: one
+clause a builder can act on without reading anything else. A constraint that applies to the
+whole library belongs in Brand foundations or Flags instead of being repeated on twenty rows.
 
 Signals that push a module from A toward B or C: vector logos and illustrations (email wants
 images), buttons built as nested app-style instances with state layers, stacked image fills,
@@ -831,7 +838,7 @@ they clean up anything the flags surfaced.
 
 ## Staying current
 
-This is version 1.10.2 of this skill. If you have web access, check once per conversation
+This is version 1.10.3 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
