@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-01",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "0c67f867d34c7395c7809997b3cd673ca26de1b6",
+    "currentCommit": "cb2551919baf867094471ce28626ca111c0fd820",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.10.3"
+      "emaillove-migration-audit": "1.11.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "cb25519",
+      "summary": "ESP migration v1 commit 1: audit skill no longer assumes Figma. New Step 0 source selector, plus a Local Folder Source adapter with Discover, Fetch, and audit-step adaptations. Report shape for non-Figma sources is deliberately slimmer. Klaviyo and Customer.io adapters land in commits 2 and 3 of the v1 series.",
+      "codexStatus": "Not yet ported. Wait until all three v1 source adapters (local folder, Klaviyo, Customer.io) land on Claude side, then port as one Codex commit. Codex's single migration skill covers both audit and conversion, so all three source adapters go into a new references/sources/ folder for progressive disclosure."
+    },
     {
       "claudeCommit": "0c67f86",
       "summary": "Portsmouth batch 1 fixes across converter and audit skills. Converter: mandatory mobile-decision checkpoint that runs on every module (not only when a mobile twin exists), concrete visual tells for the mj-group rule, step 5 verification that fails on missing stacking decisions, mobile-width screenshot in the visual check, and wrapper instance sizing (FIXED not FILL, on the component and every instance). Audit: lockup rows added to the recognized build-constraints vocabulary.",
