@@ -104,15 +104,50 @@ One worked example, the format to copy:
 > library file, or say "audit what you can see and flag the rest", and I will pick up from the saved
 > inventory at `./audit-state.json`.
 
+## Step 0: Pick your source
+
+Ask the customer where their existing emails live, in one question:
+
+> Where are the emails you want to migrate?
+> - (a) A Figma file (design system or template library)
+> - (b) A local folder of HTML files or PNG screenshots
+> - (c) Klaviyo (via the official Klaviyo MCP)
+> - (d) Customer.io (via the CIO MCP)
+
+Their answer decides everything downstream. The rest of the audit uses the source adapter for
+whichever they picked. **You cannot skip this question.** An unstated source is the default
+silent-failure mode that makes a converter walk a folder as if it were a Figma page, or
+inspects a Figma file as if it were a Klaviyo library.
+
+**Recommend Figma when it is on offer.** If the customer has their design system in a Figma
+file, that is by far the richest source: components, styles, and variables are structured data,
+cross-source deduplication happens for free, and the audit report is fully populated with
+verdicts and factor-detection. The other sources work and produce a real Email Love design
+system out the other end, but they carry less metadata forward and the audit report is slimmer.
+Say this once and honestly, then follow whichever source the customer actually has.
+
+Source adapters:
+
+- **(a) Figma:** the rest of this document as-written. No adapter needed; proceed to Step 1
+  below.
+- **(b) Local folder:** load the Local Folder Source section at the end of this file, then
+  follow its Discover, Fetch, and audit-step adaptations in place of the Figma-specific
+  behavior below.
+- **(c) Klaviyo:** load the Klaviyo Source section. (Coming in v1.)
+- **(d) Customer.io:** load the Customer.io Source section. (Coming in v1.)
+
 ## Step 1: Scope the input
 
-You need the Figma file link. If several files hold the design system, audit each. Ask only
-three questions if not obvious: which frames or pages are the email templates (as opposed to
-web or app design); whether there is an existing production email you can use as a reference
-for how their emails actually render today; and whether the component masters live in this
-file or in a separate Figma library, and if separate, ask for that file too. A missing
-library file is the most common blocker an audit surfaces, and knowing up front saves the
-report from guessing about components it cannot see.
+For a Figma source, you need the file link. If several files hold the design system, audit
+each. Ask only three questions if not obvious: which frames or pages are the email templates
+(as opposed to web or app design); whether there is an existing production email you can use
+as a reference for how their emails actually render today; and whether the component masters
+live in this file or in a separate Figma library, and if separate, ask for that file too. A
+missing library file is the most common blocker an audit surfaces, and knowing up front saves
+the report from guessing about components it cannot see.
+
+For any other source, follow the scoping instructions in that source's adapter section at the
+end of this file.
 
 ## Step 2: Survey the file
 
@@ -836,9 +871,114 @@ letting a batch start without it.
 Offer to answer questions about any specific module's verdict, and to re-run the audit after
 they clean up anything the flags surfaced.
 
+## Source Adapters
+
+Load only the section for the source the customer picked in Step 0. Each adapter defines its
+own Discover step (what replaces Step 2's Figma survey), its own Fetch step (how to hand each
+item to the design-converter worker in Phase 3), and the specific audit-step adaptations
+that apply because the source is not Figma.
+
+The adapters are ordered by simplicity and by how much of the audit report they can populate.
+Local Folder is the simplest and the most bare-bones; Klaviyo and Customer.io carry more
+template metadata forward.
+
+### Source: Local Folder
+
+The customer has emails as `.html` files, `.eml` files, PNG screenshots, or a mix, sitting in
+a folder they can point Claude at. **Requires Claude Code** (local file access). Not usable
+from Claude.ai.
+
+**Discover.** Ask the customer for the folder path. Then walk it once, non-recursive by
+default (recursive only if they say so), and list every candidate file:
+
+```
+find <folder> -maxdepth 1 -type f \( -iname '*.html' -o -iname '*.htm' -o -iname '*.eml' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \)
+```
+
+Group the results by inferred template intent from the filename. Common patterns:
+
+- `welcome.html`, `welcome-v2.html`, `welcome-final.html` → three versions of the same
+  welcome email; ask which is current.
+- `holiday-2024-01.html` ... `holiday-2024-12.html` → a monthly newsletter series; treat as
+  one template with 12 sends.
+- Anything ambiguous, ask.
+
+Report the discovery back to the customer:
+
+> Found 14 candidate emails in your folder: 8 HTML, 3 PNG screenshots, 3 .eml exports.
+> Grouped into 11 distinct templates (2 welcome, 6 promo, 3 lifecycle). Confirm before I
+> convert.
+
+**Do not walk without asking.** A `find` on the customer's Downloads folder returns all their
+personal emails and receipts. Confirm the path is a folder of source-of-truth email templates,
+not a general inbox export or a downloads dump.
+
+**Fetch.** For each item the customer approves:
+
+- **`.html`:** read the file. Render it to PNG at the target email width using headless
+  Chrome:
+  ```
+  google-chrome --headless=new --screenshot=<out.png> --window-size=<width>,4000 --force-device-scale-factor=2 file://<absolute-path>
+  ```
+  Trim trailing blank space before sending to the converter. A screenshot padded with empty
+  page invites the worker to invent spacers.
+- **`.eml`:** extract the `text/html` part using the customer's local Python
+  (`email.parser`); render as above. Fall back to the `text/plain` part only if HTML is
+  absent, and tell the customer plain-text emails will not produce an interesting design
+  system.
+- **`.png` / `.jpg`:** use directly. Do not upscale. If it is under email width, tell the
+  customer the render will be limited by the source resolution.
+
+Send the resulting PNG to the design-converter worker exactly as in Path B of the
+`emaillove-figma-builder` skill (see its B3 step, or the `emaillove-eds-converter` skill's
+Phase 3 step 1), same headers, same `promptInputs` (with `emailWidth` pinned to the target).
+The converter is source-agnostic once the input is a PNG.
+
+**Audit-step adaptations.** The audit steps that change from the Figma default when the
+source is a local folder:
+
+- **Step 2 (Survey the file):** Not applicable. There is no Figma file to survey. Replaces
+  with the Discover step above: the list of candidate templates plus the raw counts.
+- **Step 3 (Source fidelity):** Local sources are always **REFERENCE ONLY**. The customer's
+  HTML/PNG carries no styles, variables, or component structure that could serve as a
+  specification for widths, spacing, or type sizes. Build to email standards, no scale factor.
+- **Step 4 (Scale factor):** Not applicable, per Step 3.
+- **Step 5 (Split into modules, classify):** Runs per-template rather than across-templates.
+  Each template's modules are listed independently in the inventory. **No cross-template
+  deduplication in v1**, so a header used in 5 templates becomes 5 near-identical modules,
+  collapsed during design review. Say so in the report explicitly.
+- **Step 6 (Brand foundations):** Extract from the first 3 templates' worker output. Palette
+  and typography come back from the converter's OCR; the customer confirms them. Do not
+  attempt to extract from a single template; the sample is too small.
+- **Step 7 (Effort estimate):** Straight per-template estimate. No dedup means one component
+  per module per template, so the count is higher than the Figma path would produce. Call this
+  out explicitly in the estimate.
+
+**Report shape for a local-folder source.** Slimmer than the Figma report. It carries:
+
+- The source path and the confirmed template count.
+- Per-template list: name, format (HTML / EML / PNG), module count, verdict rollup.
+- Brand foundations proposal derived from the first 3 templates.
+- **The one flag every local-folder audit carries:** cross-template deduplication is
+  deferred to design review, so the initial component count is higher than a formal design
+  system's would be.
+- Effort estimate as designer-days, with the "higher than usual due to no dedup" caveat.
+
+Not present in the local-folder report: verdict-by-verdict rollup across a shared batch,
+scale-factor block, source-fidelity classification section (it is always REFERENCE ONLY,
+stated once at the top).
+
+### Source: Klaviyo
+
+Coming in v1 (next commit).
+
+### Source: Customer.io
+
+Coming in v1 (next commit).
+
 ## Staying current
 
-This is version 1.10.3 of this skill. If you have web access, check once per conversation
+This is version 1.11.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

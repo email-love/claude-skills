@@ -71,6 +71,24 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.11.0
+
+- **ESP migration v1, commit 1 of the series.** The audit no longer assumes the source is a
+  Figma file. New Step 0 ("Pick your source") at the top of the audit asks the customer where
+  their emails live: a Figma file (current behavior), a local folder of HTML/EML/PNG, Klaviyo,
+  or Customer.io.
+- **Local Folder source adapter** added at the end of the skill. Discover walks the folder
+  once, groups by inferred template intent, and confirms with the customer before proceeding.
+  Fetch renders HTML/EML to PNG at the target email width via headless Chrome (or uses PNG
+  directly), then hands each to the design-converter worker on the existing Path B route. The
+  audit-step adaptations are named explicitly: no file to survey (Step 2 replaced), always
+  REFERENCE ONLY (Step 3), no scale factor (Step 4), per-template modules with no cross-
+  template dedup in v1 (Step 5), foundations from first 3 templates (Step 6), effort estimate
+  higher than Figma path due to no dedup (Step 7).
+- Report shape for local-folder sources is deliberately slimmer than the Figma report: no
+  verdict-by-verdict rollup, no scale-factor block, no source-fidelity classification section.
+- Klaviyo and Customer.io adapters come in commits 2 and 3.
+
 ### 1.10.3
 - **Lockup rows are now a recognized build constraint** (Portsmouth batch 1 defect,
   audit-side half). The build-constraints vocabulary now includes "a two-column row that
