@@ -12,20 +12,20 @@
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
-    "currentRelease": "v3.0.0",
-    "portsClaudeCommit": "d0d88b62656f8c54cc66abb20368546544c110cc",
-    "note": "v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills. Its content was ported from the Claude skills as of the commit above."
+    "currentRelease": "v3.0.1",
+    "portsClaudeCommit": "0c67f867d34c7395c7809997b3cd673ca26de1b6",
+    "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
     {
       "claudeCommit": "0c67f86",
       "summary": "Portsmouth batch 1 fixes across converter and audit skills. Converter: mandatory mobile-decision checkpoint that runs on every module (not only when a mobile twin exists), concrete visual tells for the mj-group rule, step 5 verification that fails on missing stacking decisions, mobile-width screenshot in the visual check, and wrapper instance sizing (FIXED not FILL, on the component and every instance). Audit: lockup rows added to the recognized build-constraints vocabulary.",
-      "codexStatus": "Not yet ported. Codex has one migration skill covering both audit and conversion, so all four converter-side changes plus the audit-side change apply. Priority: high, this is the class of defect a customer catches on a real batch."
+      "codexStatus": "Ported in v3.0.1 (codex-agents commit daea242). Landed in the single migration skill (module-conversion.md, foundations.md, audit.md)."
     },
     {
       "claudeCommit": "c0719be",
       "summary": "Model-choice guidance added to all three skills: strongest available model for Path B / migration-audit / eds-converter (one-time, high rule-count work), a faster model for routine Path A campaign builds.",
-      "codexStatus": "Not yet ported. Codex has no equivalent note. When porting, keep it model-agnostic (\"your strongest available model/effort setting\", not Claude model names), since Codex users choose from a different model set."
+      "codexStatus": "Ported in v3.0.1 (codex-agents commit daea242) on both codex skills, kept model-agnostic (talks about 'strongest available model or reasoning-effort setting' rather than naming Claude models)."
     },
     {
       "claudeCommit": "f41e11f",
