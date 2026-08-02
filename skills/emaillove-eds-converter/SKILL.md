@@ -1326,11 +1326,29 @@ checklist at the end of `references/render-spec.md`:
   same shape as the band detection the audit uses for module boundaries; the difference is
   that here it fires on one module at a time and produces a padding number rather than a
   boundary.
-  **Then take a second screenshot pair at mobile width (390px)**, both source and rebuild, and
-  diff those too. The desktop pair is silent on stacking by construction, so any group-vs-loose-
-  columns mistake is invisible in it; the mobile pair surfaces it in one glance. On the rebuild's
-  mobile screenshot, walk every section that had more than one column and confirm its actual
-  stacking behavior matches the decision recorded in step 3 Part A.
+  **Mobile visual: render it, do not reason about it.** Figma's canvas has no mobile
+  breakpoint, so `get_screenshot` at 390px just renders the canvas at 390px, not the
+  plugin's mobile treatment. An agent that follows the older "second screenshot pair at
+  mobile width" instruction is looking at desktop-shaped pixels resized, not at what
+  reaches an inbox on a phone, and the check silently degrades to a recorded stacking
+  intention. Use the plugin's headless render instead: after the batch's modules are
+  built and uploaded to the plugin library (which requires the hand-off's send-readiness
+  pass on this batch first, or a provisional QA upload of just this batch's wrappers),
+  compose a test email from them and call `emaillove_preview_email` on the compose
+  token; the response carries desktop and mobile renders from the exporter. Diff the
+  mobile view against the source's mobile view (or the source screenshot for a source
+  without a mobile design). **Fail the batch on any of these**, each of which is
+  invisible on the Figma canvas and in a desktop pair:
+  - a word broken mid-string (this is the section 3.3.2 group-shrink defect)
+  - an image whose aspect ratio differs from the desktop view (same class)
+  - a stacked column still carrying its desktop gutter as an indent
+  - a section that stacked where step 3 Part A recorded a group decision, or grouped
+    where it recorded stack
+
+  Then walk every multi-column section on the mobile render and confirm its actual
+  behavior matches the step 3 Part A decision. **The order matters on a migration**:
+  build the batch, upload provisionally, render, diff, only then open the next batch.
+  A construction mistake found at batch 1 is one fix; found at batch 5 it is five.
 - Mobile: every multi-column section has an explicit stacking decision from step 3 Part A
   (either `mj-group` with the lockup reason, or `loose columns` with why stacking is expected),
   and the shared plugin data keys that produce it are listed. A section with more than one column
@@ -1472,7 +1490,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.30.0 of this skill. If you have web access, check once per conversation
+This is version 1.31.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

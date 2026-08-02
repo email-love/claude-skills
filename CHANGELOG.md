@@ -26,6 +26,25 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.31.0
+- **Mobile visual: render it, do not reason about it** (Red Paddle defect). Phase 3 step 5
+  Visual bullet rewritten. Figma's canvas has no mobile breakpoint, so `get_screenshot` at
+  390px just renders desktop-shaped pixels at 390px, not the plugin's mobile treatment.
+  The old "second screenshot pair at mobile width" instruction silently degraded to a
+  recorded intention, not a check. Replaced with a headless render via
+  `emaillove_preview_email` after the batch is uploaded provisionally to the plugin
+  library; the response carries desktop and mobile renders from the exporter.
+- Fail conditions named explicitly: word broken mid-string (task #42's 3.3.2 group-shrink
+  defect), image aspect ratio differs from desktop, stacked column carrying desktop gutter
+  as indent, section that stacked where step 3 Part A recorded group (or vice versa).
+- Order stated for migrations: build the batch, upload provisionally, render, diff, only
+  then open the next batch. A construction mistake found at batch 1 is one fix; at batch
+  5 it is five.
+- Rationale: three of the four Red Paddle corrections were mobile-only, every one caught
+  by the customer manually exporting screenshots from the plugin and sending a zip. The
+  customer should not be the mobile test harness when there is an MCP tool for it.
+- Bumps to 1.31.0 (minor: workflow change to Phase 3 step 5 verification).
+
 ### 1.30.0
 - **New render spec section 3.3.2: group columns shrink on mobile, and 3.3.1 does not
   protect them** (Red Paddle defect). Section 3.3.1 protects a pinned column against font
