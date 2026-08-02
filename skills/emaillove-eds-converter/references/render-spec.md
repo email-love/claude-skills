@@ -1268,11 +1268,37 @@ The route, since `figma.createImageAsync` is unavailable to an agent:
    node, or `node.exportAsync`, do the same job), at 2x, to a local PNG. Reading
    `fills[0].imageHash` and fetching that asset instead is the mistake, not the
    shortcut.
-2. `upload_assets` to place that PNG onto the `mj-image` rectangle in the target
+2. **Open the exported PNG before you upload it, and look at it.** Three failure
+   modes each present as a layout bug rather than an asset bug, which is why they
+   cost hours instead of minutes:
+   1. **Baked-in white.** A node whose own background is white exports opaque,
+      and dropped onto a colored band it reads as a white box. Symptom on
+      Red Paddle: a cart icon and a warranty diamond both rendered as white
+      boxes on the blue and dark bands respectively, and the dry-bag product
+      cutout rendered as a white block on the blue band. For line art, key the
+      white to transparency and set the color explicitly; for a photographic
+      cutout, flood-fill the surround from the border to the band color
+      (preserves white highlights inside the product).
+   2. **The neighbour's content.** When slicing out of a rendered parent frame
+      (task #32's render-once-crop-locally technique), **check the crop's far
+      edge against where the adjacent column starts**, not against the source
+      node's declared width. A node can be wider than its visible content, and
+      the difference will be somebody else's text. Symptom on Red Paddle: a
+      T-shirt photo baked in 28px of the neighbouring column's text (`Lor`,
+      `L`, `con`, and a button edge), and the geometry read correct at every
+      level (columns at the right x, right widths, no overlapping siblings), so
+      the layout got chased twice and the component rebuilt once before anyone
+      thought to open the PNG.
+   3. **A fused row that is not missing.** Section 4.2.2 already covers this.
+      It is the same discipline: look at the pixels.
+   A useful check on a sliced icon set is to composite each one onto its real
+   band color and look at the result before uploading. It takes seconds and it is
+   the difference between "the icons are broken" and "the icons are fine".
+3. `upload_assets` to place that PNG onto the `mj-image` rectangle in the target
    file. The crop is baked into the pixels now, so the fill is a plain
    `scaleMode: 'FILL'` with an identity transform and there is no crop left to
    reproduce.
-3. Verify against a screenshot of the SOURCE NODE, never against the source's
+4. Verify against a screenshot of the SOURCE NODE, never against the source's
    raw asset.
 
 **Aspect ratio: preserve the render's, never stretch to fit a chosen width.**

@@ -26,6 +26,20 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.32.2
+- **Open every exported PNG before uploading it** (Red Paddle defect). Render-spec 4.2.1
+  now has an explicit step between download and upload: open the PNG and look at it. Three
+  failure modes named, each of which presents as a layout bug rather than an asset bug:
+  baked-in white (a node whose own background is white exports opaque and reads as a white
+  box on a colored band; key white to transparency for line art, flood-fill surround to
+  band color for photographic cutouts), neighbour's content (check the crop's far edge
+  against where the adjacent column starts, not against the source node's declared width;
+  a node can be wider than its visible content), and fused row not missing (already 4.2.2).
+- Red Paddle: four asset defects, all presented as layout bugs. The T-shirt one baked in
+  28px of the neighbouring column's text; the layout got chased twice and the component
+  rebuilt once before anyone opened the PNG.
+- Bumps to 1.32.2 (patch: enhancement to existing 4.2.1 rule).
+
 ### 1.32.1
 - **Cap-height measurement method** for settling type-size disagreements (Red Paddle
   defect). New render-spec section 5.2.1: when the worker returns a size and the ramp says
