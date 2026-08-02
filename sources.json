@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-01",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "10239377eac2aad0b99bf599df719bfd4f0b9eb1",
+    "currentCommit": "c424d668268fdaec8f44c8c54b109e11f25788f5",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.11.1"
+      "emaillove-migration-audit": "1.11.2"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "c424d66",
+      "summary": "ESP migration v1 commit 3: Marketo Source adapter added, prioritized ahead of Customer.io for an enterprise onboarding on Marketo scheduled 2026-08-05. No Marketo MCP exists, so adapter uses direct REST with OAuth 2.0 client-credentials: one-time credential collection (Munchkin ID, client ID, client secret, optional workspace), auth with token caching, list emailTemplates paginated by offset with status=approved sort locally by updatedAt, get emailTemplate/{id}/content, headless-Chrome render to PNG, design-converter worker. Rate limits (100/20s, 10K/day) explicit; adapter directs serial fetch. Marketo-specific report additions: template ID, direct edit URL, folder path, workspace. Named v1 caveat: pulls Templates only, not Emails or Content Blocks. Step 0 updated to add Marketo as (d), Customer.io renumbered to (e).",
+      "codexStatus": "Not yet ported. Wait for commit 4 (Customer.io) so all four v1 source adapters port to Codex as one commit."
+    },
     {
       "claudeCommit": "1023937",
       "summary": "ESP migration v1 commit 2: Klaviyo Source adapter added. Uses official Klaviyo MCP for discover (get_account_details + list_email_templates with -updated sort, pagination), fetch (get_email_template returning HTML, then headless-Chrome render to PNG, then design-converter worker). Deliberately avoids render_email_template due to its 3/s burst rate limit. Report carries Klaviyo template ID, direct edit URL, and editor_type per row. v1 pulls templates only, not campaigns/flows.",
