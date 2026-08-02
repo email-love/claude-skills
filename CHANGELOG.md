@@ -26,6 +26,18 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.33.2
+- **Cloudflare 403 `error code: 1010` workaround documented** (Red Paddle defect, closes
+  queue). Phase 3 step 1 POST-to-worker instructions now say: if the worker returns 403
+  with body `error code: 1010`, it is a Cloudflare browser check, not an auth failure.
+  Retry with a normal browser User-Agent header; the Bearer/provider headers are correct
+  as documented.
+- Rationale: Red Paddle agent hit this and every POST returned 403 with body
+  `error code: 1010`. Auth was irrelevant (empty Bearer, no Bearer, and a real token all
+  failed identically); setting a browser User-Agent fixed it instantly. The 403 sat next
+  to Bearer/license-key instructions, so the natural conclusion was an auth problem.
+- Bumps to 1.33.2 (patch: infrastructure workaround note).
+
 ### 1.33.1
 - **`mj-navbar` mapping documented** (Red Paddle defect). Render-spec section 6.1 note now
   says: when the worker returns `mj-navbar`, do not invent a mapping. Rebuild as one

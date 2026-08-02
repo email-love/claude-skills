@@ -971,6 +971,14 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    - The response body is the MJML JSON. Response header `X-Cache` says HIT or MISS;
      `X-Trivial-Response: true` means the result degenerated to a single image and you
      should re-run with `recache=1` (and usually `decomposeRasterized=1`).
+   - **If the worker returns `403` with body `error code: 1010`, that is a Cloudflare
+     browser check, not an auth failure.** The edge is fingerprinting the User-Agent and
+     rejecting non-browser clients. The Bearer and provider headers above are correct as
+     documented; auth is not the problem. Retry with a normal browser `User-Agent` header
+     (any recent Chrome or Firefox UA string works) and the request goes through. This is
+     an infrastructure quirk the worker edge may lift later, so the first line of the
+     error body is the diagnostic to check; a 403 without `error code: 1010` is still an
+     auth problem and the Bearer/provider check applies.
 3. **Save the MJML JSON to disk per module** so the transcription and later re-verification
    work from a stable input.
 
@@ -1560,7 +1568,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.33.1 of this skill. If you have web access, check once per conversation
+This is version 1.33.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

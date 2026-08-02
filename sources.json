@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "45cea89",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.33.1",
+      "emaillove-eds-converter": "1.33.2",
       "emaillove-migration-audit": "1.18.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1 (four source adapters), v1.5 (Google Drive + SharePoint cloud adapters), v1.13 (six more ESP adapters), Portsmouth v2 (six defect fixes from a real customer migration), Portsmouth v3 (seven defect fixes from a Codex review of the built Portsmouth file). Major bump because the audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). v3.0.1 previously ported model-choice guidance (c0719be) and Portsmouth batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Red Paddle defect fix (closes queue): Cloudflare 403 error code 1010 workaround (task #51). Phase 3 step 1 POST-to-worker instructions: if worker returns 403 with body 'error code: 1010', that is a Cloudflare browser check not an auth failure. Retry with a normal browser User-Agent header; Bearer/provider headers are correct. Rationale: Red Paddle agent hit this, every POST returned 403 with error code 1010, auth was irrelevant (empty Bearer, no Bearer, real token all failed identically); setting a browser User-Agent fixed it instantly. The 403 sat next to Bearer/license-key instructions so the natural conclusion was an auth problem. Closes Red Paddle queue (10 defect fixes total). Bumps converter 1.33.1 to 1.33.2.",
+      "codexStatus": "Not yet ported. Task #51 of Red Paddle queue, tenth and last defect fix. Red Paddle queue is now complete."
+    },
     {
       "claudeCommit": "45cea89",
       "summary": "Red Paddle defect fix: palette census clusters by ROLE + type ramp floor (task #50, enhancement to task #34). Palette census: sample text-node fills as well as background fills; same hex used as a band and as text on white are TWO theme tokens, not one, because the theme layer needs to move them independently. A palette built from fills alone finds bands and buttons and misses type. Type ramp: where the smallest cluster is below 12px, recommend a floor at 12 (or customer-confirmed floor). Rationale: Red Paddle shipped nav link #888888 and body color #222222 (used only on text) missing from the theme roles list, both added mid-batch; value-prop captions at ~11px standardised up to 12 mid-build. Bumps audit 1.17.0 to 1.18.0.",
