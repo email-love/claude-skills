@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "dd9bd52",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.27.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "dd9bd52",
       "summary": "Portsmouth v3 defect fix: WCAG contrast table in Phase 2 foundations report (task #38). For every text-on-fill pairing the theme will render (textColor on backgroundColor, linkColor on backgroundColor, buttonTextColor on buttonContentColor, plus explicit text-on-brand pairings), compute WCAG contrast ratio and label pass/fail. Flag pairings that fail 4.5:1 for normal text or sit at 3:1 large-text floor. On a fail, name the darker semantic token that reaches threshold (Portsmouth's blue/700 #0078B4 = 4.83:1) or note designer needs to supply one. Rationale: Portsmouth shipped color/text/accent = #009EE2 at 3.00:1 on white and used it on 18px bold subheads (requires 4.5:1 AA). Bumps converter 1.26.0 to 1.27.0. Closes Codex finding 9.",
       "codexStatus": "Not yet ported. Task #38 of Portsmouth v3 queue, fifth of 7 defect fixes."
     },
