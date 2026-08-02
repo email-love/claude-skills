@@ -71,6 +71,36 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.11.3
+
+- **ESP migration v1, commit 4 (final adapter of the v1 series). Customer.io Source adapter
+  added,** replacing the "Coming in v1 (next commit)" stub. Uses the Customer.io MCP
+  (`cio_read_api` + `cio_schema` + `cio_prime`).
+- Adapter directs the agent to call `cio_prime` first every session for latest authoritative
+  usage instructions, then `cio_auth_status` to confirm the environment.
+- Names the Customer.io product-naming trap up front: "Automations" in the UI == the
+  `campaigns` API resource. Adapter tells the agent to speak the customer's language while
+  using the API resource names in tool calls.
+- v1 pulls **Templates and Newsletters only** (the two most direct "here's an email" places).
+  Discover asks the customer which of the two, or both. Uses `cio_schema` to fetch current
+  list-endpoint shapes before calling `cio_read_api`, so a schema drift doesn't silently
+  produce wrong fields.
+- Fetch: `cio_read_api` on the get-endpoint returns the resource with HTML body. Adapter
+  notes the field name varies (`body`, `html`, `content`) and directs the agent to check
+  the get-endpoint schema for the current field name.
+- Explicit v1 non-goals named for the customer up front: does NOT pull Automations
+  (campaigns) or their messages, Transactional messages, Design Studio emails, Layouts, or
+  Snippets. If the customer's active content mostly lives in one of these surfaces, adapter
+  says so before running so the customer doesn't get a silently-partial result. v1.1 will
+  extend to campaign messages, transactional, and Design Studio.
+- Two Customer.io-specific report additions per row: asset ID + resource type + direct edit
+  URL, and the "templates vs newsletters" pool distinction.
+- Warning against reading Customer.io's own agent skills (`design-studio`, `fly-api`)
+  during a migration audit: they document CREATING content, not READING it out for
+  migration, and mixing them in mid-audit introduces contradictions.
+- Step 0's Customer.io load-reference stub updated (was "Coming in v1", now points to the
+  real section at the end of the file).
+
 ### 1.11.2
 
 - **ESP migration v1, commit 3 of the series. Marketo Source adapter added, prioritized

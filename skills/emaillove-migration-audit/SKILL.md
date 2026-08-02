@@ -136,7 +136,7 @@ Source adapters:
   behavior below.
 - **(c) Klaviyo:** load the Klaviyo Source section at the end of this file.
 - **(d) Marketo:** load the Marketo Source section at the end of this file.
-- **(e) Customer.io:** load the Customer.io Source section. (Coming in v1.)
+- **(e) Customer.io:** load the Customer.io Source section at the end of this file.
 
 ## Step 1: Scope the input
 
@@ -1199,11 +1199,146 @@ only Templates and present it as their whole library.
 
 ### Source: Customer.io
 
-Coming in v1 (next commit).
+The customer's emails live in Customer.io. Requires the Customer.io MCP connected to your
+session (`cio_read_api`, `cio_schema`, `cio_prime` at minimum).
+
+**First, read the prime doc.** `cio_prime` returns the current authoritative usage
+instructions for the whole CLI, and Customer.io's API surface has non-obvious behaviors
+(product-renaming, environment-scoping, non-obvious required fields). **Call it at the top
+of every session that uses this adapter, before anything else.** The prime doc supersedes
+anything below that has drifted.
+
+**Product-naming trap, worth knowing before you ask the customer anything:**
+
+- **"Automations" in the Customer.io UI == the `campaigns` API resource.** The API name did
+  not change when the UI renamed them. When the customer says "our automations," they mean
+  campaigns; when they say "our campaigns," they might mean campaigns (API) or newsletters,
+  ask which. When you talk back to the customer, use their word, not the API's.
+- **"Profiles" in the UI == `customers` API resource.** Not relevant to this adapter but
+  worth knowing for context.
+
+**Auth check.**
+
+Confirm the MCP is authenticated before Discover: call `cio_auth_status`. If it errors,
+tell the customer to run `cio auth login` and paste their `sa_live_` service-account token.
+Every request is workspace-scoped via `environment_id` (a Customer.io environment == a
+workspace); confirm the customer's environment ID up front.
+
+**What Customer.io actually contains, and what v1 pulls:**
+
+Customer.io has several places email content lives:
+
+- **Templates** (`/v1/environments/{env}/templates`): reusable email templates. Most direct
+  equivalent of Klaviyo/Marketo templates.
+- **Newsletters** (`/v1/environments/{env}/newsletters`): one-off email sends. This is
+  often where a customer's actual sent content lives, so worth pulling by default.
+- **Campaigns / Automations** (`/v1/environments/{env}/campaigns`): triggered workflows
+  containing messages. **Not pulled in v1.** Campaign message bodies live one level below
+  the campaign, and there is no simple "list all campaign message HTMLs" path.
+- **Transactional messages** (`/v1/environments/{env}/transactional_messages`): templates
+  for API-triggered sends. **Not pulled in v1.**
+- **Design Studio emails** (`/v1/environments/{env}/design_studio/emails`): the newer
+  Customer.io email builder with components + emails. **Not pulled in v1.** Modern CIO
+  customers may have most of their content here; if they mention Design Studio, tell them
+  v1 will miss that surface.
+- **Layouts** (`/v1/environments/{env}/layouts`): reusable email skeletons that wrap
+  content. **Not pulled in v1.**
+- **Snippets** (`/v1/environments/{env}/snippets`): reusable content blocks. **Not
+  pulled in v1.**
+
+**v1 pulls Templates and Newsletters only.** Ask the customer which (or both) at the top of
+Discover, since the balance depends on how they use CIO. Some are template-heavy, some are
+newsletter-heavy, most have both.
+
+**Discover.**
+
+1. Ask the customer which of {templates, newsletters, or both} to walk. Their answer
+   decides which of the two listings below to run.
+
+2. For each chosen resource, use `cio_schema` to fetch the current list-endpoint schema
+   (`cio_schema` with `templates.list` or `newsletters.list`) rather than assuming the exact
+   response shape. Customer.io evolves the API more frequently than the other ESPs in this
+   adapter, so grounding on the current schema costs one small call and avoids stale-field
+   bugs.
+
+3. List with `cio_read_api`. Auto-paginate with `--page-all` for anything beyond the first
+   page, and use `--jq` to keep the payload small on the discovery pass:
+
+   ```
+   cio api /v1/environments/{env}/templates \
+     --page-all \
+     --jq '.templates[] | {id, name, updated_at, type}'
+   ```
+
+   (Same shape for newsletters; the property name inside the JQ may differ, hence the
+   schema lookup in step 2.)
+
+4. Sort locally by `updated_at` descending after fetching. Ask the customer to filter when
+   the combined list is >~50, same reasoning as Klaviyo and Marketo: legacy A/B splits,
+   dead workflows, one-offs.
+
+Report the discovery to the customer:
+
+> Customer.io environment `123456` authenticated. Found 34 templates and 18 newsletters.
+> Top 20 by last-updated: Welcome Template, Onboarding Day 1 Newsletter, ... Confirm which
+> to migrate.
+
+**Fetch.**
+
+For each item the customer approves:
+
+1. Fetch the individual resource via `cio_read_api` with its get-endpoint path:
+
+   ```
+   cio api /v1/environments/{env}/templates/{template_id}
+   cio api /v1/environments/{env}/newsletters/{newsletter_id}
+   ```
+
+   The response's HTML body field name differs by resource type; use `cio_schema` on the
+   corresponding `.get` endpoint if unclear. Common field names: `body`, `html`, `content`.
+
+2. Render the HTML to PNG at the target email width using the same headless Chrome command
+   as the other adapters. Trim trailing blank space.
+
+3. Feed the resulting PNG to the design-converter worker on the same Path B route.
+
+**A note on Customer.io's own agent skills.** The CLI ships two skills that overlap with
+this adapter's domain: `cio skills read design-studio` and `cio skills read fly-api`. Do NOT
+follow either during a migration audit. They document how to CREATE content in Customer.io;
+this adapter READS content out of Customer.io for migration to Email Love. Reading either
+skill mid-audit will introduce contradictions.
+
+**Audit-step adaptations.**
+
+Same as the other ESP adapters: always REFERENCE ONLY, no scale factor, per-item modules
+with no cross-item dedup in v1, foundations from the first 3 items.
+
+Two Customer.io-specific report additions:
+
+- **Include the Customer.io asset ID, resource type, and direct edit URL** for every row
+  (the URL pattern differs by resource; templates and newsletters live at different app
+  paths).
+- **Include the "created via UI as template vs newsletter" distinction per row.** A
+  customer reviewing the migration report cares which of their two content pools each
+  module came from.
+
+**One honest v1 caveat, worth naming for the customer up front.** v1 pulls Templates and
+Newsletters. It does NOT pull:
+
+- **Automations (`campaigns`)** and their messages: where most triggered/lifecycle content
+  lives.
+- **Transactional messages**: where receipts, verification emails, password resets live.
+- **Design Studio emails**: Customer.io's newer email builder. Modern customers may keep
+  the majority of their content here.
+- **Layouts** and **Snippets**: reusable wrappers and content blocks.
+
+If the customer's active content mostly lives in one of the not-pulled surfaces, tell them
+so up front rather than silently returning a partial library. v1.1 will extend to campaign
+messages, transactional, and Design Studio.
 
 ## Staying current
 
-This is version 1.11.2 of this skill. If you have web access, check once per conversation
+This is version 1.11.3 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
