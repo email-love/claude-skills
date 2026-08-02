@@ -71,6 +71,45 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.13.0
+
+- **Six more ESP source adapters added: Brevo, Kit, ActiveCampaign, Iterable, Omnisend,
+  HubSpot.** These are the marketing-focused ESPs verified via web search (August 2026)
+  to have official MCPs. Each follows the same pattern as Klaviyo/CIO: introspect the
+  connected MCP's tool list at session start, list-templates (or list-campaigns / list-
+  broadcasts / list-automations, depending on the ESP's content model), get-template
+  returns HTML, render to PNG, feed to design-converter.
+- **Adapters direct the agent to introspect** the connected MCP's tools at session start
+  rather than hardcoding tool names, since MCPs at these ESPs are evolving and each
+  MCP's exact tool surface may drift over time. Links to each official docs page are
+  included so the agent can verify.
+- Per-ESP quirks called out up front:
+  - **Brevo**: API key grants FULL account access (not scoped). Treat as high-privilege
+    secret; adapter offers env-var path.
+  - **Kit**: content model is broadcasts + sequences + templates (three pools, ask
+    which). Kit is looser than a formal template ESP.
+  - **ActiveCampaign**: drag-and-drop templates convert more cleanly than raw HTML,
+    same as Klaviyo's SYSTEM_DRAGGABLE distinction.
+  - **Iterable**: MCP is currently beta and self-hosted via npm (not a hosted MCP).
+    Read-only by default. Adapter directs the agent to log any beta surprises for
+    Iterable feedback.
+  - **Omnisend**: ecommerce-focused, so many templates carry product blocks that pull
+    live product data at send time. PNG will render placeholder data; report says
+    product-block wiring must be rebuilt in target ESP.
+  - **HubSpot**: CRM + marketing platform (no email-only surface). Marketing emails
+    embed personalization tokens (fine), smart content blocks (only default variant
+    renders in PNG), and CTA-library links (won't survive migration verbatim).
+- Step 0 grows to 13 source options (a-m). Choices are appended rather than reordered,
+  so existing letter references stay stable.
+- Bumps to 1.13.0 (minor: six new capability adapters).
+
+**Verification honesty:** unlike Klaviyo and CIO (verified against loaded MCPs in the
+session that wrote them) and Marketo (verified against public REST docs), these six
+adapters are written against each MCP's public docs page without loaded tool signatures
+to verify tool names. The adapters direct the agent to introspect at runtime for this
+reason. When a specific customer uses one of these ESPs, verify the adapter against
+their actual MCP install and file corrections here.
+
 ### 1.12.0
 
 - **ESP migration v1.5: cloud-source adapters.** Two new source options added to Step 0

@@ -116,6 +116,12 @@ Ask the customer where their existing emails live, in one question:
 > - (e) Customer.io (via the CIO MCP)
 > - (f) Google Drive folder (via the Google Drive MCP)
 > - (g) SharePoint folder (via a Microsoft Graph MCP)
+> - (h) Brevo (via the official Brevo MCP)
+> - (i) Kit (via the official Kit MCP; formerly ConvertKit)
+> - (j) ActiveCampaign (via the official ActiveCampaign MCP)
+> - (k) Iterable (via the official Iterable MCP; currently beta)
+> - (l) Omnisend (via the official Omnisend MCP)
+> - (m) HubSpot (via the official HubSpot MCP)
 
 Their answer decides everything downstream. The rest of the audit uses the source adapter for
 whichever they picked. **You cannot skip this question.** An unstated source is the default
@@ -141,6 +147,12 @@ Source adapters:
 - **(e) Customer.io:** load the Customer.io Source section at the end of this file.
 - **(f) Google Drive folder:** load the Google Drive Source section at the end of this file.
 - **(g) SharePoint folder:** load the SharePoint Source section at the end of this file.
+- **(h) Brevo:** load the Brevo Source section at the end of this file.
+- **(i) Kit:** load the Kit Source section at the end of this file.
+- **(j) ActiveCampaign:** load the ActiveCampaign Source section at the end of this file.
+- **(k) Iterable:** load the Iterable Source section at the end of this file.
+- **(l) Omnisend:** load the Omnisend Source section at the end of this file.
+- **(m) HubSpot:** load the HubSpot Source section at the end of this file.
 
 ## Step 1: Scope the input
 
@@ -1446,9 +1458,218 @@ Same as Local Folder.
 URLs often include tenant-specific tokens and can look unwieldy; preserve them verbatim
 rather than trying to shorten them, since the customer's team will recognize them.
 
+### Source: Brevo
+
+The customer's emails live in Brevo (formerly Sendinblue). Requires the [official Brevo
+MCP](https://developers.brevo.com/docs/mcp-protocol) connected to your session. Auth is API
+key (Bearer token).
+
+**Security note that matters up front.** A Brevo API key grants FULL account access:
+sending, contact writes, template edits, everything. It is not a scoped read-only key like
+some ESPs offer. Treat the key as a high-privilege secret and offer the customer an
+environment-variable path (`BREVO_API_KEY`) so the literal key does not appear in the
+conversation history.
+
+**Discover.**
+
+1. Introspect the connected MCP's tool list at session start; tool names below are the
+   likely shape but the Brevo MCP has ~27 modules and evolves. Confirm what your
+   installation actually exposes.
+2. Call the templates-list tool. Filter to email templates (Brevo also handles SMS and
+   WhatsApp; ignore both for migration).
+3. Sort locally by last-modified. Report the count back to the customer.
+
+Same >50-template filter threshold as the other ESP adapters.
+
+**Fetch.**
+
+For each approved template, call the get-template tool. The response contains the raw HTML
+under a field the Brevo API commonly names `htmlContent` (verify against your MCP's tool
+schema). Render HTML to PNG via headless Chrome at the target email width. Feed to the
+design-converter worker.
+
+Brevo templates use Brevo's own personalization syntax (`{{ contact.FIRSTNAME }}`). Leave
+it in the render; the design-converter reads pixels, and the customer's Email Love design
+system will use its target ESP's merge tag syntax anyway.
+
+**Audit-step adaptations.**
+
+Same as the other ESP adapters: always REFERENCE ONLY, no scale factor, per-template
+modules with no cross-template dedup in v1, foundations from the first 3 items.
+
+**One honest caveat.** v1 pulls Brevo email templates only. Brevo customers often keep
+active content inside campaigns and automations too; if the customer's production content
+mostly lives in one of those, tell them so up front.
+
+### Source: Kit
+
+The customer's emails live in Kit (formerly ConvertKit). Requires the [official Kit
+MCP](https://developers.kit.com/mcp/kit-mcp) connected to your session. Auth is OAuth.
+
+**A framing note that matters.** Kit's content model differs from a formal-template ESP.
+Kit primarily has:
+
+- **Broadcasts**: one-off email sends.
+- **Sequences**: automated multi-email sequences (each step is an email).
+- **Templates**: reusable design templates that broadcasts and sequences can start from.
+
+For migration purposes, all three carry HTML content worth pulling. Ask the customer which
+of the three (or which combination) to migrate at the top of Discover.
+
+**Discover.**
+
+1. Introspect the connected MCP's tool list (Kit's MCP has 65+ tools; the exact
+   template/broadcast/sequence tool names vary).
+2. Call whichever list tool matches the customer's chosen pool: list-broadcasts,
+   list-sequences, or list-templates.
+3. Sort locally by last-modified. Report the count.
+
+Same >50 threshold and filter prompt.
+
+**Fetch.**
+
+For each approved item, call the corresponding get-item tool. The response includes the
+HTML body (field name varies by item type: check your MCP's tool schema). Render to PNG,
+feed to the design-converter.
+
+**Audit-step adaptations.** Same as other ESP adapters.
+
+**Kit specific report addition.** Include the pool type per row (broadcast / sequence
+step / template), so the customer can trace each migrated module back to where it came
+from in Kit.
+
+### Source: ActiveCampaign
+
+The customer's emails live in ActiveCampaign. Requires the [official ActiveCampaign
+MCP](https://developers.activecampaign.com/page/mcp) connected to your session. Auth is
+OAuth. The MCP has 46 write-capable tools; we only use the read-side for migration.
+
+**Discover.**
+
+1. Introspect the connected MCP's tool list at session start.
+2. ActiveCampaign has campaigns (one-off sends) and automations (workflows containing
+   emails). Templates are reusable designs. Ask the customer which pool to walk. For
+   migration, campaigns and templates are the most common source of design system
+   material; automation emails are usually variations of the same designs.
+3. Call the list tool for the chosen pool. Sort locally by last-modified. Report count.
+
+Same >50 threshold and filter prompt.
+
+**Fetch.**
+
+For each approved item, call the get-item tool. HTML body is under a `content` or `html`
+field depending on item type. Render to PNG, feed to the design-converter.
+
+**Audit-step adaptations.** Same as other ESP adapters.
+
+**One caveat.** ActiveCampaign templates can be either drag-and-drop or raw HTML.
+Drag-and-drop templates convert more cleanly than raw HTML (their layout is more
+structured), same trade-off as Klaviyo's `SYSTEM_DRAGGABLE` vs raw HTML templates. Include
+the template type per row in the report if the MCP surfaces it.
+
+### Source: Iterable
+
+The customer's emails live in Iterable. Requires the [official Iterable
+MCP](https://support.iterable.com/hc/en-us/articles/42936800222612-Overview-of-Iterable-s-MCP-Server)
+connected to your session. **Currently beta.** Read-only by default (which is exactly what
+migration needs).
+
+**One deployment note.** Iterable's MCP is a **self-hosted local deployment** installed
+via npm, not a hosted MCP the customer authenticates into. If the customer has not set it
+up, point them at the docs first. Setup takes a few minutes and requires their Iterable
+API key with template-read permissions.
+
+**Discover.**
+
+1. Introspect the connected MCP's tool list at session start (Iterable's MCP has 108 tools
+   at beta launch; the exact template-list name varies).
+2. Iterable has both templates (reusable designs) and campaigns (individual sends,
+   including within journeys). For migration, templates are the direct hit; campaigns are
+   where a customer's actual production content often lives.
+3. Ask which pool to walk. Call the list tool. Sort by last-modified. Report count.
+
+Same >50 threshold and filter prompt.
+
+**Fetch.**
+
+For each approved item, call the get-item tool. HTML body under a `html` field (verify
+against schema). Render to PNG, feed to the design-converter.
+
+**Audit-step adaptations.** Same as other ESP adapters.
+
+**Iterable specific report addition.** Since the MCP is beta, log any unexpected error or
+schema surprise in the report per row so the customer can flag it back to Iterable if
+needed. This helps their beta feedback loop and helps this adapter improve.
+
+### Source: Omnisend
+
+The customer's emails live in Omnisend (an ecommerce-focused ESP with email, SMS, and
+push). Requires the [official Omnisend MCP](https://mcp.omnisend.com/) connected to your
+session. Auth is OAuth.
+
+**Discover.**
+
+1. Introspect the connected MCP's tool list at session start.
+2. Omnisend content lives primarily in campaigns (one-off sends) and automations
+   (triggered workflows). Templates are reusable designs used by campaigns. Ask the
+   customer which pool to walk.
+3. Call the list tool. Sort by last-modified. Report count.
+
+Same >50 threshold and filter prompt.
+
+**Fetch.**
+
+For each approved item, call the get-item tool. HTML body under `html` or `content`
+(verify against schema). Render to PNG, feed to the design-converter.
+
+**Audit-step adaptations.** Same as other ESP adapters.
+
+**One Omnisend-specific caveat.** Omnisend is ecommerce-focused, so many templates carry
+product blocks that pull live product data at send time. Those blocks will render in the
+PNG with placeholder or last-cached product data. The converted design system module
+inherits the layout but not the live product logic; the customer would rebuild the
+product-block wiring in their target ESP. Say this in the report so the customer knows to
+expect it.
+
+### Source: HubSpot
+
+The customer's emails live in HubSpot's marketing hub. Requires the [official HubSpot
+MCP](https://developers.hubspot.com/mcp) connected to your session. HubSpot's MCP is a
+**CRM and marketing platform server**; it reads campaigns and manages contacts. There is
+no separate email-only surface, so this adapter uses the marketing-emails endpoints.
+
+**Discover.**
+
+1. Introspect the connected MCP's tool list at session start.
+2. HubSpot marketing content lives in **marketing emails** (drafts, published, and
+   automated) and **email templates**. Ask the customer which pool to walk; most
+   customers want marketing emails since that is where the sent design lives.
+3. Call the list tool. Filter to `published` status by default (drafts are usually
+   experiments). Sort by last-modified. Report count.
+
+Same >50 threshold and filter prompt.
+
+**Fetch.**
+
+For each approved item, call the get-item tool. HTML body under a HubSpot-specific field
+(verify against the MCP tool schema; HubSpot APIs typically expose `emailBody` or a
+rendered-body field).
+
+Render to PNG, feed to the design-converter.
+
+**Audit-step adaptations.** Same as other ESP adapters.
+
+**One HubSpot-specific caveat.** HubSpot marketing emails often embed HubSpot's
+personalization tokens (`{{ contact.firstname }}`), smart content blocks (rules-based
+conditional content), and CTAs that render from a separate HubSpot CTA library at send
+time. Personalization tokens are fine (same as Marketo, Brevo). Smart content and dynamic
+CTAs will render only the default variant in the PNG. Say this in the report so the
+customer knows their conditional content and CTA-library links won't survive the
+migration verbatim; they'd rebuild that logic in the target ESP.
+
 ## Staying current
 
-This is version 1.12.0 of this skill. If you have web access, check once per conversation
+This is version 1.13.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
