@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "8254fb9",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.23.0",
+      "emaillove-eds-converter": "1.24.0",
       "emaillove-migration-audit": "1.16.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v2 defect fix (last of queue): inline plugin-data key table + precondition check (task #28). Adds a new '### Precondition check: confirm the references are present' at the top of Phase 2 that reads references/render-spec.md and references/structure.md before starting; on absent files, names what cannot be verified and directs the agent to fetch a fresh bundle or agree a reduced scope with the user (Portsmouth batch hit this four modules in and cost five rounds of design review). Then a new '### The shared plugin data keys the exporter reads (inline, load-bearing)' section carrying the complete `emaillove` shared plugin data key table inline (name, nodeType, nine theme keys on the mainFrame root, optional email meta, fullWidth, stackColumns, reverseStack, href, altText), with what goes where and what it does. Plus a 'Mobile behaviors that are NOT shared plugin data keys' section covering four mobile behaviors Portsmouth spent rounds hunting for that turned out to be Figma-side: full-width mobile button (layoutSizingHorizontal='FILL' on mj-button), fluid-on-mobile image (width-relationship to column content width), mobile padding overrides (node properties), mobile column stacking (stackColumns or mj-group). Render spec keeps the prose, worked examples and rationale; the inline table is the irreducible contract that makes the skill functional even when a bundle ships without references. Closes the Portsmouth v2 queue (5 defect fixes shipped, 1 was deprioritized after the packaging bug that caused the original symptom was fixed, this one lands anyway as belt-and-braces). Bumps converter 1.23.0 to 1.24.0.",
+      "codexStatus": "Not yet ported. Task #28 of Portsmouth v2 queue, sixth and last defect fix. Portsmouth v2 queue is now complete. Ready to port the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2 = 8 commits) as one clean spec."
+    },
     {
       "claudeCommit": "8254fb9",
       "summary": "Portsmouth v2 defect fix: render-once-crop-locally + band-detection measurement techniques + nav bar worked example (task #32). Three additions across both skills. (1) Converter Phase 3 step 1: on an unstructured source, render the whole design at 1:1 once and crop locally per module rather than per-node get_screenshot (which returns loose rectangles without overlapping text, useless on layered z-order files). (2) Audit Step 5 pass 1: same band-detection technique used for finding module boundaries on unstructured pages (rows of pure canvas background between text/imagery are gaps between modules); record y-coordinates on source ref so Phase 3 crops the same pixels. (3) Converter Phase 3 step 5 visual check: on a module that comes out 20-40px too tall (Figma text renders taller than hand-placed boxes report), detect content bands in source PNG and rebuild PNG, diff them, derive exact padding corrections; deterministic two-pass loop instead of eyeballed nudging. (4) Nav bar worked example added to mj-group visual tells: a row of five or more nav links does NOT survive as a group (exporter divides body width by column count, per-link boxes narrower than a single word, breaks words mid-letter); ungrouped columns stack cleanly, one link per row. Portsmouth: band detection got 24 of 28 modules onto source height; nav bar rule saves two attempts. Bumps audit 1.15.0 to 1.16.0 and converter 1.22.0 to 1.23.0.",

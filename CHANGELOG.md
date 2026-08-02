@@ -26,6 +26,32 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.24.0
+- **Inline plugin-data key table at the top of Phase 2** (Portsmouth v2 defect, last of the
+  queue). The skill cites `references/render-spec.md` and `references/structure.md` by
+  section number 23 times. Portsmouth received a converter bundle where those files were
+  absent (a v1.19.1 packaging bug, since fixed) and spent five rounds of design review
+  hunting for load-bearing plugin data keys the SKILL.md would not surface. This adds:
+  - A precondition check at the top of Phase 2 that confirms both reference files are
+    readable. On absent files, name what cannot be verified before starting and either
+    fetch a fresh bundle or agree on a reduced scope. A one-line check catches this
+    before the first module instead of four modules in.
+  - The complete `emaillove` shared plugin data key table inline (name, nodeType, nine
+    theme keys on the mainFrame root, optional email meta, `fullWidth`, `stackColumns`,
+    `reverseStack`, `href`, `altText`), with what goes where and what it does.
+  - A named "NOT shared plugin data keys" section covering four mobile behaviors
+    Portsmouth spent rounds hunting for that turned out to be Figma-side, not data-side:
+    full-width mobile button (`layoutSizingHorizontal='FILL'` on `mj-button`),
+    fluid-on-mobile image (width-relationship to column content width), mobile padding
+    overrides (node properties, not shared keys), mobile column stacking (`stackColumns`
+    or `mj-group`).
+- The render spec keeps the prose, the worked examples, and the rationale. The inline
+  table is the irreducible contract that makes the skill functional even when a bundle
+  ships without references (which should never happen again, but the belt-and-braces is
+  worth the forty lines).
+- Bumps to 1.24.0 (minor: material additions to Phase 2 preamble, closes Portsmouth v2
+  queue).
+
 ### 1.23.0
 - **Render-once-crop-locally documented for unstructured sources** (Portsmouth v2 technique).
   Phase 3 step 1 (screenshot the module) now says: on an unstructured source, render the whole

@@ -253,6 +253,75 @@ you still working on it":
 
 ## Phase 2: Foundations (run once per customer)
 
+### Precondition check: confirm the references are present
+
+Before building anything, confirm you can read both `references/render-spec.md` and
+`references/structure.md`. This skill cites them by section number 23 times; they carry every
+MJML tag and attribute mapping and the exporter's ground truth. If either file is missing,
+say so to the user before you start, name what you will not be able to verify (the mapping
+for any tag not covered inline below, structural checklist items keyed by render-spec section,
+worked examples of the Two Column Swap and the group rule, most of Phase 3 step 5's
+verification), and either fetch a fresh skill bundle before continuing or agree with the
+user on a reduced scope. This exact absence bit a Portsmouth batch four modules in and cost
+five rounds of design review to work around; a one-line check catches it before the first
+module.
+
+### The shared plugin data keys the exporter reads (inline, load-bearing)
+
+The exporter reads shared plugin data in namespace `emaillove`. This table is the irreducible
+contract; it lives inline here so a batch can proceed even if the references above did not
+ship. The render spec keeps the prose, the worked examples, and the rationale.
+
+| key | where it goes | value | what it does |
+| --- | --- | --- | --- |
+| `name` | every tagged node | the MJML tag string (`mj-wrapper`, `mj-section`, `mj-column`, `mj-column-inner`, `mj-text`, `mj-image`, `mj-button`, `mj-divider`, `mj-spacer`, `mj-social`, `mj-social-element`, `mj-group`, `mj-hero`, `mj-navbar`, `mj-navbar-link`, `mj-table`, `mj-raw`; frame variants add `-Frame`) | tells the exporter which MJML element this node emits. REQUIRED on every tagged node; the layer-name fallback is a fallback, not the contract. |
+| `nodeType` | ONLY the root frame of a whole email | `'mainFrame'` | marks the frame as an email template. Absent on every module (an `mj-wrapper` component). Present on a module = the block uploads as a whole email and no component JSON is emitted. |
+| `backgroundColor` | mainFrame root | hex, e.g. `'#FFFFFF'` | dark-mode page background. Empty is NOT neutral: the exporter substitutes `#000000` and wrecks a light email. |
+| `contentColor` | mainFrame root | hex | dark-mode content/section background. |
+| `textColor` | mainFrame root | hex | dark-mode text color. |
+| `linkColor` | mainFrame root | hex | link color. |
+| `buttonTextColor` | mainFrame root | hex | button label color. |
+| `buttonContentColor` | mainFrame root | hex | button background color. |
+| `lightThemeBackgroundColor` | mainFrame root | hex | mj-body `background-color`; defaults to `#FFFFFF` when empty. |
+| `fallBackFontName` | mainFrame root | font family, e.g. `'Arial'` | fallback for text nodes whose pinned font is unavailable. |
+| `emailSubject` | mainFrame root | plain string | optional. |
+| `emailPreHeader` | mainFrame root | plain string | optional. |
+| `fullWidth` | `mj-wrapper` | `'true'` | only when MJML has `full-width`; otherwise omit. |
+| `stackColumns` | `mj-wrapper` or `mj-section` | `'true'` (default) or `'false'` | `'false'` prevents mobile stacking WITHOUT wrapping in an `mj-group`. Propagates down from the wrapper to its sections. |
+| `reverseStack` | `mj-wrapper` or `mj-section` | `'true'` | reverses stacking order on mobile. |
+| `href` | `mj-image` | absolute URL | link target; omit when absent, never write `#`. |
+| `altText` | `mj-image` | plain string | image alt text. |
+
+**Mobile behaviors that are NOT shared plugin data keys** (a common trap: Portsmouth spent
+rounds hunting for keys that do not exist because these behaviors are Figma-side, not
+data-side):
+
+- **Full-width mobile button (`applyFullWidth`, the exported `.mj-b-full` class):** set by
+  `layoutSizingHorizontal = 'FILL'` on the `mj-button` node. No plugin data key. HUG =
+  auto-width, FIXED = pinned, FILL = full-width mobile. Section 3.7 of render spec.
+- **Fluid-on-mobile image (`fluid-on-mobile`, class `lf`):** derived from width comparison.
+  When the `mj-image` rectangle's width equals its column's content width, the exporter
+  keeps `fluid-on-mobile` and the image scales; when the rectangle is narrower, the
+  exporter drops it and the image stays fixed. No plugin data key. So a footer logo that
+  should NOT scale is built at less than its column's content width; a hero photo that
+  SHOULD scale is built at exactly the content width. Section 4.2 of render spec.
+- **Mobile padding overrides (`mobileStylesPadding*`):** carried by properties on
+  the node, not by a `emaillove` shared key. Only exists on nodes where the design has a
+  distinct mobile padding value; the desktop padding does not double as the mobile one.
+- **Mobile stacking of columns:** default behavior for `mj-column` inside `mj-section`.
+  Suppress with `stackColumns='false'` (above) or by wrapping the columns in an
+  `mj-group`. The choice between the two is a decision, not a preference: `mj-group`
+  holds a lockup shape (unequal columns, shared background, header/footer strip);
+  `stackColumns='false'` fits the rare case where you want equal columns to stay side
+  by side without pinning them as a group. Section 3.3 of render spec.
+
+The load-bearing rule from all of this: **not every mobile behavior is a plugin data key.**
+When the exporter surprises you, first check whether the intended behavior is Figma-side
+(layout sizing, width relationship, node property) before you go hunting for a key that
+does not exist.
+
+### Build the foundations
+
 **Start by reading the audit's Source fidelity tier, and say which tier you are building under
 before you create a node.** It decides where every number below comes from, so it is not something
 to discover in the middle of a type ramp.
@@ -1269,7 +1338,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.23.0 of this skill. If you have web access, check once per conversation
+This is version 1.24.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
