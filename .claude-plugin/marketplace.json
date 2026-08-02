@@ -19,8 +19,8 @@
     {
       "name": "emaillove-migration-audit",
       "source": "./skills/emaillove-migration-audit",
-      "description": "Read-only audit of an existing Figma design system for Email Love migration: a deduplicated module inventory with a verdict per module (live-text, editable-image, hybrid, not emailable), source fidelity classification, scale-factor detection where it applies, spacing-system census (one system per role, not per-module ad hoc values), brand foundations including the source's content margin and content width, effort estimate, and a hand-off to the converter",
-      "version": "1.14.0",
+      "description": "Read-only audit of an existing Figma design system for Email Love migration: a deduplicated module inventory with a verdict per module (live-text, editable-image, hybrid, not emailable), source fidelity classification, scale-factor detection where it applies, spacing-system census (one system per role, not per-module ad hoc values), type-ramp census (every distinct family/size/weight/line-height tuple in the file, not what was sampled), brand foundations including the source's content margin and content width, effort estimate, and a hand-off to the converter",
+      "version": "1.15.0",
       "author": {
         "name": "Email Love"
       }

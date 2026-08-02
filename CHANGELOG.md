@@ -89,6 +89,23 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.15.0
+- **Type ramp is now CENSUSED, not sampled** (Portsmouth v2 defect). Step 6 replaces the old
+  "each of their text styles mapped" opener with a full census: enumerate every distinct
+  `(family, size, weight, line-height)` tuple in the file. On a file with text styles the
+  census is the styles page plus any local overrides; on a file without text styles it is a
+  walk over every text node across every design surveyed in Step 2. Cluster tuples within a
+  point or two of each other, and treat each cluster as one ramp row. The mapping table then
+  gets populated from the census, not from what was sampled in content modules.
+- Rationale in the skill: Portsmouth ran the sampling version and missed the nav-link style
+  (15px bold) and the quote style (24/38), both of which had to be added mid-conversion.
+  The scale-factor ratio test still passed, because the missing sizes fell inside the
+  existing range: the arithmetic gate catches a distorted ramp but not an incomplete one.
+- The census still runs on REFERENCE ONLY sources, because the typefaces and weights the
+  source uses are the palette the standard ramp gets mapped onto; the sizes are what get
+  discarded on that tier.
+- Bumps to 1.15.0 (minor: audit behavior change, no report structure change).
+
 ### 1.14.0
 - **Spacing is now CENSUSED, not sampled** (Portsmouth v2 headline defect). Step 6 replaces
   the old "spacing scale from any padding/spacer components" bullet with a full census: read

@@ -1,6 +1,6 @@
 ---
 name: emaillove-migration-audit
-description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, classifies how much of the source's geometry is a specification worth preserving, detects the source's scale factor when one applies, censuses the source's spacing values into one system per role, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
+description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, classifies how much of the source's geometry is a specification worth preserving, detects the source's scale factor when one applies, censuses the source's spacing values into one system per role, censuses every distinct family/size/weight/line-height tuple in the file into one type ramp, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
 ---
 
 # Email Love Migration Audit
@@ -668,14 +668,28 @@ PARTIAL they are the source's where it is demonstrably consistent and the standa
 REFERENCE ONLY only the brand comes from the file (palette, typefaces, logo) and every measurement
 comes from Step 3's email standards, with no factor involved anywhere.
 
-- **Type ramp mapping:** each of their text styles mapped to an email-safe equivalent, using
-  their own fallback choices when a fallbacks page exists. Flag fonts that need web-font
+- **Type ramp, CENSUSED rather than sampled.** Do not derive the ramp from the text you happened
+  to meet in Step 5's content modules: a sampled ramp misses the nav-link style, the caption, the
+  quote, the eyebrow, and anything else that lives on a page you did not walk through in full, and
+  a ramp that arrives incomplete gets filled in mid-conversion where every addition is a decision
+  made without the file in front of you. Enumerate every distinct `(family, size, weight,
+  line-height)` tuple in the source. On a file with text styles this is the styles page plus any
+  local overrides you find; on a file without text styles this is a walk over every text node
+  across every design surveyed in Step 2, tabulated. Cluster the tuples where they are within a
+  point or two of each other, and treat each cluster as one ramp row. This is a cheap complete
+  operation on a file you are already walking and it is strictly better than sampling. The
+  arithmetic gate then does its job (an incomplete ramp cannot pass a ratio test on an unseen
+  size), and the mapping table below is populated from the census rather than from what got noticed.
+  Then map each of their text styles or ramp clusters to an email-safe equivalent, using their own
+  fallback choices when a fallbacks page exists. Flag fonts that need web-font
   hosting or substitution. When the Step 4 scale factor is not 1, use the four-column table Step
   4 specifies (style, authored size, factor, email size), with the factor restated on every row,
   so a reader can audit the arithmetic instead of trusting it. Run Step 4's ratio acceptance test
   on the finished table. **On a reference-only source there is no factor and no such table:** state
   the standard ramp (body 16, with 12, 14, 20, and 24 to 30 around it), map their typefaces onto
-  it, and label it as the email standard rather than as a measurement.
+  it, and label it as the email standard rather than as a measurement. The census still runs on
+  reference-only sources, because the typefaces and weights the source uses are the palette the
+  ramp gets mapped onto; the sizes are what get discarded on this tier.
 - **Palette:** their named paint styles, and a proposed set of the six Email Love theme
   colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
   buttonContentColor) drawn from it, marked as a proposal for their designer to confirm.
@@ -834,7 +848,10 @@ verdict present. A roll-up of the Module inventory, not a second classification:
 appears here that is not already on a module row above.]
 ## Brand foundations
 [Type ramp mapping table (style, authored size, factor, email size, one row per style with the
-same factor on every row), proposed theme colors, button styles, target email width. The spacing
+same factor on every row). The rows come from the Step 6 census of every distinct
+`(family, size, weight, line-height)` tuple, not from what was sampled in content modules, so a
+nav-link style or a quote style that never appeared in a body-copy module still gets a row.
+Proposed theme colors, button styles, target email width. The spacing
 system lives in its own section above, so do not restate it here beyond a one-line pointer. State that the ratio acceptance test passed, with the two ratios you
 compared. Also REQUIRED here, because foundations otherwise invents it: the source's **content
 margin as a percentage of source width**, the email-scale margin it converts to through the target
@@ -1709,7 +1726,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.14.0 of this skill. If you have web access, check once per conversation
+This is version 1.15.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "cea986c",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.20.0",
-      "emaillove-migration-audit": "1.14.0"
+      "emaillove-migration-audit": "1.15.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v2 defect fix: type ramp censused instead of sampled (task #30). Audit Step 6 type-ramp bullet rewritten from sampling ('each of their text styles mapped') to a full census: enumerate every distinct (family, size, weight, line-height) tuple in the file, cluster within a point or two, treat each cluster as one ramp row. On a file with text styles the census is the styles page plus local overrides; on a file without text styles it is a walk over every text node in every design surveyed in Step 2. Report Brand foundations section note updated to say the ramp rows come from the census, not from sampled content modules. Rationale: Portsmouth ran the old skill and missed the nav-link style (15px bold) and quote style (24/38) because they never appeared in body-copy modules; the ratio test still passed because the missing sizes fell inside the existing range, so the arithmetic gate caught a distorted ramp but not an incomplete one. Census still runs on REFERENCE ONLY sources (the typefaces and weights the source uses are the palette the standard ramp gets mapped onto; sizes are discarded on that tier). Bumps audit 1.14.0 to 1.15.0.",
+      "codexStatus": "Not yet ported. Task #30 of Portsmouth v2 queue, second of ~5-6 defect fixes. Batch with the rest (#28-32) and port the whole thing (v1 + v1.5 + six ESPs + Portsmouth v2) as one clean spec."
+    },
     {
       "claudeCommit": "cea986c",
       "summary": "Portsmouth v2 headline defect fix: spacing system census + consistency enforcement (task #27). Audit Step 6 replaces the sampled 'spacing scale from padding/spacer components' bullet with a full census read from every module in Step 5, clustered by role (section side padding, vertical rhythm, gutter, card or inset padding, mobile equivalents). Step 7 report gets a new required 'Spacing system' section between Scale factor and Module inventory, same shape as Scale factor (census, proposed system, outliers, designer decision). Any mobile value > 160px flagged. Converter Phase 2 now states every module builds on the audit's Spacing system, not per-module source values; Phase 3 step 5 verification walks the built module and asserts every side padding, vertical padding and gutter resolves to a system value (or a named exception), and flags mobile paddings > 160px. Named exceptions (full-bleed image bands, wide-quote outsets) allowed only where the audit listed them. Bumps audit 1.13.0 to 1.14.0 and converter 1.19.3 to 1.20.0. Portsmouth ran the old skills and passed every batch report while shipping 30 distinct side insets across 28 modules, one broken on mobile (220/221 on a 320 viewport): the per-module measurement was exactly how it happened.",
