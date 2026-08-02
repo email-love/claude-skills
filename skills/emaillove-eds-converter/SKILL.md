@@ -217,11 +217,11 @@ work, not in a later reply and not only once the user asks. Four things, every t
 
 The reasons that qualify are a blocker, a decision only the user can make, a limit you have hit, or
 reaching the end of a unit of work. That last one is the common case rather than an exception:
-finishing a batch IS a stop, and checkpoint 5 plus the gate in Phase 3 step 6 are how that one gets
+finishing a batch IS a stop, and checkpoint 5 plus the gate in Phase 3 step 7 are how that one gets
 announced.
 
 **Do not pause mid-batch.** The batch is the unit of work and the design review happens BETWEEN
-batches (Phase 3 step 6), so five modules of a five-module batch is a defined stopping point and one
+batches (Phase 3 step 7), so five modules of a five-module batch is a defined stopping point and one
 module of five is not. Either complete the batch, or stop AT the blocker and name it. An overrun is
 not a blocker: a batch tracking at double the estimate earns a revised number at the next module
 boundary, not a stop.
@@ -1165,7 +1165,55 @@ checklist at the end of `references/render-spec.md`:
   multi-column section: even "loose columns, stack expected, no keys set" is a real answer with a
   visible line.
 
-### 6. Batch report and gate
+### 6. Export sniff test (once per batch)
+
+Everything in step 5 is a Figma-side check. The plugin's exporter is what decides whether a
+group overflows, whether a button goes full width, whether an image scales, and no other step
+in this phase looks at its output. A batch that passes every Figma check can still ship with
+mobile defects that only exist in the exported HTML: on Portsmouth this ate five rounds of
+design review, each spent reverse-engineering exporter behavior by pixel-measuring preview
+PNGs, when one export read would have surfaced the group overflow, the button width and the
+fluid-image behavior together in the first batch.
+
+Once per batch, after the individual modules have passed step 5:
+
+- **Pick one representative module.** A multi-column one is best, because mobile behavior
+  lives in the columns; if the batch has both a header lockup and a card row, pick the card
+  row. On a batch with only single-column modules, pick the one carrying the button, since
+  the full-width mobile button is the other common exporter surprise.
+- **Export it to HTML.** The plugin's Export produces the HTML the ESP will actually receive:
+  drop an instance of the module wrapper into a temporary email frame on Campaigns (foundations
+  built one in Phase 2 step 7), select the frame, and click Export in the plugin. Ask the user to
+  drive the click if you cannot; the export runs in the plugin sandbox and there is no agent-side
+  shortcut for a bare module. Save the HTML alongside the batch report.
+- **Read the HTML and confirm four things**, none of them expensive:
+  - **Body width** matches the target email width from foundations. A 600 build that exports
+    at 640 (or vice versa) is a Figma-side wrapper-width mistake that step 5's wrapper check
+    should have caught, and the sniff test is where it does when it did not.
+  - **`@media only screen and (max-width` block is present.** Its absence means the mobile
+    treatment is empty; every mobile stacking or fluid-image behavior lives inside it, so a
+    module without it renders desktop-only on phones regardless of what the Figma decision
+    said.
+  - **Mobile classes exist for anything that should stack or go full width.** A column that
+    step 3 Part A decided should stack has a `mj-column-per-100` or the equivalent width rule
+    inside the media query. A button set to full-width mobile has the `mj-b-full` class or
+    the exporter's current equivalent. An empty media query on a module that step 3 recorded
+    a stacking decision for is a fail.
+  - **Column widths add up.** For each `mj-section`, the column `width` attributes plus any
+    gutters should sum to the intended content box, and no single column should exceed the
+    body width. A `mj-group` that overflows is visible here as a per-column width sum that
+    exceeds the section content width, and that is the failure mode Portsmouth's footer had
+    for five rounds before it was caught.
+- **Record the four confirmations in the batch report** with the module name you sniffed. On
+  a fail, do not open the review: fix the defect on the Figma side (that is where the export
+  is generated from), re-export, re-read. A batch that ships with a known exporter defect
+  costs a design-review round per module the same defect touches; the sniff is what stops
+  that from happening.
+- **The sniff is not a replacement for step 5**, it is a second-pass check on a different
+  artifact. A module that passes both is much less likely to surface a mobile defect at
+  design review. A module that passes step 5 alone is Portsmouth.
+
+### 7. Batch report and gate
 
 One report per batch: per module, keyed by its Module inventory row name, what was rebuilt, the
 design you converted it from, verdict honored or changed (with reason), any concession and
@@ -1195,7 +1243,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.21.0 of this skill. If you have web access, check once per conversation
+This is version 1.22.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

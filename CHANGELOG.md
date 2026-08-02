@@ -26,6 +26,27 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.22.0
+- **New Phase 3 step 6: export sniff test (once per batch)** (Portsmouth v2 defect). Every
+  check in step 5 is Figma-side, and the plugin's exporter is what decides whether a group
+  overflows, whether a button goes full width, whether an image scales. A batch that passes
+  every Figma check can still ship with mobile defects that only exist in the exported HTML.
+  Once per batch, after step 5 has passed for individual modules, drop a wrapper instance
+  into a temporary email frame on Campaigns, click Export, read the HTML, and confirm four
+  things: body width matches foundations, an `@media only screen and (max-width` block
+  exists, mobile classes are present for anything that should stack or go full-width
+  (`mj-column-per-100`, `mj-b-full`), and per-section column widths add up to the intended
+  content box.
+- Rationale in the skill: on Portsmouth this ate five rounds of design review, each spent
+  reverse-engineering exporter behavior by pixel-measuring preview PNGs, when one export
+  read would have surfaced the group overflow, the button width and the fluid-image
+  behavior together in the first batch. The sniff is a second-pass check on a different
+  artifact, not a replacement for step 5.
+- **Step numbering shifts:** old step 6 "Batch report and gate" is now step 7. The
+  "finishing a batch IS a stop" reference at the top of the skill updated to point at
+  step 7.
+- Bumps to 1.22.0 (minor: new required step in Phase 3).
+
 ### 1.21.0
 - **The render-node-not-fill rule now fires in TWO phases, not one** (Portsmouth v2 defect).
   It always existed in Phase 2 step 6 (assets round-trip). Phase 3 step 1 (screenshot the
