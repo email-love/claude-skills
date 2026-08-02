@@ -33,7 +33,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
   The Figma environment an agent runs in typically serves Google Fonts only (about 1,900
   families); Helvetica, Helvetica Neue, and Arial are all absent even though they are the
   most common email-safe answer.
-- **When the target is Arial or Helvetica and unavailable, build in Arimo** — the
+- **When the target is Arial or Helvetica and unavailable, build in Arimo**, the
   metrically compatible Arial clone. Identical advance widths, so a string that fits on
   the canvas fits in the email and section 3.3.1's slack arithmetic stays accurate.
 - State the consequence in the foundations report: the exporter writes `fontName.family`
