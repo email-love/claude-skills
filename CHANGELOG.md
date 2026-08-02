@@ -409,6 +409,21 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.18.0
+- **Palette census now clusters by ROLE as well as by VALUE** (Red Paddle defect enhancement
+  to task #34). Sample text-node fills as well as background fills; the same hex used as a
+  band and as text on white are TWO theme tokens, not one, because the theme layer needs
+  to move them independently. A palette built from `fills` alone finds bands and buttons
+  and misses type, which is how a nav link `#888888` and a body color `#222222` used only
+  on text disappear from a theme roles list. Red Paddle shipped both cases and the
+  converter added both mid-batch.
+- **Type ramp floor recommendation.** Where the smallest cluster is below 12px, the audit
+  now recommends a floor at 12 (or a customer-confirmed floor). The conversion will have
+  to standardise below-12 upward anyway (Android and Outlook garbling, readability), and
+  it is better decided at audit than at batch 4. Red Paddle: value-prop captions at ~11px
+  standardised up to 12 mid-build; the audit would surface the decision now.
+- Bumps to 1.18.0 (minor: two audit-behavior enhancements, no report structure change).
+
 ### 1.17.0
 - **Palette is now CENSUSED, not sampled** (Portsmouth v3 defect). Step 6 palette bullet
   rewritten to enumerate every distinct fill hex in the file, cluster near-duplicates within

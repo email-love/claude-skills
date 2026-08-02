@@ -698,13 +698,30 @@ comes from Step 3's email standards, with no factor involved anywhere.
   it, and label it as the email standard rather than as a measurement. The census still runs on
   reference-only sources, because the typefaces and weights the source uses are the palette the
   ramp gets mapped onto; the sizes are what get discarded on this tier.
-- **Palette, CENSUSED rather than sampled.** Same shape and rationale as the type ramp and
-  spacing system above: enumerate every distinct fill hex used in the file, cluster
-  near-duplicates within a small delta (2-3 units per channel, so `#3C023C` and `#3C004A` do
-  NOT collapse but `#009EE2` and `#009FE1` do), and report each cluster with its source hex,
-  the count of fills that use it, and the module or modules it appears on. On a file with
-  named paint styles this is the styles page plus any local overrides; on a file without
-  styles it is a walk over every fillable node. Then propose a set of the six Email Love
+  **Where the smallest cluster is below 12px, say so and recommend a floor** at 12 (or the
+  customer's confirmed floor). The conversion will have to standardise below-12 values
+  upward anyway (email clients garble smaller sizes on some Android and Outlook builds,
+  and a 10 or 11 the source built to a monitor pixel size is not readable in most inboxes),
+  and that is better decided at audit than at batch 4. Red Paddle: the source had value-prop
+  captions at approximately 11px, which the converter standardised up to 12 mid-build; a
+  floor recommendation in the audit would have surfaced the decision at foundations.
+- **Palette, CENSUSED rather than sampled, and CLUSTERED BY ROLE.** Same shape and rationale
+  as the type ramp and spacing system above: enumerate every distinct fill hex used in the
+  file, cluster near-duplicates within a small delta (2-3 units per channel, so `#3C023C`
+  and `#3C004A` do NOT collapse but `#009EE2` and `#009FE1` do), and report each cluster
+  with its source hex, the count of fills that use it, and the module or modules it appears
+  on. Cluster by ROLE as well as by VALUE: sample text-node fills (`fills` on TEXT layers)
+  as well as background fills (`fills` on FRAME/RECTANGLE layers), and treat the same hex
+  in two roles as two rows, not one. `#222222` used on three modules as a section band and
+  `#222222` used on two card captions and body-copy runs on white are TWO theme tokens,
+  not one, because the theme layer needs to move them independently: a designer who
+  darkens the band should not also darken the caption. A palette built from `fills` alone
+  finds bands and buttons and misses type; that is how a nav link `#888888` and a body
+  color `#222222` used only on text disappear from a theme roles list. Red Paddle shipped
+  both cases and the converter added both mid-batch.
+  On a file with named paint styles this is the styles page plus any local overrides plus
+  the text-node walk; on a file without styles it is a walk over every fillable node AND
+  every text node. Then propose a set of the six Email Love
   theme colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
   buttonContentColor) drawn from the census clusters, marked as a proposal for the designer
   to confirm, and **name every proposed theme value that does NOT match a source cluster
@@ -1765,7 +1782,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.17.0 of this skill. If you have web access, check once per conversation
+This is version 1.18.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
