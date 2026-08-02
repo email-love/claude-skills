@@ -26,6 +26,26 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.32.0
+- **STRUCTURE from worker, NUMBERS from measurement** (Red Paddle defect). Phase 3 step 2
+  "unpinned drifts" bullet rewritten to say plainly what the old wording undersold: the
+  worker is a very good structure detector (find columns, rows, stacking order, which
+  things are buttons, and sometimes structural fixes the source does not advertise) but
+  it is not a measuring instrument (colors drift by several units, sizes land on plausible
+  round numbers rather than the customer's ramp, unpinned fonts flatten to Arial).
+  Transcribe its tree, then replace every color with one sampled from source pixels, every
+  type size with one measured, and pin every font.
+- **A size the worker returns that is not on the audit's ramp is the loudest signal it
+  guessed.** The ramp is the specification; a 40 where the ramp says 36 is a per-module
+  factor sneaking back in.
+- **A gap in the ramp is a decision for foundations, not for batch 3** (Red Paddle defect).
+  Phase 2 step 3 Type specimen instruction now says: if the specimen shows a jump with
+  nothing between it, look at the source for content that would sit in the gap (eyebrows,
+  captions, small subheads); if any exists, add the step now and record it as a
+  standardisation. Red Paddle foundations report predicted this exact cost and deferred
+  anyway; three modules in batch 3 wanted exactly the missing 20px step.
+- Bumps to 1.32.0 (minor: rewritten bullet in Phase 3 step 2 + new rule in Phase 2 step 3).
+
 ### 1.31.1
 - **`unsubscribe.com` magic link convention documented inline** (Red Paddle defect). Phase
   2 inline plugin data key section now carries a "Magic link values the exporter rewrites"

@@ -541,6 +541,20 @@ Build the scaffold every later batch depends on:
      what a passing ratio hides in the middle of one. On a REFERENCE ONLY source there is no ratio
      check to pair it with, so the page carries the whole load: look at the specimen sheet and
      confirm the standard ramp reads as a ramp.
+     **A gap in the ramp is a decision for foundations, not for batch 3.** If the specimen sheet
+     shows a jump with nothing between it (a 26 next to a 17, or a 30 next to a 20), look at
+     the source for content that would sit in the gap: eyebrows, card captions, small
+     subheads, fine print. If any exists, add the step now and record it as a standardisation.
+     Adding it later means editing every module that would have used it, and the ramp gap will
+     not have gone away, it will have been resolved module by module into per-module sizes.
+     Red Paddle's foundations report predicted this cost verbatim ("adding it later means
+     touching every module that would have used it") and deferred anyway; three modules in
+     batch 3 wanted exactly the missing 20px step. Predicting the cost and deferring is not a
+     judgement, it is the rule the skill is now naming.
+     **A step added this way sits outside the ratio check** and must say so, exactly like the
+     spacing scale: the check proves one factor was applied uniformly across the sizes the audit
+     derived, and a standardised step was never derived from that factor. Say which rows the
+     check covers.
    - **Buttons.** One component per button style the audit listed, built as step 4 specifies, each
      visibly labeled with its name, each with its fill bound to the semantic token that style
      actually uses. Where the inventory has a Buttons category, its modules land here too, below
@@ -1071,8 +1085,23 @@ This mapping covers almost everything you will meet:
   each with its own `href`). List every row you rebuilt this way in the module's report line.
 - **Every `src` comes back as `"placeholder"`.** Place the real assets you round-tripped in
   foundations; use flat gray fills at the correct dimensions everywhere else and list them.
-- **Unpinned colors, radii, and fonts drift** between runs, and unpinned fonts flatten to
-  Arial. Correct them against the foundations rather than accepting what came back.
+- **Take the STRUCTURE from the worker and every NUMBER from measurement.** The worker is a
+  very good structure detector: it finds columns, rows, stacking order, which things are
+  buttons, and it will sometimes find a structural fix the source does not advertise (a
+  single 538px text run split into four separately linked items is the kind of structural
+  finding to trust). It is not a measuring instrument. Colors drift by several units, sizes
+  land on plausible round numbers rather than the customer's ramp, and fonts flatten to
+  Arial when unpinned; the worker returns all of these confidently. So transcribe its tree,
+  then replace every color with one sampled from the source pixels, every type size with one
+  measured (cap-height method in render spec section 5.3, task #46), and pin every font
+  against the audit's ramp before accepting the value.
+  **A size the worker returns that is not on the audit's ramp is the loudest signal it
+  guessed.** The ramp is the specification; a 40 where the ramp says 36 is a per-module
+  factor sneaking back in, which is the exact drift the single-factor rule exists to prevent.
+  Red Paddle carried nine color and size mismatches on the worker output where the delta
+  ranged from "one shade off" to "not even close" (`#CCCCCC` for measured `#FFFFFF`, four
+  different wrong reds for one button color, a 40px headline where the ramp said 36 and 40
+  was not on the ramp at all).
 - Map every text node to the type styles from foundations.
 - Images: one image fill on each `mj-image` RECTANGLE, from a render of the source node (render
   spec 4.2.1). Its `mj-image-Frame` keeps `fills = []` always; a fill on the frame exports as an
@@ -1509,7 +1538,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.31.1 of this skill. If you have web access, check once per conversation
+This is version 1.32.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
