@@ -1274,6 +1274,17 @@ checklist at the end of `references/render-spec.md`:
   twenty-eight modules, one of them broken on mobile) the moment the batch grows. Confirm too that
   no mobile padding is greater than 160px on a 320 viewport, because that is a defect regardless of
   what the system carries.
+- **Group columns resolve wide enough on mobile** (render spec section 3.3.2). For every
+  `mj-group` column in the module, compute the resolved width at a 375px viewport
+  (`columnWidth / groupWidth * (375 - mobile side padding)`), and per column list what it
+  needs to fit: the longest unbreakable word in the exported font times 1.05 for a text
+  carrier, or the natural width of the image for a fixed-aspect-image carrier. Any column
+  whose resolved width fails its requirement is a fail; the remedy is not slack, it is one
+  of the three restructures in 3.3.2 (collapse to one reflowing `mj-text` with
+  `setRangeHyperlink` ranges, drop the group so columns stack, or hide the column with
+  `mobileStylesHideInMobileDevice`). This is invisible on the Figma canvas and in the
+  desktop preview by construction: a group column that fails at 375 renders `CHA / NGI / NG`,
+  `G / E / A / R` on phones and passes every other check in this list.
 - **Semantic-token bind count: every non-placeholder solid fill in the module resolves to a
   variable binding from the audit's Palette**, not to a raw hex. Walk every fillable node,
   list any unbound solid fill by node id with the raw hex and the role it should have
@@ -1461,7 +1472,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.29.0 of this skill. If you have web access, check once per conversation
+This is version 1.30.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

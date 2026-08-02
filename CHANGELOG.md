@@ -26,6 +26,26 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.30.0
+- **New render spec section 3.3.2: group columns shrink on mobile, and 3.3.1 does not
+  protect them** (Red Paddle defect). Section 3.3.1 protects a pinned column against font
+  drift at the pinned width; it does nothing about the other risk which only exists for
+  group columns: a group never stacks so its columns shrink proportionally at every
+  smaller viewport. Formula: `resolved = columnWidth / groupWidth * (mobileViewport - side padding)`.
+  Per column: text carrier needs `resolved >= widthOf(longest unbreakable word) * 1.05`;
+  fixed-aspect image carrier needs `resolved >= image natural width`. Three remedies when
+  a column fails (collapse to one reflowing mj-text with setRangeHyperlink ranges, drop
+  the group so columns stack, or hide with mobileStylesHideInMobileDevice); widening is
+  usually not available because widths must sum to the content box.
+- **Phase 3 step 5 checklist gets a new "group columns resolve wide enough on mobile"
+  bullet** referencing 3.3.2. Empty violation list is the only pass.
+- Rationale in the skill: Red Paddle shipped a four-item nav pinned at 137/86/133/89 in
+  a 560 group that rendered `CHA/NGI/NG`, `G/E/A/R`, `CLO/THIN/G`, `GI/F/T/S` at 375px;
+  the 86px GEAR column resolved to 51px which cannot hold "GEAR" at 17px. Invisible on
+  the Figma canvas and in the desktop preview by construction. Also caught a second
+  module before ship (announcement bar text column resolving to 190px vs 191px hug).
+- Bumps to 1.30.0 (minor: new required checklist rule + new render-spec section).
+
 ### 1.29.0
 - **Getting Started page: HUG height, screenshot verification, accurate image workflow**
   (Portsmouth v3 defect, closes queue). Phase 2 Getting Started page section now says: the

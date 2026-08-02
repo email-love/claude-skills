@@ -910,6 +910,80 @@ It does NOT apply to FILL columns or FILL buttons, which resolve against the
 content box at render time and adapt. Do not pad those; the extra width would be
 real design drift for no gain.
 
+#### 3.3.2 Group columns shrink on mobile, and section 3.3.1 does not protect them
+
+Section 3.3.1 protects a pinned column against font drift at the width you pinned
+it. It does nothing about the other risk, which only exists for group columns: **a
+group never stacks, so its columns shrink proportionally at every smaller
+viewport.** The pixel you pinned is a percentage the moment the email is opened
+on a phone.
+
+Both risks are real, they are unrelated, and 3.3.1 only covers the first. A group
+column that passed the 3.3.1 slack check with 12 or 25 percent headroom will still
+break at 375 wide if the arithmetic below fails, because 3.3.1's percentage was
+computed against the desktop pin, not against a shrunk phone width.
+
+Before pinning any `mj-group` column, compute what it resolves to at phone width:
+
+```
+resolved = columnWidth / groupWidth * (mobileViewport - section horizontal padding at mobile)
+```
+
+At a 375px viewport with 20/20 mobile side padding, that denominator is 335. So a
+137px column inside a 560px group resolves to `137 / 560 * 335 = 82px`.
+
+Then require, per column:
+
+- **Carrying text:** `resolved >= widthOf(longest unbreakable word) * 1.05`. The
+  longest **word**, not the longest string: the string can wrap, a word cannot.
+  Measure the word in the exported font (section 3.3.1 has the drift table); a
+  word that fits by two pixels on canvas can be six pixels wide of the resolved
+  column in Arial.
+- **Carrying a fixed-aspect image:** `resolved >= image natural width`. Below
+  that the image is compressed on one axis and the aspect ratio visibly breaks;
+  no CSS renders it back proportionally inside a group column.
+
+**When a column fails this, the group is the wrong container.** Three remedies,
+in order of preference:
+
+1. **Collapse the contents into one reflowing `mj-text` with per-range
+   hyperlinks.** For a row of links this is the same construction section 6.1's
+   note recommends for `mj-navbar`: one text node, `setRangeHyperlink` per label,
+   labels separated by a normal space plus non-breaking spaces so the gap
+   survives HTML whitespace collapsing while the line can break between labels
+   but never inside one. Reflows cleanly, which pinned group columns cannot.
+2. **Drop the group so the columns stack.** Mobile users get one item per row.
+   Correct for card grids where stacking is the point; less good for a header
+   nav where the intent is one strip of chrome.
+3. **Hide the column below the breakpoint with
+   `mobileStylesHideInMobileDevice`.** Reserved for decorative content the mobile
+   view can lose: an icon beside a label where the label already carries the
+   meaning.
+
+Widening the column is not usually available, because the widths have to sum to
+the content box. Moving pixels from a neighbour column shrinks that column
+instead, and now that one may fail the check.
+
+**Failure signature.** Words break character by character on a phone that read
+fine on the Figma canvas and in the desktop preview. If you see `CHA / NGI / NG`,
+`G / E / A / R`, `CLO / THIN / G`, `GI / F / T / S` in a mobile screenshot, the
+group columns are shrinking below their longest words. That is this rule, not a
+font issue and not a padding issue.
+
+**Measured case.** A four-item nav pinned at 137 / 86 / 133 / 89 in a 560 group
+rendered as `CHA NGI NG`, `G E A R`, `CLO THIN G`, `GI F T S` at 375px. The 86px
+GEAR column resolved to `86 / 560 * 335 = 51px`, which cannot hold "GEAR" at 17px
+in the exported font. Rebuilt as one reflowing `mj-text` with four
+`setRangeHyperlink` ranges, it wraps to two clean lines at 375, and probing at
+235, 210, 190 and 170px produced no mid-word break at any width.
+
+**Also worth checking on an announcement bar or hero copy row**, not just navs:
+any group whose contents include a word longer than a few characters against a
+column that hugs its content. On the migration this rule came from, a second
+module was caught the same way: an announcement bar whose text column resolved
+to 190px carried copy that hugs at 191px. One pixel off, invisible on the canvas,
+would have wrapped ugly on every phone. The arithmetic is cheap; run it.
+
 ### 3.4 mj-column
 
 - Node: FRAME, child of `mj-section` or `mj-group`.
