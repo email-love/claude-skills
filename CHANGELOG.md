@@ -176,6 +176,25 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.17.0
+- **Palette is now CENSUSED, not sampled** (Portsmouth v3 defect). Step 6 palette bullet
+  rewritten to enumerate every distinct fill hex in the file, cluster near-duplicates within
+  a small delta (2-3 units per channel), report each cluster with source hex, count of fills
+  using it, and modules it appears on. Same shape as the type ramp and spacing censuses.
+- **New required "Palette" report section** between Spacing system and Module inventory.
+  Same shape as Scale factor and Spacing system: the census, the proposed theme colors, and
+  **every deviation between a proposed theme value and its source cluster listed with the
+  delta** so a designer approving the theme approves the drift too and does not read a
+  lightened value as source fidelity. Additional source colors not carried into theme roles
+  listed at the bottom so nothing is silently dropped.
+- Rationale in the skill: Portsmouth's Codex review found four accent primitives lightened
+  from source (Pink #C4014B -> #D03E75, Magenta, Teal, Orange) with no documentation of the
+  drift, and two source colors absent from the theme entirely (a decorative green, a bright
+  blue). The palette section prevents undocumented drift and silent drops.
+- Brand foundations report section trimmed: palette no longer restated there, one-line
+  pointer instead. Same pattern as spacing.
+- Bumps to 1.17.0 (minor: new required report section, audit behavior change).
+
 ### 1.16.0
 - **Band-detection technique for module boundaries on unstructured sources** (Portsmouth v2
   technique). Step 5 pass 1 (split each design into blocks) now says: on an unstructured

@@ -698,9 +698,24 @@ comes from Step 3's email standards, with no factor involved anywhere.
   it, and label it as the email standard rather than as a measurement. The census still runs on
   reference-only sources, because the typefaces and weights the source uses are the palette the
   ramp gets mapped onto; the sizes are what get discarded on this tier.
-- **Palette:** their named paint styles, and a proposed set of the six Email Love theme
-  colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
-  buttonContentColor) drawn from it, marked as a proposal for their designer to confirm.
+- **Palette, CENSUSED rather than sampled.** Same shape and rationale as the type ramp and
+  spacing system above: enumerate every distinct fill hex used in the file, cluster
+  near-duplicates within a small delta (2-3 units per channel, so `#3C023C` and `#3C004A` do
+  NOT collapse but `#009EE2` and `#009FE1` do), and report each cluster with its source hex,
+  the count of fills that use it, and the module or modules it appears on. On a file with
+  named paint styles this is the styles page plus any local overrides; on a file without
+  styles it is a walk over every fillable node. Then propose a set of the six Email Love
+  theme colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
+  buttonContentColor) drawn from the census clusters, marked as a proposal for the designer
+  to confirm, and **name every proposed theme value that does NOT match a source cluster
+  exactly, with the delta**: a proposal that quietly lightens `#C4014B` to `#D03E75` is a
+  brand decision made without the designer, and this is where it gets surfaced instead of
+  shipping into a foundations page that reads as source-fidelity. The census also carries
+  low-frequency colors the theme roles do not need (a decorative green used on one badge, a
+  bright blue used on one hero); list them as "additional source colors not carried into the
+  theme roles" so nothing gets silently dropped. On a REFERENCE ONLY source the census still
+  runs, because the palette is what the file contributes on that tier; the theme roles map
+  onto the census clusters as normal, no theme value is invented from outside the file.
 - **Spacing system, CENSUSED rather than sampled.** A design system's coherence is decided by
   spacing more than by any other quantity, and unlike scale it is invisible in any one module and
   only visible when modules sit together. So enumerate every distinct spacing value in the source,
@@ -767,8 +782,8 @@ comes from Step 3's email standards, with no factor involved anywhere.
 ## Step 7: Write the migration report
 
 Produce one markdown report, in this exact structure. **Source fidelity, Scale factor, Spacing
-system and Module inventory are required sections**: they are what Phase 2 consumes, and a report
-missing any one of them cannot be converted from. Source fidelity sits near the top because it changes how every
+system, Palette and Module inventory are required sections**: they are what Phase 2 consumes,
+and a report missing any one of them cannot be converted from. Source fidelity sits near the top because it changes how every
 section below it should be read.
 
 # Migration audit: [Design system name]
@@ -831,6 +846,22 @@ scale the build uses instead (8, 16, 24, 32, 40, 48) with the one section side p
 it. Never omit the section and never populate it with source measurements on this tier: whoever
 converts builds against whatever spacing system is here, and a per-module number reintroduces the
 Portsmouth defect the section exists to prevent.]
+## Palette
+[REQUIRED as a section; same shape as Spacing system. The census from Step 6, one row per
+color cluster: source hex, count of fills that used it, module or modules it appears on.
+Near-duplicates within a small delta collapsed, exact source hexes preserved. Then the
+proposed set of the six Email Love theme colors (backgroundColor, contentColor, textColor,
+linkColor, buttonTextColor, buttonContentColor), each named with the source cluster it maps
+from and the delta if the proposal deviates from the exact source hex. **Every deviation
+listed as a line: `proposed pink #D03E75 vs source #C4014B, delta 60/60/42`**, so a designer
+approving the theme is approving the drift too and not reading a lightened value as source
+fidelity. Additional source colors not carried into theme roles listed at the bottom (a
+decorative green used on one badge, a bright blue used on one hero), so nothing is silently
+dropped. Close with "designer decision" the same as Scale factor and Spacing system: the
+census is measurement, the theme mapping is a recommendation. On REFERENCE ONLY: the census
+runs, the theme roles map onto census clusters as normal, no theme value invented from
+outside the file, and no deviation line is expected. Never omit the section: without it the
+foundations report reads as source-fidelity and the drift becomes invisible.]
 ## Module inventory
 [REQUIRED, deduplicated, and this is the section Phase 2 works from. One row per DISTINCT
 module: module name | category | appears in (design names) | source ref | verdict A/B/C/D |
@@ -859,8 +890,8 @@ appears here that is not already on a module row above.]
 same factor on every row). The rows come from the Step 6 census of every distinct
 `(family, size, weight, line-height)` tuple, not from what was sampled in content modules, so a
 nav-link style or a quote style that never appeared in a body-copy module still gets a row.
-Proposed theme colors, button styles, target email width. The spacing
-system lives in its own section above, so do not restate it here beyond a one-line pointer. State that the ratio acceptance test passed, with the two ratios you
+Button styles, target email width. The spacing system and the palette live in their own
+sections above, so do not restate either here beyond a one-line pointer to each. State that the ratio acceptance test passed, with the two ratios you
 compared. Also REQUIRED here, because foundations otherwise invents it: the source's **content
 margin as a percentage of source width**, the email-scale margin it converts to through the target
 width, the **content width** that implies, the designs you measured, and whether the source margin
@@ -1734,7 +1765,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.16.0 of this skill. If you have web access, check once per conversation
+This is version 1.17.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

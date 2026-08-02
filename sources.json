@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "9397fe4",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.24.0",
-      "emaillove-migration-audit": "1.16.0"
+      "emaillove-migration-audit": "1.17.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v3 defect fix (first of queue): palette census in audit (task #34). Audit Step 6 palette bullet rewritten from sampled ('their named paint styles') to a full census: enumerate every distinct fill hex in the file, cluster near-duplicates within a small delta (2-3 units per channel so #3C023C and #3C004A do NOT collapse but #009EE2 and #009FE1 do). Report Step 7 gets a new required 'Palette' section between Spacing system and Module inventory: source hex, count of fills using it, module list, plus proposed theme colors with every deviation from source hex listed with the delta so a designer approving the theme approves the drift too. Additional source colors not carried into theme roles listed at the bottom. Rationale: Portsmouth's Codex review found four accent primitives lightened from source (Pink #C4014B -> #D03E75, Magenta, Teal, Orange) with no documentation of the drift, and two source colors absent from theme entirely (a decorative green, a bright blue). Palette section prevents undocumented drift and silent drops. Same shape as the spacing (task #27) and type ramp (task #30) censuses. Bumps audit 1.16.0 to 1.17.0.",
+      "codexStatus": "Not yet ported. Task #34 of Portsmouth v3 queue, first of ~7 defect fixes surfaced by Codex review of built Portsmouth file. Batch with the rest and port after the queue closes."
+    },
     {
       "claudeCommit": "9397fe4",
       "summary": "Portsmouth v2 defect fix (last of queue): inline plugin-data key table + precondition check (task #28). Adds a new '### Precondition check: confirm the references are present' at the top of Phase 2 that reads references/render-spec.md and references/structure.md before starting; on absent files, names what cannot be verified and directs the agent to fetch a fresh bundle or agree a reduced scope with the user (Portsmouth batch hit this four modules in and cost five rounds of design review). Then a new '### The shared plugin data keys the exporter reads (inline, load-bearing)' section carrying the complete `emaillove` shared plugin data key table inline (name, nodeType, nine theme keys on the mainFrame root, optional email meta, fullWidth, stackColumns, reverseStack, href, altText), with what goes where and what it does. Plus a 'Mobile behaviors that are NOT shared plugin data keys' section covering four mobile behaviors Portsmouth spent rounds hunting for that turned out to be Figma-side: full-width mobile button (layoutSizingHorizontal='FILL' on mj-button), fluid-on-mobile image (width-relationship to column content width), mobile padding overrides (node properties), mobile column stacking (stackColumns or mj-group). Render spec keeps the prose, worked examples and rationale; the inline table is the irreducible contract that makes the skill functional even when a bundle ships without references. Closes the Portsmouth v2 queue (5 defect fixes shipped, 1 was deprioritized after the packaging bug that caused the original symptom was fixed, this one lands anyway as belt-and-braces). Bumps converter 1.23.0 to 1.24.0.",
