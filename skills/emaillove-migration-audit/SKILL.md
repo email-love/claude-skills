@@ -1,6 +1,6 @@
 ---
 name: emaillove-migration-audit
-description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, classifies how much of the source's geometry is a specification worth preserving, detects the source's scale factor when one applies, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
+description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, classifies how much of the source's geometry is a specification worth preserving, detects the source's scale factor when one applies, censuses the source's spacing values into one system per role, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
 ---
 
 # Email Love Migration Audit
@@ -679,9 +679,31 @@ comes from Step 3's email standards, with no factor involved anywhere.
 - **Palette:** their named paint styles, and a proposed set of the six Email Love theme
   colors (backgroundColor, contentColor, textColor, linkColor, buttonTextColor,
   buttonContentColor) drawn from it, marked as a proposal for their designer to confirm.
-- **Spacing scale** from any padding/spacer components, stated at email scale (divided by the
-  Step 4 factor) rather than at source scale. On a reference-only source, the multiples-of-8 scale
-  from Step 3 instead, since the source's paddings were not chosen.
+- **Spacing system, CENSUSED rather than sampled.** A design system's coherence is decided by
+  spacing more than by any other quantity, and unlike scale it is invisible in any one module and
+  only visible when modules sit together. So enumerate every distinct spacing value in the source,
+  clustered by role: **section side padding** (the inset from body edge to content), **vertical
+  rhythm** (top and bottom padding on sections and between sections), **column gutter** (the gap
+  between side-by-side columns), **card or inset padding** (the inset inside a bordered or filled
+  block from its own edge to its content), and the **mobile equivalents** of each where a mobile
+  variant exists. Read them from every module you saw in Step 5, not from padding or spacer
+  components alone: a source without spacer components can still be hand-drawn with thirty distinct
+  side insets, and a source with a tidy spacer library can still have modules that ignore it. State
+  each value at email scale (divided by the Step 4 factor) with the count of modules that used it,
+  as one row per role. Then **propose one system, per role, with a designer-decision gate**, the
+  same shape as the Scale factor block: for each role, the value or short ladder the converted
+  library will use, the source values it consolidates, and one sentence naming which module or
+  modules disagreed the most so the designer can inspect the outliers before saying yes. Prefer
+  multiples of 8 for the system values (8, 16, 24, 32, 40, 48) unless the source's clustered
+  centres are strongly on a different grid, so the ladder stays legible. Flag any mobile value that
+  is greater than 160px (half a 320 viewport), because that is a defect the source is carrying
+  regardless of what the designer decides on the desktop system. **Recorded reason exceptions are
+  allowed but named up front:** a full-bleed image band with zero side padding, a wide-quote
+  treatment where the block deliberately outsets, and so on. The output of this step is the
+  spacing scale the converter builds on; the ratio-acceptance shape of Scale factor applies here
+  too, in that the system replaces the source's ad-hoc numbers rather than averaging them. On a
+  REFERENCE ONLY source, do not census: the multiples-of-8 scale from Step 3 is the system, label
+  it as the email standard rather than as a measurement, and record no source values.
 - **Buttons:** their button styles as candidates for the Email Love button component page.
 - **Target email width:** the width the converted system gets built at, which is 600 or 640 and
   nothing else. It is a hard constraint from the email clients rather than something the factor
@@ -722,9 +744,9 @@ comes from Step 3's email standards, with no factor involved anywhere.
 
 ## Step 7: Write the migration report
 
-Produce one markdown report, in this exact structure. **Source fidelity, Scale factor and Module
-inventory are required sections**: they are what Phase 2 consumes, and a report missing any one of
-them cannot be converted from. Source fidelity sits near the top because it changes how every
+Produce one markdown report, in this exact structure. **Source fidelity, Scale factor, Spacing
+system and Module inventory are required sections**: they are what Phase 2 consumes, and a report
+missing any one of them cannot be converted from. Source fidelity sits near the top because it changes how every
 section below it should be read.
 
 # Migration audit: [Design system name]
@@ -770,6 +792,23 @@ factors as an error to be corrected later.
 On REFERENCE ONLY: the words `Not applicable, source is reference only`, then the email standards
 the build uses instead, and nothing that reads as a factor. Never omit the section and never fill
 it with a number derived "for information": whoever converts applies whatever number is here.]
+## Spacing system
+[REQUIRED as a section; what goes in it depends on Source fidelity, same shape as Scale factor.
+On AUTHORITATIVE or PARTIAL: the census from Step 6, one row per role (section side padding,
+vertical rhythm, gutter, card or inset padding, mobile equivalents), each row listing the distinct
+source values found at email scale with the count of modules that used each, then the proposed
+system value or short ladder, then the outlier module or two the designer should inspect. Close
+with the words "designer decision", the same as Scale factor: the census is measurement, the
+system is a recommendation.
+List every mobile value greater than 160px as a defect the source is carrying regardless of the
+decision, since it will not fit inside a 320 viewport.
+Named exceptions (a full-bleed image band with zero side padding, a wide-quote outset, and so on)
+are recorded here as system values with a note, not as ad-hoc overrides.
+On REFERENCE ONLY: the words `Not applicable, source is reference only`, then the multiples-of-8
+scale the build uses instead (8, 16, 24, 32, 40, 48) with the one section side padding chosen off
+it. Never omit the section and never populate it with source measurements on this tier: whoever
+converts builds against whatever spacing system is here, and a per-module number reintroduces the
+Portsmouth defect the section exists to prevent.]
 ## Module inventory
 [REQUIRED, deduplicated, and this is the section Phase 2 works from. One row per DISTINCT
 module: module name | category | appears in (design names) | source ref | verdict A/B/C/D |
@@ -795,8 +834,8 @@ verdict present. A roll-up of the Module inventory, not a second classification:
 appears here that is not already on a module row above.]
 ## Brand foundations
 [Type ramp mapping table (style, authored size, factor, email size, one row per style with the
-same factor on every row), proposed theme colors, spacing scale at email scale, button styles,
-target email width. State that the ratio acceptance test passed, with the two ratios you
+same factor on every row), proposed theme colors, button styles, target email width. The spacing
+system lives in its own section above, so do not restate it here beyond a one-line pointer. State that the ratio acceptance test passed, with the two ratios you
 compared. Also REQUIRED here, because foundations otherwise invents it: the source's **content
 margin as a percentage of source width**, the email-scale margin it converts to through the target
 width, the **content width** that implies, the designs you measured, and whether the source margin
@@ -804,9 +843,10 @@ was CONSISTENT (evidence the customer's system has one margin, which the convert
 keep) or INCONSISTENT (a flag, listed with the values found, and foundations picks one rather than
 inheriting it). Say which factor you converted the percentage through. On a REFERENCE ONLY source
 there is no factor column, no authored sizes, and no ratio
-test to run: give the standard ramp and the multiples-of-8 spacing scale, say they are the email
-standard rather than measurements, give the standard 600 body with its one 560 content width for
-every module, and take only the palette, typefaces, and logo from the file.]
+test to run: give the standard ramp, point at the Spacing system section above rather than
+restating the multiples-of-8 ladder here, say the ramp is the email standard rather than a
+measurement, give the standard 600 body with its one 560 content width for every module, and take
+only the palette, typefaces, and logo from the file.]
 ## Flags
 [Everything a human should look at: fonts unavailable for email, naming typos, empty pages,
 inconsistent widths, accessibility risks from image-heavy modules, module boundaries you
@@ -1669,7 +1709,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.13.0 of this skill. If you have web access, check once per conversation
+This is version 1.14.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

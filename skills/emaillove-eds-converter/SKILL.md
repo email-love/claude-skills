@@ -290,6 +290,18 @@ Everything below that reads a source number, the ramp in step 3 and the spacing 
 above all, is an AUTHORITATIVE and PARTIAL instruction. On a REFERENCE ONLY source it is the
 defaults above that get built, and the source's numbers stay in the audit as evidence.
 
+**Read the audit's Spacing system section and build to it, not to per-module source values.** The
+audit's census consolidated the source's ad-hoc side insets, vertical rhythm, gutter and card
+paddings, and their mobile equivalents, into one system per role, with a designer decision on
+each. That system is what every module in every batch inherits. When a module conversion asks
+"what side padding does this section get", the answer is the audit's row, not a number measured
+off this module's own screenshot: a per-module measurement is exactly how the Portsmouth defect
+landed, thirty distinct side insets across twenty-eight modules and one that broke mobile.
+Named exceptions (a full-bleed image band with zero side padding, a wide-quote outset) are
+allowed only where the audit's Spacing system listed them as exceptions, with the reason. A
+module that needs a spacing value the system does not carry is a designer question raised out of
+batch, not a silent override.
+
 **Foundations also SETS the content width, once, for the whole library, and records it.** This is
 the same shape as the scale factor rule above, so treat it the same way: one number, decided here,
 applied by every later batch, never re-derived per module. Content width is the width text
@@ -1089,6 +1101,16 @@ checklist at the end of `references/render-spec.md`:
   every padding is off the spacing scale, and the text column resolves to the library content width.
   Do not check the module against the source's proportions, because matching them is not the goal
   and a mismatch is not a finding.
+- **Spacing system: every side padding, vertical padding and gutter in the module resolves to a
+  value listed in the audit's Spacing system section**, no exceptions except the exceptions the
+  audit named (a full-bleed image band with zero side padding, a wide-quote outset). Walk the built
+  module and list each padding with the role and system value it satisfies; a padding that resolves
+  to nothing is a fail, and the remedy is a designer question about the system, not a silent
+  override inside the module. This is a cross-module check by nature: a per-module value looks
+  reasonable on its own and produces the Portsmouth defect (thirty distinct side insets across
+  twenty-eight modules, one of them broken on mobile) the moment the batch grows. Confirm too that
+  no mobile padding is greater than 160px on a 320 viewport, because that is a defect regardless of
+  what the system carries.
 - **Content width: read the resolved x and width of the text-bearing column off the built module
   and confirm it equals the library content width from foundations**, not the worker's number. On a
   multi-column row confirm the columns plus gutters sum to it. This is a cross-module check by
@@ -1148,7 +1170,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.19.3 of this skill. If you have web access, check once per conversation
+This is version 1.20.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

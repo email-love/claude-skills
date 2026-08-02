@@ -26,6 +26,24 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.20.0
+- **Phase 2 now reads the audit's Spacing system section and builds every module against it,
+  not against per-module source values** (Portsmouth v2 headline defect). The audit's census
+  consolidated the source's ad-hoc side insets, vertical rhythm, gutters, card paddings and
+  their mobile equivalents into one system per role with a designer decision on each; that
+  system is what every module in every batch inherits. Named exceptions (full-bleed image
+  bands, wide-quote outsets) are allowed only where the audit listed them.
+- **Phase 3 step 5 verification now asserts spacing resolution.** Walk the built module and
+  list each side padding, vertical padding and gutter with the role and system value it
+  satisfies; a padding that resolves to nothing is a fail, and the remedy is a designer
+  question about the system rather than a silent per-module override. Also confirms no mobile
+  padding is greater than 160px on a 320 viewport (a defect regardless of what the system
+  carries).
+- Rationale in the skill: Portsmouth shipped with 30-plus distinct side inset values across
+  28 modules and one that broke on mobile (220/221 on a 320 viewport), and every batch
+  report passed. The per-module measurement was exactly how it happened.
+- Bumps to 1.20.0 (minor: new mandatory verification line, converter behavior change).
+
 ### 1.19.3
 - **Mobile stacking now has a mandatory checkpoint** (Portsmouth batch 1 defect). Phase 3
   step 3 renamed from "Merge the mobile twin" to "Decide mobile behavior" and split into
@@ -70,6 +88,26 @@ independent per skill. Every release attaches all three `.skill` bundles.
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.14.0
+- **Spacing is now CENSUSED, not sampled** (Portsmouth v2 headline defect). Step 6 replaces
+  the old "spacing scale from any padding/spacer components" bullet with a full census: read
+  every distinct spacing value from every module in Step 5, cluster by role (section side
+  padding, vertical rhythm, gutter, card or inset padding, mobile equivalents), state each
+  value at email scale with the count of modules that used it, then propose one system per
+  role with a designer-decision gate, the same shape as the Scale factor section. Any mobile
+  value greater than 160px is flagged as a defect the source is carrying regardless of the
+  decision.
+- **Report Step 7 gets a new "Spacing system" required section**, between Scale factor and
+  Module inventory. Same shape and treatment: the census, the proposed system per role, the
+  outlier modules for the designer to inspect, and the words "designer decision". Brand
+  foundations no longer duplicates the spacing scale; it points at the Spacing system
+  section instead.
+- Rationale in the skill: a design system's coherence is decided by spacing more than by any
+  other quantity, and unlike scale it is invisible in any one module and only visible when
+  modules sit together. Portsmouth ran the old skill and passed every batch report with 30
+  distinct side insets across 28 modules, one broken on mobile.
+- Bumps to 1.14.0 (minor: new required report section, audit behavior change).
 
 ### 1.13.0
 

@@ -1,13 +1,13 @@
 {
   "description": "Source-alignment record between the Claude skills in this repo and the Codex plugin port in email-love/codex-agents. Its job is to stop a fix from landing in one surface and silently never reaching the other. Update it whenever either surface ships a change that the other should mirror, and stamp lastAlignmentReview when you have checked the two are in sync.",
-  "lastAlignmentReview": "2026-08-01",
+  "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "e0d597de451f50281cb244307d3881fb6f3c15a7",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.13.0"
+      "emaillove-eds-converter": "1.20.0",
+      "emaillove-migration-audit": "1.14.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v2 headline defect fix: spacing system census + consistency enforcement (task #27). Audit Step 6 replaces the sampled 'spacing scale from padding/spacer components' bullet with a full census read from every module in Step 5, clustered by role (section side padding, vertical rhythm, gutter, card or inset padding, mobile equivalents). Step 7 report gets a new required 'Spacing system' section between Scale factor and Module inventory, same shape as Scale factor (census, proposed system, outliers, designer decision). Any mobile value > 160px flagged. Converter Phase 2 now states every module builds on the audit's Spacing system, not per-module source values; Phase 3 step 5 verification walks the built module and asserts every side padding, vertical padding and gutter resolves to a system value (or a named exception), and flags mobile paddings > 160px. Named exceptions (full-bleed image bands, wide-quote outsets) allowed only where the audit listed them. Bumps audit 1.13.0 to 1.14.0 and converter 1.19.3 to 1.20.0. Portsmouth ran the old skills and passed every batch report while shipping 30 distinct side insets across 28 modules, one broken on mobile (220/221 on a 320 viewport): the per-module measurement was exactly how it happened.",
+      "codexStatus": "Not yet ported. The Notion port spec is now 5 commits behind (Portsmouth Marketo v1.11.2, CIO v1.11.3, cloud sources v1.12.0, six ESPs v1.13.0, spacing system v1.14.0 / converter v1.20.0). The Portsmouth v2 fixes are the reason a single-pass port makes sense: this commit is the first of 5-6 Portsmouth v2 defect fixes that should ship together, then the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2) ports as one clean spec."
+    },
     {
       "claudeCommit": "e0d597d",
       "summary": "Six more ESP source adapters added (Brevo, Kit, ActiveCampaign, Iterable, Omnisend, HubSpot), one per ESP verified via web search (Aug 2026) to have an official MCP. Each adapter written against public MCP docs and directs the agent to introspect the connected MCP's tools at session start since no loaded tool signatures were available to verify names. Per-ESP quirks named (Brevo full-account API key, Kit's three content pools, ActiveCampaign DND vs HTML, Iterable beta/self-hosted, Omnisend product-block placeholders, HubSpot smart content and CTA library). Step 0 now has 13 source options. Bumps audit 1.12.0 to 1.13.0.",
