@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "a5c4601",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.20.0",
+      "emaillove-eds-converter": "1.21.0",
       "emaillove-migration-audit": "1.15.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v2 defect fix: render-node-not-fill constraint fires at asset export AND at module screenshot, plus logos-never-resized rule (task #31). Converter Phase 2 step 6 already carried the render-node-not-fill rule; Phase 3 step 1 (screenshot the module) now carries it too, because the mistake happens where the pipeline is. Portsmouth's hero photograph was cropped out of a canvas render and the overlapping white card baked into the image, producing a ghost headline inside the picture that only surfaced at the visual check. Phase 3 step 1 now states: the module screenshot is for the worker to classify structure, not the source of image assets; any image asset a module carries is exported from its own node in isolation, not cropped from the module screenshot or a canvas render. A bulk canvas-crop pass for efficiency in either phase is the failure mode. Separately: Phase 2 step 6 adds 'logos have an intrinsic size and are never resized to fit', because a Portsmouth 'grow inset images to fill their column' pass stretched the footer logo to 191x68. Logo intrinsic size is the source of truth; do not stretch, scale up to match a hero, or fold into a bulk image-sizing pass. Bumps converter 1.20.0 to 1.21.0.",
+      "codexStatus": "Not yet ported. Task #31 of Portsmouth v2 queue, third of ~5-6 defect fixes. Batch with the rest (#28-32) and port the whole thing (v1 + v1.5 + six ESPs + Portsmouth v2) as one clean spec."
+    },
     {
       "claudeCommit": "a5c4601",
       "summary": "Portsmouth v2 defect fix: type ramp censused instead of sampled (task #30). Audit Step 6 type-ramp bullet rewritten from sampling ('each of their text styles mapped') to a full census: enumerate every distinct (family, size, weight, line-height) tuple in the file, cluster within a point or two, treat each cluster as one ramp row. On a file with text styles the census is the styles page plus local overrides; on a file without text styles it is a walk over every text node in every design surveyed in Step 2. Report Brand foundations section note updated to say the ramp rows come from the census, not from sampled content modules. Rationale: Portsmouth ran the old skill and missed the nav-link style (15px bold) and quote style (24/38) because they never appeared in body-copy modules; the ratio test still passed because the missing sizes fell inside the existing range, so the arithmetic gate caught a distorted ramp but not an incomplete one. Census still runs on REFERENCE ONLY sources (the typefaces and weights the source uses are the palette the standard ramp gets mapped onto; sizes are discarded on that tier). Bumps audit 1.14.0 to 1.15.0.",

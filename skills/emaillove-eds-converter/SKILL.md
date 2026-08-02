@@ -558,10 +558,24 @@ Build the scaffold every later batch depends on:
    no scale in the source to preserve the shape of.
 6. **Assets.** Export the logo and any recurring imagery from the source file
    (download_assets) and upload into the target file (upload_assets). Logos become images,
-   never vectors. Export the RENDERED node every time, never the raw image fill behind it: a
+   never vectors. **Logos have an intrinsic size and are never resized to fit.** A logo's own
+   aspect ratio and pixel dimensions are the source of truth; do not stretch it to fill a
+   column, do not scale it up to match a hero image, do not fold it into a "grow inset images
+   to fill their column" pass. This is a separate rule from the image sizing rules that apply
+   to hero photography, because a stretched logo damages a brand asset the customer already
+   owns rather than an editable image the plugin will regenerate.
+   Export the RENDERED node every time, never the raw image fill behind it: a
    source fill with `scaleMode: 'CROP'` loses its crop the moment you take the underlying
    asset, and you get the whole photograph instead of the picture the designer composed
    (render spec 4.2.1, which also has the aspect-ratio rule).
+   **The render-node-not-fill rule fires here, in Phase 2 step 6, and again in Phase 3 step 1
+   where the module gets screenshotted for the worker.** They are two different actions, taken
+   at two different times, on two different pipelines. A bulk canvas-crop pass done for
+   efficiency in either phase reintroduces the same defect: on Portsmouth the hero photograph
+   was cropped out of a canvas render and the overlapping white card baked into the image,
+   producing a ghost headline inside the picture that only surfaced at the visual check.
+   Bulk pipelines that crop from a canvas render are the failure mode; export each image
+   node individually.
 7. **Root EMAIL TEMPLATE frame** on Campaigns at the audit's target email width (600 or 640,
    never the source canvas width when the source was not at email scale; 600 on a REFERENCE ONLY
    source unless the customer's ESP or brand asks for 640): vertical
@@ -760,6 +774,17 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    frame or node; on an unstructured source it is the region of a design the source ref bounds,
    cropped at the boundaries the audit set rather than at ones you decide now. Keep the PNG; it
    is also your visual reference for verification.
+   The module screenshot is for the worker to classify structure. It is not the source of
+   image assets. **Any image asset a module will actually carry is exported from its own node,
+   not cropped out of this screenshot or out of a canvas render.** A crop taken out of a
+   broader render bakes overlapping siblings into the picture (a headline over a hero, a card
+   over a photograph, a badge over a product shot), which then survives every downstream step
+   and only surfaces at the visual check as a ghost. This is the same render-node-not-fill
+   rule as Phase 2 step 6, restated here because the pipeline is different: a bulk
+   canvas-crop pass for efficiency in either phase is exactly how the Portsmouth hero shipped
+   with a ghost headline inside the picture. When you need a per-module image asset (for
+   example a hero photograph the customer wants placed rather than a gray fill), export that
+   image node in isolation even when it is slower than cropping the module screenshot.
    **Size the export so the PNG comes back at the target email width.** Where a factor exists that
    means exporting a source at scale factor 2.2 at roughly 0.45x; where none does, divide the source
    region's own width by the target width and export at that, which is a framing decision about one
@@ -1170,7 +1195,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.20.0 of this skill. If you have web access, check once per conversation
+This is version 1.21.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

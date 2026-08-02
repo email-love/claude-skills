@@ -26,6 +26,22 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.21.0
+- **The render-node-not-fill rule now fires in TWO phases, not one** (Portsmouth v2 defect).
+  It always existed in Phase 2 step 6 (assets round-trip). Phase 3 step 1 (screenshot the
+  module) now carries it too, because the mistake happens where the pipeline is: on
+  Portsmouth the hero photograph was cropped out of a canvas render and the overlapping
+  white card baked into the image, producing a ghost headline inside the picture that only
+  surfaced at the visual check. A bulk canvas-crop pass for efficiency in either phase is
+  the failure mode; export each image node individually, even when it is slower.
+- **Logos are never resized to fit** (Portsmouth v2 defect). Phase 2 step 6 now says the
+  intrinsic size is the source of truth: do not stretch a logo to fill a column, scale it
+  up to match a hero image, or fold it into a "grow inset images to fill their column" pass.
+  Separate rule from image sizing, because a stretched logo damages a brand asset the
+  customer already owns.
+- Bumps to 1.21.0 (minor: converter behavior change in two phases, no report structure
+  change).
+
 ### 1.20.0
 - **Phase 2 now reads the audit's Spacing system section and builds every module against it,
   not against per-module source values** (Portsmouth v2 headline defect). The audit's census
