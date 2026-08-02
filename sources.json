@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "45cea89",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.33.1",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "45cea89",
       "summary": "Red Paddle defect fix: palette census clusters by ROLE + type ramp floor (task #50, enhancement to task #34). Palette census: sample text-node fills as well as background fills; same hex used as a band and as text on white are TWO theme tokens, not one, because the theme layer needs to move them independently. A palette built from fills alone finds bands and buttons and misses type. Type ramp: where the smallest cluster is below 12px, recommend a floor at 12 (or customer-confirmed floor). Rationale: Red Paddle shipped nav link #888888 and body color #222222 (used only on text) missing from the theme roles list, both added mid-batch; value-prop captions at ~11px standardised up to 12 mid-build. Bumps audit 1.17.0 to 1.18.0.",
       "codexStatus": "Not yet ported. Task #50 of Red Paddle queue, ninth of 10 defect fixes."
     },
