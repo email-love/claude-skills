@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "cea986c",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.20.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "cea986c",
       "summary": "Portsmouth v2 headline defect fix: spacing system census + consistency enforcement (task #27). Audit Step 6 replaces the sampled 'spacing scale from padding/spacer components' bullet with a full census read from every module in Step 5, clustered by role (section side padding, vertical rhythm, gutter, card or inset padding, mobile equivalents). Step 7 report gets a new required 'Spacing system' section between Scale factor and Module inventory, same shape as Scale factor (census, proposed system, outliers, designer decision). Any mobile value > 160px flagged. Converter Phase 2 now states every module builds on the audit's Spacing system, not per-module source values; Phase 3 step 5 verification walks the built module and asserts every side padding, vertical padding and gutter resolves to a system value (or a named exception), and flags mobile paddings > 160px. Named exceptions (full-bleed image bands, wide-quote outsets) allowed only where the audit listed them. Bumps audit 1.13.0 to 1.14.0 and converter 1.19.3 to 1.20.0. Portsmouth ran the old skills and passed every batch report while shipping 30 distinct side insets across 28 modules, one broken on mobile (220/221 on a 320 viewport): the per-module measurement was exactly how it happened.",
       "codexStatus": "Not yet ported. The Notion port spec is now 5 commits behind (Portsmouth Marketo v1.11.2, CIO v1.11.3, cloud sources v1.12.0, six ESPs v1.13.0, spacing system v1.14.0 / converter v1.20.0). The Portsmouth v2 fixes are the reason a single-pass port makes sense: this commit is the first of 5-6 Portsmouth v2 defect fixes that should ship together, then the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2) ports as one clean spec."
     },
