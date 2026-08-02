@@ -14,7 +14,7 @@
     "repo": "email-love/codex-agents",
     "currentRelease": "v3.0.1",
     "portsClaudeCommit": "0c67f867d34c7395c7809997b3cd673ca26de1b6",
-    "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
+    "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills. Next port: v4.0.0 batch spec ready in Notion (page id 3b0eabcb-09b7-8127-acb8-d26ca3215313, pinned to Claude commit b437b5a), covering v1 + v1.5 + six ESPs + Portsmouth v2 + Portsmouth v3 (15 commits). Major bump because the audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshapes an existing section)."
   },
   "drift": [
     {
