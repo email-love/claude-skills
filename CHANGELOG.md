@@ -26,6 +26,22 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.33.1
+- **`mj-navbar` mapping documented** (Red Paddle defect). Render-spec section 6.1 note now
+  says: when the worker returns `mj-navbar`, do not invent a mapping. Rebuild as one
+  `mj-text` node whose characters carry every label, with `setRangeHyperlink` per label,
+  separated by a normal space plus non-breaking spaces so the visible gap survives HTML
+  whitespace collapsing while the line can still break between labels but never inside
+  one. Type styling from the audit's Nav Link ramp entry.
+- Two reasons this shape wins over the alternatives on any nav past three items: it
+  reflows (a group of pinned columns cannot, per section 3.3.2), and it satisfies audit
+  constraints of the form "split the single text run into N separately linked items"
+  without a per-item column.
+- Rationale: Red Paddle met `mj-navbar` twice and improvised twice, ending at the
+  reflowing-text shape both times. Task #42's four-item nav shipped this way after the
+  group build failed twice.
+- Bumps to 1.33.1 (patch: documentation of a mapping the skill previously punted on).
+
 ### 1.33.0
 - **Check the font is installed before building the ramp; know the substitute** (Red
   Paddle defect). Phase 2 step 3 (Type mapping) now says: call

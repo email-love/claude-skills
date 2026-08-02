@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "dc4a545",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.33.0",
+      "emaillove-eds-converter": "1.33.1",
       "emaillove-migration-audit": "1.17.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1 (four source adapters), v1.5 (Google Drive + SharePoint cloud adapters), v1.13 (six more ESP adapters), Portsmouth v2 (six defect fixes from a real customer migration), Portsmouth v3 (seven defect fixes from a Codex review of the built Portsmouth file). Major bump because the audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). v3.0.1 previously ported model-choice guidance (c0719be) and Portsmouth batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Red Paddle defect fix: mj-navbar mapping documented (task #49). Render-spec section 6.1 note: when the worker returns mj-navbar, do not invent a mapping. Rebuild as one mj-text node whose characters carry every label, with setRangeHyperlink per label, separated by a normal space plus non-breaking spaces so gap survives HTML whitespace collapsing while line can break between labels but never inside one. Type styling from audit's Nav Link ramp entry. Two reasons this wins over alternatives past three items: reflows (a group of pinned columns cannot per 3.3.2), satisfies 'split single text run into N separately linked items' constraint without per-item column. Red Paddle met mj-navbar twice and improvised twice, ending at this shape both times; task #42's four-item nav shipped this way after group build failed twice. Bumps converter 1.33.0 to 1.33.1 (patch: documentation of a mapping previously punted on).",
+      "codexStatus": "Not yet ported. Task #49 of Red Paddle queue, eighth of ~10 defect fixes."
+    },
     {
       "claudeCommit": "dc4a545",
       "summary": "Red Paddle defect fix: Figma cloud fonts have no Helvetica/Arial, build in Arimo (task #48). Phase 2 step 3 (Type mapping): call figma.listAvailableFontsAsync() and look for the target family by name before building. Figma environment for agents typically serves Google Fonts only (~1,900 families); Helvetica, Helvetica Neue, and Arial are all absent even though they are the most common email-safe answer. When target is Arial or Helvetica and unavailable, build in Arimo (metrically compatible Arial clone, identical advance widths). State consequence in foundations report: exporter writes fontName.family into font-family so export will say Arimo until family is swapped. Expect weight count to drop (Regular/Bold only from email-safe stack). Rationale: every agent-run migration whose customer picks the standard email-safe stack hits this; silent failure mode is building the ramp in Inter. Bumps converter 1.32.2 to 1.33.0.",

@@ -1778,6 +1778,29 @@ worker returns one of the others, compose the row from mapped primitives instead
 `mj-hero` for the case where a design genuinely needs live text over a
 full-bleed background image.
 
+**Specifically for `mj-navbar`, do not invent a mapping. Rebuild as one
+`mj-text` with per-label hyperlinks.** The worker returns `mj-navbar` for any
+row of links, and if there is no `mj-navbar` attribute mapping here (and there
+is not), an agent that leaves it as `mj-navbar` in the tree gets a node the
+plugin rejects and an agent that improvises a mapping produces a group whose
+columns fail section 3.3.2 at phone width. The construction that reflows and
+survives:
+
+- One `mj-text` node whose characters carry every label in one string.
+- One `setRangeHyperlink` per label pointing at that label's href.
+- Between labels, a normal space plus one or more non-breaking spaces (` `)
+  so the visible gap survives HTML whitespace collapsing while the line can
+  still break between labels but never inside one.
+- Type styling from the audit's Nav Link ramp entry, aligned per the design
+  (centre for a nav strip, left for an inline row).
+
+Two independent reasons this shape wins over the alternatives on any nav past
+three items: it reflows, which a group of pinned columns cannot (section 3.3.2
+has the arithmetic), and it satisfies audit constraints of the form "split the
+single text run into N separately linked items" without a per-item column.
+Task #42's four-item nav shipped this way after `CHA / NGI / NG`, `G / E / A / R`
+failed the group build twice.
+
 ---
 
 ## 7. Components: when a node is a COMPONENT instead of a FRAME
