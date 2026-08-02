@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-01",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "48d085d6068ad1665e6e78c7ce9c1f9e00e9c51d",
+    "currentCommit": "8fd68a5de71611196fdbefe241f8711bbe476c37",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.11.3"
+      "emaillove-migration-audit": "1.12.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "8fd68a5",
+      "summary": "ESP migration v1.5: Google Drive + SharePoint cloud-source adapters added. Both use the same 'walk a location via MCP, pull HTML/EML/PNG, feed downstream' pattern as Local Folder. Drive adapter uses the reference Google Drive MCP with the drive.readonly scope caveat named. SharePoint adapter uses a Microsoft Graph MCP with the enterprise-IT-blocking-OAuth friction named. Step 0 gets choices (f) Google Drive and (g) SharePoint. Bumps audit 1.11.3 to 1.12.0.",
+      "codexStatus": "Not yet ported. The existing Notion port spec pinned to 48d085d does not cover this. Update the pinned spec (or write an addendum) before running through Codex; alternatively wait until Portsmouth v2 fixes ship and port everything in one pass to avoid churn."
+    },
     {
       "claudeCommit": "48d085d",
       "summary": "ESP migration v1 commit 4: Customer.io Source adapter added (final adapter of v1 series). Uses cio_read_api + cio_schema + cio_prime. Directs cio_prime call every session, cio_auth_status for env confirmation. Names 'Automations in UI == campaigns in API' product-naming trap. v1 pulls Templates and Newsletters (customer picks one or both). Schema-first: use cio_schema to get current list/get shapes since CIO evolves the API frequently. Explicit v1 non-goals for customer transparency: does NOT pull Automations messages, Transactional, Design Studio emails, Layouts, or Snippets. Warns against reading CIO's own agent skills (design-studio, fly-api) mid-audit. Step 0 Customer.io load-reference stub updated to point to the real section.",
