@@ -71,6 +71,26 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.12.0
+
+- **ESP migration v1.5: cloud-source adapters.** Two new source options added to Step 0
+  ((f) Google Drive folder and (g) SharePoint folder) via the same "walk a location, pull
+  HTML/EML/PNG, feed downstream" pattern that Local Folder established. Both use the
+  respective MCP for auth and file access.
+- **Google Drive Source adapter** added. Uses the Google Drive MCP; customer supplies a
+  folder URL or ID. Filters files to HTML, EML, PNG, JPG. Names the OAuth-scope gotcha:
+  `drive.file` scope only sees files opened through a Google file picker, so an MCP set
+  up with that scope will return empty on an arbitrary folder even when the user has
+  access.
+- **SharePoint Source adapter** added. Uses a Microsoft Graph MCP; customer supplies a
+  SharePoint folder path. Same file filtering as Drive. Names the enterprise-IT
+  friction: many organizations block third-party OAuth into SharePoint, requiring admin
+  consent that can take a week or two.
+- Both adapters share the audit-step adaptations already established for cloud sources:
+  always REFERENCE ONLY, no scale factor, per-file modules with no cross-file dedup in
+  v1, foundations from the first 3 items.
+- Bumps to 1.12.0 (minor: new capability set, not just an addition to an existing one).
+
 ### 1.11.3
 
 - **ESP migration v1, commit 4 (final adapter of the v1 series). Customer.io Source adapter

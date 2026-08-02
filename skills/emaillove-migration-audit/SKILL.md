@@ -114,6 +114,8 @@ Ask the customer where their existing emails live, in one question:
 > - (c) Klaviyo (via the official Klaviyo MCP)
 > - (d) Marketo (via the customer's Marketo REST API credentials)
 > - (e) Customer.io (via the CIO MCP)
+> - (f) Google Drive folder (via the Google Drive MCP)
+> - (g) SharePoint folder (via a Microsoft Graph MCP)
 
 Their answer decides everything downstream. The rest of the audit uses the source adapter for
 whichever they picked. **You cannot skip this question.** An unstated source is the default
@@ -137,6 +139,8 @@ Source adapters:
 - **(c) Klaviyo:** load the Klaviyo Source section at the end of this file.
 - **(d) Marketo:** load the Marketo Source section at the end of this file.
 - **(e) Customer.io:** load the Customer.io Source section at the end of this file.
+- **(f) Google Drive folder:** load the Google Drive Source section at the end of this file.
+- **(g) SharePoint folder:** load the SharePoint Source section at the end of this file.
 
 ## Step 1: Scope the input
 
@@ -881,7 +885,7 @@ item to the design-converter worker in Phase 3), and the specific audit-step ada
 that apply because the source is not Figma.
 
 The adapters are ordered by simplicity and by how much of the audit report they can populate.
-Local Folder is the simplest and the most bare-bones; Klaviyo, Marketo, and Customer.io carry more
+Local Folder is the simplest and the most bare-bones; the two cloud folders (Google Drive and SharePoint) work the same way as Local Folder but reach files via an MCP instead of the local filesystem; Klaviyo, Marketo, and Customer.io carry more
 template metadata forward.
 
 ### Source: Local Folder
@@ -1336,9 +1340,115 @@ If the customer's active content mostly lives in one of the not-pulled surfaces,
 so up front rather than silently returning a partial library. v1.1 will extend to campaign
 messages, transactional, and Design Studio.
 
+### Source: Google Drive
+
+The customer's emails live in a Google Drive folder (`.html`, `.eml`, `.png`, or `.jpg`
+files). Requires the Google Drive MCP connected to your session. Works from any Claude or
+Codex surface with MCP support (no local file access needed, unlike Local Folder).
+
+**Which MCP.** The reference implementation is the [official Google Drive MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/gdrive)
+from the modelcontextprotocol servers repo. Third-party implementations exist with varying
+tool names. Introspect the connected MCP's tool list at session start so the exact tool
+names below match what your MCP actually exposes.
+
+**Discover.**
+
+1. Ask the customer for the Drive folder URL or ID. Format:
+   `https://drive.google.com/drive/folders/{folder_id}`. Extract the folder ID from the URL.
+2. Confirm the MCP is authenticated for the account that has access to that folder. Google
+   Drive's per-user permissions mean a folder shared with a specific person may not be
+   accessible to whichever account authorized the MCP.
+3. Call the MCP's list-files-in-folder tool (typically `gdrive_list_files_in_folder`, or a
+   search query with the folder ID as parent). Filter to these MIME types: `text/html`,
+   `message/rfc822` (EML), `image/png`, `image/jpeg`.
+
+Report the discovery to the customer:
+
+> Google Drive folder: "Legacy email templates" (id `1AbC...`). Found 24 files: 15 HTML, 6
+> PNG screenshots, 3 EML exports. Confirm which to migrate.
+
+Same 50-file threshold as the ESP adapters: if the folder has more than about 50 candidate
+files, ask the customer to narrow (specific filenames, a date-modified range, or a
+subfolder).
+
+**Fetch.**
+
+For each file the customer approves:
+
+1. Call the MCP's read-file tool with the file ID. For HTML files, the response body is HTML
+   directly. For EML, extract the `text/html` part (see the Local Folder adapter's EML
+   handling). For PNG/JPG, the response body is base64-encoded image content: decode and
+   save to a temporary file.
+2. HTML files: render to PNG via headless Chrome (same command as the Local Folder adapter).
+3. EML files: extract the HTML part, then render to PNG.
+4. PNG/JPG files: use directly.
+5. Feed the resulting PNG to the design-converter worker on the same Path B route the other
+   adapters use.
+
+**Audit-step adaptations.**
+
+Same as Local Folder: always REFERENCE ONLY, no scale factor, per-file modules with no
+cross-file dedup in v1, foundations from the first 3 items.
+
+**Google Drive specific report addition:** include the file's Google Drive URL per row
+(`https://drive.google.com/file/d/{file_id}/view`) so the customer can click through to the
+source.
+
+**One caveat worth naming.** Google Drive's OAuth scopes matter. The MCP typically requests
+either `drive.readonly` (all files the user can access) or `drive.file` (only files the app
+created or that the user opened with the app through a Google file picker). If the MCP was
+set up with `drive.file` scope, it will not see arbitrary folders even when the customer
+has access to them; the customer would need to re-authorize with `drive.readonly`, or pick
+each file individually through a picker. If the MCP returns empty for a folder the customer
+knows contains files, the scope is the first thing to check.
+
+### Source: SharePoint
+
+The customer's emails live in a SharePoint site folder (`.html`, `.eml`, `.png`, or `.jpg`
+files). Requires a Microsoft Graph MCP connected to your session with permission to read
+the customer's SharePoint content.
+
+**Which MCP.** Microsoft's [official Graph MCP](https://github.com/microsoftgraph/msgraph-mcp)
+is the canonical option, but the SharePoint MCP ecosystem is thinner than Google's.
+Third-party implementations exist with varying tool names. Introspect the connected MCP's
+tool list at session start.
+
+**Enterprise IT often blocks third-party OAuth into SharePoint.** Confirm the customer's IT
+allows the Graph MCP's app registration before assuming setup will work. If not, they need
+admin consent, which can take a week or two in a large org. This is not a v1 blocker for
+the skill itself, but it is a real friction the customer needs to know about up front.
+
+**Discover.**
+
+1. Ask the customer for the SharePoint folder path. Format varies but typically:
+   `https://{tenant}.sharepoint.com/sites/{site}/Shared%20Documents/{folder}`.
+2. Confirm the MCP is authenticated with permission to read that site's content. Some
+   enterprise SharePoint setups scope OAuth per-site, not tenant-wide, so a token that
+   works for one site may not work for another.
+3. Call the MCP's list-files tool for that folder. Filter to the same file types as the
+   Local Folder and Drive adapters: HTML, EML, PNG, JPG.
+
+Report the discovery the same way (folder path, file count, format breakdown).
+
+Same 50-file threshold. If the folder is a general document library rather than a
+templates folder, ask the customer to narrow to the templates subfolder before pulling.
+
+**Fetch.**
+
+Same as Google Drive: MCP tool returns file content, decode or extract HTML as needed,
+render to PNG via headless Chrome, feed to the design-converter worker.
+
+**Audit-step adaptations.**
+
+Same as Local Folder.
+
+**SharePoint specific report addition:** include the SharePoint file URL per row. These
+URLs often include tenant-specific tokens and can look unwieldy; preserve them verbatim
+rather than trying to shorten them, since the customer's team will recognize them.
+
 ## Staying current
 
-This is version 1.11.3 of this skill. If you have web access, check once per conversation
+This is version 1.12.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
