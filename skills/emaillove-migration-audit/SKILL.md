@@ -970,7 +970,84 @@ stated once at the top).
 
 ### Source: Klaviyo
 
-Coming in v1 (next commit).
+The customer's emails live in Klaviyo. Requires the official Klaviyo MCP connected to your
+Claude session (works from Claude.ai, Claude Code, or any Claude surface with MCP support).
+The tool names are prefixed with the MCP's namespace in your environment; the tool NAMES
+below are the ones you actually call.
+
+**Discover.**
+
+1. Call `get_account_details` first, always. Klaviyo customers commonly have separate staging
+   and production accounts on the same email address; confirming the account name and
+   organization back to the customer avoids migrating the staging library by accident.
+
+2. Call `list_email_templates` with the minimal-payload set for discovery:
+   `fields_template=["id","name","editor_type","created","updated"]` and
+   `sort="-updated"` (most-recently-modified first, which correlates strongly with what is
+   actually in use). Klaviyo's `page_size` is capped at 10, so paginate with the cursor from
+   `links.next` until it is null.
+
+3. **When the customer has more than about 50 templates, ask them to filter rather than
+   pulling everything.** Suggest sort options ("last 30 days," "top 20 by last-updated,"
+   "just the campaigns starting with `Welcome`"), and let them pick a batch by name, date
+   range, or ID list. Migrating 200 templates unprompted is almost always wrong: most of
+   them are old drafts, one-off promo variants, or A/B splits the customer forgot about.
+
+Report the discovery to the customer:
+
+> Klaviyo account: Acme Inc. (org id `abc123`). Found 47 templates, 12 modified in the last
+> 30 days. Top 20 by last-updated: Welcome v3, Winback H2, ... Confirm which to migrate.
+
+**Fetch.**
+
+For each template the customer approves:
+
+1. Call `get_email_template` with the template ID, requesting the `html` field. (The `html`
+   field is also present in the `list_email_templates` response by default, so if you kept the
+   list response in memory you can pull HTML from there instead of a second call. Prefer the
+   second call when the customer's selection is small.)
+2. **Skip templates with no HTML.** `editor_type=SYSTEM_TEXT_ONLY` (or any type that returns
+   only a `text` field) is a plain-text email; log it, tell the customer it will not produce
+   a design system contribution, and move on.
+3. Render the returned HTML to PNG at the target email width using headless Chrome (same
+   command as the Local Folder adapter above). Save each render to a per-template file path
+   the audit can reference. Trim trailing blank space.
+4. Feed the resulting PNG to the design-converter worker on the same Path B route the other
+   adapters use.
+
+**Do NOT default to `render_email_template`.** It substitutes template tags for a provided
+context, which sounds appealing ("no `{{first_name}}` in the render!") but it is rate-limited
+to 3 requests/second burst and 60/minute steady, much stricter than the other endpoints. For
+migration you want structure, not populated content, and the design-converter reads pixels
+regardless of whether it sees `{{first_name}}` or `John`. Use `render_email_template` only if
+the customer explicitly wants merge tags substituted before conversion, and warn them about
+the rate cap on a batch of more than 10 templates.
+
+**A note on the `model` parameter.** Every Klaviyo MCP tool requires a `model` string naming
+the LLM you are running as (e.g. `"claude-opus-4-8"`). This is Klaviyo's telemetry, not
+optional. Pass the most-specific model identifier you know.
+
+**Audit-step adaptations.**
+
+Same as Local Folder, because a Klaviyo template carries no styles/variables/component
+metadata the audit could read: always REFERENCE ONLY, no scale factor, per-template modules
+with no cross-template dedup in v1, foundations from the first 3 templates.
+
+Two Klaviyo-specific report additions:
+
+- **Include the Klaviyo template ID and the direct edit URL for every row**
+  (`https://www.klaviyo.com/email-editor/{TEMPLATE_ID}/edit`), so the customer can jump back
+  to the source when reviewing.
+- **Note the editor type per template.** Drag-and-drop templates (`editor_type=SYSTEM_DRAGGABLE`)
+  produce cleaner converter output than raw HTML templates, because their layout is more
+  structured. Not a verdict, just useful context for setting expectations.
+
+**One honest caveat, worth naming for the customer up front.** v1 pulls Klaviyo **templates**
+only. Many Klaviyo customers keep their best current content inside **campaigns** and **flows**,
+not standalone templates. If a customer's active work lives in campaigns, tell them the two
+paths: create standalone templates from their best campaigns and re-run the audit, or wait for
+v1.1 which extends to campaign and flow messages. Do not silently pull only templates and
+present it as their whole library.
 
 ### Source: Customer.io
 
@@ -978,7 +1055,7 @@ Coming in v1 (next commit).
 
 ## Staying current
 
-This is version 1.11.0 of this skill. If you have web access, check once per conversation
+This is version 1.11.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

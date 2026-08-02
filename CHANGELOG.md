@@ -71,6 +71,31 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.11.1
+
+- **ESP migration v1, commit 2 of the series.** Klaviyo Source adapter added, replacing the
+  "Coming in v1 (next commit)" stub. Uses the official Klaviyo MCP.
+- Discover: `get_account_details` first to confirm staging vs production, then
+  `list_email_templates` with minimal-payload discovery sort by `-updated`, paginated at
+  Klaviyo's 10-per-page cap. Explicit safeguard: when the account has more than about 50
+  templates, ask the customer to filter (by date range, name, or IDs) rather than pulling
+  everything, since the majority of a Klaviyo template list is old drafts and one-off A/B
+  splits.
+- Fetch: `get_email_template` returns HTML directly. Skip templates whose `editor_type` is
+  text-only. Render HTML to PNG via headless Chrome at the target email width, same command
+  as the Local Folder adapter. Feed PNG to the design-converter worker.
+- Explicitly do NOT default to `render_email_template`: it is rate-limited to 3/s burst and
+  60/m steady (much stricter than the other endpoints), and for migration we care about
+  structure, not substituted content. Only use it when a customer explicitly wants merge
+  tags evaluated.
+- Klaviyo-specific report additions: include the template ID and the direct edit URL for
+  every row, and note the editor type (`SYSTEM_DRAGGABLE` templates convert more cleanly
+  than raw HTML templates).
+- Named the honest caveat about templates-only v1 scope: Klaviyo customers often keep their
+  best current content inside campaigns and flows, not standalone templates. The adapter
+  tells the customer this up front rather than silently pulling only templates.
+- Customer.io adapter comes in commit 3.
+
 ### 1.11.0
 
 - **ESP migration v1, commit 1 of the series.** The audit no longer assumes the source is a
