@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "0fa8e3b",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.22.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "0fa8e3b",
       "summary": "Portsmouth v2 defect fix: export sniff test added to Phase 3 (task #29). New Phase 3 step 6 'Export sniff test (once per batch)' between per-module verify (step 5) and batch report (now step 7). After individual modules pass step 5, pick one representative module (a multi-column one when possible, since mobile behavior lives in columns), drop a wrapper instance into a temporary email frame on Campaigns, click plugin's Export, read the HTML. Confirm four things: (1) body width matches foundations target email width, (2) `@media only screen and (max-width` block is present, (3) mobile classes exist for anything that should stack or go full-width (`mj-column-per-100`, `mj-b-full`), (4) per-section column widths plus gutters sum to intended content box (a `mj-group` that overflows shows up as a column-sum > body width). Record confirmations in batch report; on a fail, fix the defect Figma-side and re-export, do not open review. Rationale: every check in step 5 is Figma-side, and the plugin's exporter is what decides group overflow, button width, image scaling. Portsmouth spent five rounds reverse-engineering exporter behavior by pixel-measuring preview PNGs when one export read would have caught the group overflow, button width and fluid-image behavior together in the first batch. Step numbering shifts: old step 6 'Batch report and gate' is now step 7; the 'finishing a batch IS a stop' reference at the top of the skill updated. Bumps converter 1.21.0 to 1.22.0.",
       "codexStatus": "Not yet ported. Task #29 of Portsmouth v2 queue, fourth of ~5-6 defect fixes. Batch with the rest (#28, #32) and port the whole thing (v1 + v1.5 + six ESPs + Portsmouth v2) as one clean spec."
     },
