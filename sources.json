@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "2436122",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.25.0",
+      "emaillove-eds-converter": "1.25.1",
       "emaillove-migration-audit": "1.17.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v3 defect fix: enforcement teeth on Phase 3 step 5 structural rules (task #36). Rules that shipped violated on Portsmouth (18 alignment axis mismatches, 18 untagged button TEXT children) get list-every-violation-by-node-id treatment; empty list is the only pass. The `name` key check explicitly includes the TEXT child of every mj-button (must carry mj-button-text). The alignment axis check names the exporter contract (mismatched axes render one way in Figma, another in HTML) and asks for each mismatch reported as `<node id>: primary=X, counter=Y`. Closes findings 2 and 7. Bumps converter 1.25.0 to 1.25.1 (patch: enforcement tightening on existing rules).",
+      "codexStatus": "Not yet ported. Task #36 of Portsmouth v3 queue, third of 7 defect fixes."
+    },
     {
       "claudeCommit": "2436122",
       "summary": "Portsmouth v3 defect fix: send-readiness pass at hand-off (task #35). New '### Send-readiness pass on every campaign' step at the top of Hand-off in the converter. Before the hand-off conversation, walk every mainFrame campaign root and confirm safe to send. Per campaign root: all nine theme keys populated (not empty, since empty is not neutral and the exporter substitutes dark defaults), non-blank emailSubject and emailPreHeader, fallBackFontName is a single family name not a CSS stack, root has a non-generic name (QA roots renamed with 'QA only, do not send' prefix). Per mj-image: href is real URL or explicitly empty for decorative, altText is meaningful copy or empty for decorative. In footer: no placeholder legal, no 'Lorem ipsum', no literal 'Address' string, unsubscribe as merge tag or real URL not '#'. List every violation by node id under 'Send-readiness violations' heading. Empty list is the only pass. Rationale: Portsmouth's Codex review found the delivered file had zero shared hrefs, zero shared altText, blank subject/preheader on all three campaigns, one root with blank lightThemeBackgroundColor, placeholder legal, and literal 'Address' string in footer. Closes Codex findings 3 and 4. Bumps converter 1.24.0 to 1.25.0.",

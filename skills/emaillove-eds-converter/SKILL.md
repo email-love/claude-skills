@@ -1184,11 +1184,24 @@ checklist at the end of `references/render-spec.md`:
   back; do not assume. A module carrying `mainFrame` uploads as a whole email, and a module
   with a wrapper nested inside another wrapper is an email in disguise. No theme color keys
   unless a designer asked for a dark-mode treatment on that block.
-- Structural checklist: the `name` plugin data key resolves to a real tag on every node
-  (nothing relying on the layer-name fallback); every leaf is a complete tagged pair; both
-  alignment axes match on every auto-layout frame; no detached instances; no unrecognized
-  frames except intentional editable-image regions; `mj-column-inner`, if used, is literally
-  `children[0]` of its column.
+- Structural checklist, and each of these is a walk-and-list, not a walk-and-eyeball. **List
+  every violation by node id in the batch report; an empty list is the only pass.** A
+  "walked the tree, looked fine" pass is what shipped 18 alignment mismatches and 18
+  untagged button TEXT children on Portsmouth without a single line of the checklist
+  reporting anything:
+  - `name` plugin data key resolves to a real tag on **every** tagged node (nothing relying
+    on the layer-name fallback). Includes the TEXT child of every `mj-button`, which must
+    carry `mj-button-text`; a foundation-button instance whose inner text is untagged is
+    still untagged and still fails.
+  - Every leaf is a complete tagged pair.
+  - **Both alignment axes match on every auto-layout frame** (`primaryAxisAlignItems`
+    equals `counterAxisAlignItems`). This is the exporter contract, not a style preference:
+    a mismatched pair renders one way in Figma and another way in HTML. Portsmouth shipped
+    18 mismatches, propagated to 37 across three campaigns through instances. Walk every
+    auto-layout frame; report each mismatch as `<node id>: primary=X, counter=Y`.
+  - No detached instances.
+  - No unrecognized frames except intentional editable-image regions.
+  - `mj-column-inner`, if used, is literally `children[0]` of its column.
 - Sizing: walk the tree and confirm every frame is vertical HUG, the only fixed height is an
   `mj-spacer`, every FIXED width is one of the load-bearing cases, every pinned width that
   carries text has slack (render spec section 3.3.1), and each button's width sizing was
@@ -1394,7 +1407,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.25.0 of this skill. If you have web access, check once per conversation
+This is version 1.25.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

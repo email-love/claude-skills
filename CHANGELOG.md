@@ -26,6 +26,20 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.25.1
+- **Enforcement teeth on Phase 3 step 5 structural rules** (Portsmouth v3 defect). Rules
+  that shipped violated on Portsmouth (18 alignment axis mismatches, 18 untagged button
+  TEXT children) get list-every-violation-by-node-id treatment. Empty list is the only
+  pass. A "walked the tree, looked fine" pass is what shipped those defects with no
+  checklist line reporting them.
+- The `name` plugin data key check now explicitly includes the TEXT child of every
+  `mj-button` (must carry `mj-button-text`), calling out that a foundation-button instance
+  whose inner text is untagged is still untagged and still fails.
+- The alignment axis check now names the exporter contract (mismatched axes render one
+  way in Figma and another way in HTML) and asks for each mismatch to be reported as
+  `<node id>: primary=X, counter=Y`.
+- Bumps to 1.25.1 (patch: enforcement tightening on existing rules, no new behavior).
+
 ### 1.25.0
 - **New "Send-readiness pass on every campaign" step at Hand-off** (Portsmouth v3 defect).
   Before the hand-off conversation, walk every mainFrame campaign root and confirm each is
