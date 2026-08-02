@@ -26,6 +26,19 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.27.0
+- **New WCAG contrast table in the Phase 2 foundations report** (Portsmouth v3 defect).
+  For every text-on-fill pairing the theme will render (textColor on backgroundColor,
+  linkColor on backgroundColor, buttonTextColor on buttonContentColor, plus explicit
+  text-on-brand pairings), compute the WCAG contrast ratio, label each `pass` or `fail`
+  with the ratio, and flag pairings that fail 4.5:1 for normal text or sit at the 3:1
+  large-text floor.
+- Rationale in the skill: Portsmouth shipped `color/text/accent = #009EE2` at 3.00:1 on
+  white and used it on 18px bold subheads (which requires 4.5:1 under WCAG AA). The
+  darker `blue/700 = #0078B4` reaches 4.83:1 on white; the contrast table is what
+  surfaces the choice before the designer confirms the palette.
+- Bumps to 1.27.0 (minor: new required report row, closes Codex finding 9).
+
 ### 1.26.0
 - **New Phase 3 step 5 verification line: semantic-token bind count** (Portsmouth v3
   defect). Every non-placeholder solid fill in a module must resolve to a variable binding

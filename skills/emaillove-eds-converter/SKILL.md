@@ -675,7 +675,21 @@ Build the scaffold every later batch depends on:
    at, the completion checklist result below, what the
    audit proposed that you changed, and
    what needs the designer's eye before batch 1 (theme colors especially: they are a proposal
-   until a human confirms). Then the tier's own numbers:
+   until a human confirms).
+   **Include a WCAG contrast table for every text-on-fill pairing the theme will render.** Walk
+   the proposed theme (`textColor` on `backgroundColor`, `linkColor` on `backgroundColor`,
+   `buttonTextColor` on `buttonContentColor`, and each explicit text-on-brand pairing the
+   design uses, for instance a headline color on a hero band), compute the WCAG contrast ratio,
+   and label each row `pass` (>=4.5:1 for normal text, >=3:1 for large text at 18pt or 14pt bold
+   and above) or `fail` with the ratio. Flag any pairing that fails 4.5:1 for normal text since
+   most email body copy sits under that threshold, and any button pairing whose ratio sits at
+   exactly the 3:1 large-text floor since it leaves no safety margin. Portsmouth shipped
+   `color/text/accent = #009EE2` at 3.00:1 on white and used it on 18px bold subheads, which
+   fails AA for text below 18pt bold; the table is what surfaces that before the designer
+   confirms the palette. On a fail, name the darker semantic token that reaches the threshold
+   (Portsmouth's `blue/700 = #0078B4` reaches 4.83:1) or note that the designer needs to
+   supply one.
+   Then the tier's own numbers:
 
    - **AUTHORITATIVE or PARTIAL:** the scale factor, the width-versus-type factor check with both
      ratios and which factor governs which quantities, and the ratio check result with the two
@@ -1417,7 +1431,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.26.0 of this skill. If you have web access, check once per conversation
+This is version 1.27.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
