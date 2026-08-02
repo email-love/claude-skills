@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "8bf9bd6",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.33.1",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "8bf9bd6",
       "summary": "Red Paddle defect fix: mj-navbar mapping documented (task #49). Render-spec section 6.1 note: when the worker returns mj-navbar, do not invent a mapping. Rebuild as one mj-text node whose characters carry every label, with setRangeHyperlink per label, separated by a normal space plus non-breaking spaces so gap survives HTML whitespace collapsing while line can break between labels but never inside one. Type styling from audit's Nav Link ramp entry. Two reasons this wins over alternatives past three items: reflows (a group of pinned columns cannot per 3.3.2), satisfies 'split single text run into N separately linked items' constraint without per-item column. Red Paddle met mj-navbar twice and improvised twice, ending at this shape both times; task #42's four-item nav shipped this way after group build failed twice. Bumps converter 1.33.0 to 1.33.1 (patch: documentation of a mapping previously punted on).",
       "codexStatus": "Not yet ported. Task #49 of Red Paddle queue, eighth of ~10 defect fixes."
     },
