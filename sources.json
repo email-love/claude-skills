@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-01",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "c424d668268fdaec8f44c8c54b109e11f25788f5",
+    "currentCommit": "48d085d6068ad1665e6e78c7ce9c1f9e00e9c51d",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.11.2"
+      "emaillove-migration-audit": "1.11.3"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "48d085d",
+      "summary": "ESP migration v1 commit 4: Customer.io Source adapter added (final adapter of v1 series). Uses cio_read_api + cio_schema + cio_prime. Directs cio_prime call every session, cio_auth_status for env confirmation. Names 'Automations in UI == campaigns in API' product-naming trap. v1 pulls Templates and Newsletters (customer picks one or both). Schema-first: use cio_schema to get current list/get shapes since CIO evolves the API frequently. Explicit v1 non-goals for customer transparency: does NOT pull Automations messages, Transactional, Design Studio emails, Layouts, or Snippets. Warns against reading CIO's own agent skills (design-studio, fly-api) mid-audit. Step 0 Customer.io load-reference stub updated to point to the real section.",
+      "codexStatus": "Not yet ported. All four v1 source adapters (local folder, Klaviyo, Marketo, Customer.io) now shipped on Claude side. Next commit is the Codex port spec (per new pattern: Andy runs the port through Codex against a spec doc, rather than me hand-porting)."
+    },
     {
       "claudeCommit": "c424d66",
       "summary": "ESP migration v1 commit 3: Marketo Source adapter added, prioritized ahead of Customer.io for an enterprise onboarding on Marketo scheduled 2026-08-05. No Marketo MCP exists, so adapter uses direct REST with OAuth 2.0 client-credentials: one-time credential collection (Munchkin ID, client ID, client secret, optional workspace), auth with token caching, list emailTemplates paginated by offset with status=approved sort locally by updatedAt, get emailTemplate/{id}/content, headless-Chrome render to PNG, design-converter worker. Rate limits (100/20s, 10K/day) explicit; adapter directs serial fetch. Marketo-specific report additions: template ID, direct edit URL, folder path, workspace. Named v1 caveat: pulls Templates only, not Emails or Content Blocks. Step 0 updated to add Marketo as (d), Customer.io renumbered to (e).",
