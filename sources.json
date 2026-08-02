@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "0fa8e3b",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.22.0",
-      "emaillove-migration-audit": "1.15.0"
+      "emaillove-eds-converter": "1.23.0",
+      "emaillove-migration-audit": "1.16.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v2 defect fix: render-once-crop-locally + band-detection measurement techniques + nav bar worked example (task #32). Three additions across both skills. (1) Converter Phase 3 step 1: on an unstructured source, render the whole design at 1:1 once and crop locally per module rather than per-node get_screenshot (which returns loose rectangles without overlapping text, useless on layered z-order files). (2) Audit Step 5 pass 1: same band-detection technique used for finding module boundaries on unstructured pages (rows of pure canvas background between text/imagery are gaps between modules); record y-coordinates on source ref so Phase 3 crops the same pixels. (3) Converter Phase 3 step 5 visual check: on a module that comes out 20-40px too tall (Figma text renders taller than hand-placed boxes report), detect content bands in source PNG and rebuild PNG, diff them, derive exact padding corrections; deterministic two-pass loop instead of eyeballed nudging. (4) Nav bar worked example added to mj-group visual tells: a row of five or more nav links does NOT survive as a group (exporter divides body width by column count, per-link boxes narrower than a single word, breaks words mid-letter); ungrouped columns stack cleanly, one link per row. Portsmouth: band detection got 24 of 28 modules onto source height; nav bar rule saves two attempts. Bumps audit 1.15.0 to 1.16.0 and converter 1.22.0 to 1.23.0.",
+      "codexStatus": "Not yet ported. Task #32 of Portsmouth v2 queue, fifth of ~5-6 defect fixes. Only #28 (inline plugin-data key table) remains, and it was deprioritized after the packaging bug was fixed. Ready to port the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2) as one clean spec after either #28 lands or Andy calls Portsmouth v2 done."
+    },
     {
       "claudeCommit": "0fa8e3b",
       "summary": "Portsmouth v2 defect fix: export sniff test added to Phase 3 (task #29). New Phase 3 step 6 'Export sniff test (once per batch)' between per-module verify (step 5) and batch report (now step 7). After individual modules pass step 5, pick one representative module (a multi-column one when possible, since mobile behavior lives in columns), drop a wrapper instance into a temporary email frame on Campaigns, click plugin's Export, read the HTML. Confirm four things: (1) body width matches foundations target email width, (2) `@media only screen and (max-width` block is present, (3) mobile classes exist for anything that should stack or go full-width (`mj-column-per-100`, `mj-b-full`), (4) per-section column widths plus gutters sum to intended content box (a `mj-group` that overflows shows up as a column-sum > body width). Record confirmations in batch report; on a fail, fix the defect Figma-side and re-export, do not open review. Rationale: every check in step 5 is Figma-side, and the plugin's exporter is what decides group overflow, button width, image scaling. Portsmouth spent five rounds reverse-engineering exporter behavior by pixel-measuring preview PNGs when one export read would have caught the group overflow, button width and fluid-image behavior together in the first batch. Step numbering shifts: old step 6 'Batch report and gate' is now step 7; the 'finishing a batch IS a stop' reference at the top of the skill updated. Bumps converter 1.21.0 to 1.22.0.",

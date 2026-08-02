@@ -774,6 +774,14 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    frame or node; on an unstructured source it is the region of a design the source ref bounds,
    cropped at the boundaries the audit set rather than at ones you decide now. Keep the PNG; it
    is also your visual reference for verification.
+   **On an unstructured source, render the whole design page once at 1:1, then crop locally.**
+   Per-node screenshots via `get_screenshot` fail on a file with no grouping: a loose rectangle
+   comes back rendered in isolation, without the text that visually sits on top of it in the
+   design, which is useless when the design's meaning is layered z-order. One full-canvas render
+   at native resolution costs one call and gives exact pixels for every module the audit's
+   source refs bound; the agent crops locally to each module's rectangle. On an email-native
+   source with proper components this is not needed and per-node screenshots are correct. The
+   choice is per source, not per module.
    The module screenshot is for the worker to classify structure. It is not the source of
    image assets. **Any image asset a module will actually carry is exported from its own node,
    not cropped out of this screenshot or out of a canvas render.** A crop taken out of a
@@ -922,6 +930,14 @@ This mapping covers almost everything you will meet:
   and should stack normally on mobile. When in doubt, err toward grouping headers and footers, and
   err toward stacking content rows. Every case gets a recorded decision either way in step 3
   Part A of this phase, and step 5's mobile verification confirms the decision is present.
+  **Worked exception: a row of five or more nav links does NOT survive as a group.** A grouped
+  nav bar of five or more short links breaks words mid-letter at phone width, because the
+  exporter has to divide the body width by the column count and the resulting per-link box is
+  narrower than a single word. A single inline text line with wide spacing wraps into nonsense
+  for the same reason. Ungrouped columns stack cleanly, one link per row, and that is the
+  shipped shape. Record the stacking decision as "loose columns, stack expected, no keys set,
+  nav bar exceeds group-safe width" in step 3 Part A, and move on. On Portsmouth this cost two
+  attempts before landing on the stacked build; the rule saves them.
 - **A badge, pill, or icon sitting beside text is an `mj-group`, not a loose frame inside
   `mj-text-Frame`.** A loose frame there flattens to an image and detaches from the text.
   Rebuild it as a group inside the section: `mj-group` containing one `mj-column` that holds
@@ -1153,6 +1169,16 @@ checklist at the end of `references/render-spec.md`:
   comparison for content and structure only:** the same blocks, in the same order, with the same
   copy and the same imagery. Margins, type sizes, and spacing are expected to differ, and listing
   them as divergences buries the ones that matter under noise a reviewer will then try to fix.
+  **On a module that comes out taller than the source by 20-40px, do not eyeball a nudge:
+  detect the rendered content bands and compute the padding correction.** Figma text nodes
+  render taller than the hand-placed box reports, and a first-pass rebuild typically overshoots
+  height by that margin. Detect the content bands (runs of non-canvas pixels) in the source
+  PNG and in the rebuild PNG, diff the two, and derive exact padding corrections from the
+  difference. That turns a subjective back-and-forth loop into a deterministic two-pass one,
+  and on Portsmouth it got 24 of 28 modules onto their source height. The technique is the
+  same shape as the band detection the audit uses for module boundaries; the difference is
+  that here it fires on one module at a time and produces a padding number rather than a
+  boundary.
   **Then take a second screenshot pair at mobile width (390px)**, both source and rebuild, and
   diff those too. The desktop pair is silent on stacking by construction, so any group-vs-loose-
   columns mistake is invisible in it; the mobile pair surfaces it in one glance. On the rebuild's
@@ -1243,7 +1269,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.22.0 of this skill. If you have web access, check once per conversation
+This is version 1.23.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

@@ -26,6 +26,30 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.23.0
+- **Render-once-crop-locally documented for unstructured sources** (Portsmouth v2 technique).
+  Phase 3 step 1 (screenshot the module) now says: on an unstructured source, render the whole
+  design page once at 1:1 and crop locally per module. Per-node `get_screenshot` calls fail on
+  a file with no grouping because a loose rectangle comes back rendered in isolation without
+  the text that visually sits on top of it, useless when the design's meaning is layered
+  z-order. One full-canvas render costs one call and gives exact pixels for every module the
+  audit's source refs bound. On an email-native source with proper components, per-node
+  screenshots remain correct; the choice is per source, not per module.
+- **Band detection for padding correction** (Portsmouth v2 technique). Phase 3 step 5 visual
+  check now includes: on a module that comes out 20-40px too tall (the common first-pass
+  overshoot because Figma text renders taller than the hand-placed box reports), detect
+  content bands in the source PNG and the rebuild PNG, diff them, and derive exact padding
+  corrections from the difference. Turns a subjective back-and-forth loop into a deterministic
+  two-pass one. On Portsmouth this got 24 of 28 modules onto their source height.
+- **Nav bar worked example added to the mj-group visual tells** (Portsmouth v2 exception).
+  A row of five or more nav links does NOT survive as a group: the exporter divides body
+  width by column count and per-link boxes come out narrower than a single word, breaking
+  words mid-letter at phone width. Ungrouped columns stack cleanly, one link per row, and
+  that is the shipped shape. Recorded as "loose columns, stack expected, no keys set, nav
+  bar exceeds group-safe width" in step 3 Part A. On Portsmouth this cost two attempts
+  before landing on the stacked build.
+- Bumps to 1.23.0 (minor: two new techniques documented, one worked example).
+
 ### 1.22.0
 - **New Phase 3 step 6: export sniff test (once per batch)** (Portsmouth v2 defect). Every
   check in step 5 is Figma-side, and the plugin's exporter is what decides whether a group
@@ -125,6 +149,18 @@ independent per skill. Every release attaches all three `.skill` bundles.
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.16.0
+- **Band-detection technique for module boundaries on unstructured sources** (Portsmouth v2
+  technique). Step 5 pass 1 (split each design into blocks) now says: on an unstructured
+  source, render the whole design at 1:1 and detect content bands from the pixels. Rows of
+  pure canvas background between text and imagery are the gaps between modules; transitions
+  from a run of solid background pixels to a run of mixed pixels are the module boundaries.
+  Finds cuts where node structure gave none, on the artifact the reader will actually see
+  rather than the tree structure they will not, costs one render. Record the y-coordinates
+  on the source ref (`top 128 to 540` rather than a hand-eyeballed range) so Phase 3 can
+  crop to the same pixels without re-deriving.
+- Bumps to 1.16.0 (minor: audit technique added, no report structure change).
 
 ### 1.15.0
 - **Type ramp is now CENSUSED, not sampled** (Portsmouth v2 defect). Step 6 replaces the old

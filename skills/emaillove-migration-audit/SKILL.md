@@ -495,7 +495,15 @@ Three passes:
    you where the cuts are. On an unstructured source (loose groups, absolute positioning, no
    components, no styles) you are inferring them, so say so in the report and ask the designer
    to confirm the split: the Module inventory is what gets built, so a wrong boundary is a wrong
-   component. **Then write the boundary down on the row.** Whoever converts the module has to
+   component.
+   **Technique for unstructured sources: render the whole design at 1:1 and detect content
+   bands from the pixels.** Rows of pure canvas background between text and imagery are the
+   gaps between modules; the transitions from a run of solid background pixels to a run of
+   mixed pixels are the module boundaries. This finds cuts where node structure gave none, on
+   the artifact the reader will actually see rather than the tree structure they will not, and
+   it costs one render. Record the y-coordinates you detected on each source ref (`top 128 to
+   540` rather than a hand-eyeballed range), so Phase 3 can crop to the same pixels without
+   re-deriving the boundary. **Then write the boundary down on the row.** Whoever converts the module has to
    screenshot exactly the region you cut, and a boundary you found but did not record is a
    boundary they have to infer again, differently. So record a source ref per module: the design
    to convert from, plus the node name or node id you cut at, and on a source with no node to
@@ -1726,7 +1734,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.15.0 of this skill. If you have web access, check once per conversation
+This is version 1.16.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
