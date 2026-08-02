@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "9397fe4",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.24.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "9397fe4",
       "summary": "Portsmouth v2 defect fix (last of queue): inline plugin-data key table + precondition check (task #28). Adds a new '### Precondition check: confirm the references are present' at the top of Phase 2 that reads references/render-spec.md and references/structure.md before starting; on absent files, names what cannot be verified and directs the agent to fetch a fresh bundle or agree a reduced scope with the user (Portsmouth batch hit this four modules in and cost five rounds of design review). Then a new '### The shared plugin data keys the exporter reads (inline, load-bearing)' section carrying the complete `emaillove` shared plugin data key table inline (name, nodeType, nine theme keys on the mainFrame root, optional email meta, fullWidth, stackColumns, reverseStack, href, altText), with what goes where and what it does. Plus a 'Mobile behaviors that are NOT shared plugin data keys' section covering four mobile behaviors Portsmouth spent rounds hunting for that turned out to be Figma-side: full-width mobile button (layoutSizingHorizontal='FILL' on mj-button), fluid-on-mobile image (width-relationship to column content width), mobile padding overrides (node properties), mobile column stacking (stackColumns or mj-group). Render spec keeps the prose, worked examples and rationale; the inline table is the irreducible contract that makes the skill functional even when a bundle ships without references. Closes the Portsmouth v2 queue (5 defect fixes shipped, 1 was deprioritized after the packaging bug that caused the original symptom was fixed, this one lands anyway as belt-and-braces). Bumps converter 1.23.0 to 1.24.0.",
       "codexStatus": "Not yet ported. Task #28 of Portsmouth v2 queue, sixth and last defect fix. Portsmouth v2 queue is now complete. Ready to port the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2 = 8 commits) as one clean spec."
     },
