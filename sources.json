@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "cd9bcce",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.28.0",
+      "emaillove-eds-converter": "1.29.0",
       "emaillove-migration-audit": "1.17.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v3 defect fix (closes queue): Getting Started page correctness + image workflow accuracy (task #40). Phase 2 Getting Started page section: the frame is vertical HUG with clipsContent OFF, never a fixed height (Portsmouth shipped a 100px-fixed frame that clipped 940px of instruction text and the page rendered as the bottom edge of its own title). After writing the block, screenshot the whole page and confirm every line visible; a screenshot showing only the title is a fail. Image workflow described accurately: text edited through component properties (correct), images edited by selecting the image rectangle inside the instance and replacing its image fill (correct), never by detaching. Figma has no image component-property type so 'swap images using the component properties panel' is wrong and reads to a user as a workflow that does not exist. Phase 2 completion checklist Getting Started bullet updated with both requirements. Closes the Portsmouth v3 queue (7 defect fixes total). Bumps converter 1.28.0 to 1.29.0. Closes Codex findings 1 and 5.",
+      "codexStatus": "Not yet ported. Task #40 of Portsmouth v3 queue, seventh and last defect fix. Portsmouth v3 queue is now complete. Ready to port the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2 + Portsmouth v3 = 15 commits) as one clean spec."
+    },
     {
       "claudeCommit": "cd9bcce",
       "summary": "Portsmouth v3 defect fix: button label MUST be exposed at module-root level (task #39). Phase 3 step 4 (properties): every module that contains a button re-exposes the foundation button's Label as a TEXT property on the module root, named `Button label` (single-CTA) or `Card N button label` (grid). Phase 3 step 5 checklist: any module with a button and no top-level Button label property is a fail; list by node id each button whose label is not surfaced at module level. Portsmouth shipped 18 buttons across 18 modules, each with a working label property on the foundation and none surfaced at the module the marketer instances, so a user following the Getting Started page could not change any CTA copy from the top-level property panel. Show button BOOLEAN is a separate decision from Label: add only where a sibling design in the source has that button absent, not speculatively. Bumps converter 1.27.0 to 1.28.0. Closes Codex finding 6.",

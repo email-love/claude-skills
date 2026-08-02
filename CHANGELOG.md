@@ -26,6 +26,25 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.29.0
+- **Getting Started page: HUG height, screenshot verification, accurate image workflow**
+  (Portsmouth v3 defect, closes queue). Phase 2 Getting Started page section now says: the
+  frame is vertical HUG with clipsContent OFF, never a fixed height (a fixed height clips
+  the content invisibly and the page functionally disappears; Portsmouth shipped a
+  100px-fixed frame that clipped 940px of instruction text and the page rendered as the
+  bottom edge of its own title). After writing the block, screenshot the whole page and
+  confirm every line is visible; a screenshot that shows only the title is a fail.
+- **Image workflow described accurately, not the way it was described on Portsmouth.**
+  Text is edited through component properties (correct); images are edited by selecting the
+  image rectangle inside the instance and replacing its image fill (correct), never by
+  detaching or reparenting. Figma has no image component-property type, so the wording
+  "swap images using the component properties panel" is wrong and reads to a user as a
+  workflow that does not exist. Say the actual workflow instead.
+- Phase 2 completion checklist Getting Started bullet updated with both requirements
+  (HUG-not-fixed, image workflow accuracy) so the check surfaces both defects before the
+  next step runs.
+- Bumps to 1.29.0 (minor: closes Portsmouth v3 queue, Codex findings 1 and 5).
+
 ### 1.28.0
 - **Button label MUST be exposed at module-root level** (Portsmouth v3 defect). Phase 3 step 4
   (properties): every module that contains a button re-exposes the foundation button's Label

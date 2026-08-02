@@ -481,9 +481,19 @@ Build the scaffold every later batch depends on:
      `color/bg/brand`, so the cover is on brand color and moves when the brand color moves. No
      module lives on this page.
    - **Getting Started.** How to use the library, in prose a designer or marketer new to the file
-     can follow. Required, one short block each: that modules are wrapper components and are used
-     by INSTANCING them, never by copying or detaching; that text and images are edited through
-     the component properties on an instance rather than by editing inside it; that color, type,
+     can follow.
+     **The frame is vertical HUG with clipsContent OFF, never a fixed height.** A fixed height
+     clips the content invisibly and the page functionally disappears; Portsmouth shipped a
+     100px-fixed frame that clipped 940px of instruction text and the page rendered as the
+     bottom edge of its own title. After you finish writing the block, screenshot the whole page
+     and confirm every line is visible; a screenshot that shows only the title is a fail.
+     Required, one short block each: that modules are wrapper components and are used
+     by INSTANCING them, never by copying or detaching; that **text is edited through the
+     component properties on an instance** while **images are edited by selecting the image
+     rectangle inside the instance and replacing its image fill** (never by detaching or
+     reparenting anything). Figma has no image component-property type, so the phrase "swap
+     images using the component properties panel" is wrong and reads to a user as a workflow
+     that does not exist; say the actual workflow instead. Continuing: that color, type,
      and spacing come from the tokens on Foundations and Type rather than from hand-typed values;
      and where to look when something does not export as expected (confirm the block is still an
      instance and not detached, confirm the copy was changed through its property rather than in
@@ -725,11 +735,15 @@ Pages, in canonical order:
 - [ ] **Cover:** brand name set large, "Email Love Design System" beneath it, and one metadata
       line stating version, email width, and month and year. The width printed there matches the
       width the root frame was actually built at. Its frame fill is bound to `color/bg/brand`.
-- [ ] **Getting Started:** instancing rather than copying, editing through component properties,
-      styling from the tokens, and the "does not export as expected" path are all four present,
-      plus the email width, the content width with its side margin, and the scale factor, or, on a
-      REFERENCE ONLY source, the sentence that the geometry is built to email standards and the
-      brand came from the source.
+- [ ] **Getting Started:** the frame is vertical HUG with clipsContent OFF and no fixed height
+      (screenshot the whole page and confirm every line is visible; a page that shows only its
+      title is a fail); text-editing describes component properties while image-editing describes
+      selecting the image rectangle inside the instance and replacing its fill (Figma has no
+      image component-property type, so any wording that says "swap images using component
+      properties" is wrong); instancing rather than copying, styling from the tokens, and the
+      "does not export as expected" path are all present; plus the email width, the content
+      width with its side margin, and the scale factor, or, on a REFERENCE ONLY source, the
+      sentence that the geometry is built to email standards and the brand came from the source.
 - [ ] **Foundations:** every swatch labeled with hex AND variable name, primitives and semantics
       visibly separated, the spacing scale rendered and labeled with token names and values, the
       radius token present. No hex anywhere on the page that no variable carries.
@@ -1447,7 +1461,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.28.0 of this skill. If you have web access, check once per conversation
+This is version 1.29.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
