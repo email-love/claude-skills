@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "95b78bd",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.32.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "95b78bd",
       "summary": "Red Paddle defect fix: STRUCTURE from worker, NUMBERS from measurement + ramp gaps at foundations (task #45). Phase 3 step 2 'unpinned drifts' bullet rewritten: worker is a good structure detector (columns, rows, stacking order, which things are buttons, sometimes structural fixes the source does not advertise) but not a measuring instrument (colors drift, sizes land on plausible round numbers rather than the ramp, unpinned fonts flatten to Arial). Take structure from worker, every color from source pixels, every size measured, every font pinned. A size the worker returns that is not on the audit's ramp is the loudest signal it guessed (per-module factor sneaking back in). Phase 2 step 3 Type specimen: a gap in the ramp is a decision for foundations, not batch 3; if the specimen shows a jump with nothing between it and the source has content that would sit in the gap, add the step now and record as a standardisation. Red Paddle: 9 worker mismatches from #CCCCCC-for-#FFFFFF to four different wrong reds to a 40px headline where the ramp said 36. Foundations report predicted the ramp-gap cost verbatim and deferred anyway; three modules in batch 3 wanted the missing 20px step. Bumps converter 1.31.1 to 1.32.0.",
       "codexStatus": "Not yet ported. Task #45 of Red Paddle queue, fourth of ~10 defect fixes."
     },
