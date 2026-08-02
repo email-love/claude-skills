@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "73e3038",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.33.2",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "73e3038",
       "summary": "Red Paddle defect fix (closes queue): Cloudflare 403 error code 1010 workaround (task #51). Phase 3 step 1 POST-to-worker instructions: if worker returns 403 with body 'error code: 1010', that is a Cloudflare browser check not an auth failure. Retry with a normal browser User-Agent header; Bearer/provider headers are correct. Rationale: Red Paddle agent hit this, every POST returned 403 with error code 1010, auth was irrelevant (empty Bearer, no Bearer, real token all failed identically); setting a browser User-Agent fixed it instantly. The 403 sat next to Bearer/license-key instructions so the natural conclusion was an auth problem. Closes Red Paddle queue (10 defect fixes total). Bumps converter 1.33.1 to 1.33.2.",
       "codexStatus": "Not yet ported. Task #51 of Red Paddle queue, tenth and last defect fix. Red Paddle queue is now complete."
     },
