@@ -1170,6 +1170,18 @@ working range, and zero is a legitimate answer for a fixed block like a logo hea
 `componentPropertyReferences` back off each node to confirm the binding landed. Record the
 properties you added, and why, in the module's report line.
 
+**Every module that contains a button MUST expose the button's label as a TEXT property at
+module-root level**, named `Button label` on a single-CTA module or `Card 1 button label`,
+`Card 2 button label` in a grid. The foundation button component already owns a Label
+property; that property is not surfaced on instances placed inside a module unless the
+module root re-exposes it. Portsmouth shipped 18 buttons across 18 modules, every one with
+a working label property on the foundation and none of them surfaced at the module the
+marketer instances, so a user following the Getting Started page could not change any CTA
+copy from the top-level property panel. The Show button BOOLEAN is a separate decision from
+Label: add it only where a sibling design in the source has that button absent, not
+speculatively. Any module with a button and no top-level Button label property is a fail on
+the step 5 checklist.
+
 Then confirm its category for the upload. **The Module inventory row already proposes one**, so
 start there and change it only when the rebuilt structure contradicts it, saying so in the batch
 report. **Use the customer's real category names**, which are whatever sections already exist in
@@ -1269,7 +1281,11 @@ checklist at the end of `references/render-spec.md`:
   into the plugin data `name` key.
 - Component: the module root is a direct child of its category page, not inside a component
   set or a Figma section, with no stray instances of it left loose on the page. Every property
-  binding re-read and confirmed.
+  binding re-read and confirmed. **If the module contains any button, the module root exposes
+  a TEXT property for that button's label** (`Button label`, or `Card N button label` in a
+  grid). A button whose label lives only on the foundation component fails this check: the
+  marketer instancing the module cannot reach the label from the top-level property panel.
+  List by node id each button whose label is not surfaced at module level.
 - Visual: screenshot the rebuild next to the source screenshot from step 1; flag
   divergences rather than silently accepting them. **On a REFERENCE ONLY source, read that
   comparison for content and structure only:** the same blocks, in the same order, with the same
@@ -1431,7 +1447,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.27.0 of this skill. If you have web access, check once per conversation
+This is version 1.28.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

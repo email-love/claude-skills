@@ -26,6 +26,22 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.28.0
+- **Button label MUST be exposed at module-root level** (Portsmouth v3 defect). Phase 3 step 4
+  (properties): every module that contains a button re-exposes the foundation button's Label
+  as a TEXT property on the module root, named `Button label` (single-CTA) or
+  `Card N button label` (grid). The foundation button's Label property is not surfaced on
+  instances placed inside a module unless the module root re-exposes it.
+- Phase 3 step 5 checklist adds: any module with a button and no top-level Button label
+  property is a fail. List by node id each button whose label is not surfaced at module level.
+- Rationale: Portsmouth shipped 18 buttons across 18 modules, each with a working label
+  property on the foundation and none surfaced at the module the marketer instances, so a
+  user following the Getting Started page could not change any CTA copy from the top-level
+  property panel.
+- Show button BOOLEAN is a separate decision from Label: add only where a sibling design in
+  the source has that button absent, not speculatively.
+- Bumps to 1.28.0 (minor: new required property rule, closes Codex finding 6).
+
 ### 1.27.0
 - **New WCAG contrast table in the Phase 2 foundations report** (Portsmouth v3 defect).
   For every text-on-fill pairing the theme will render (textColor on backgroundColor,

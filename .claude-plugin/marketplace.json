@@ -29,7 +29,7 @@
       "name": "emaillove-eds-converter",
       "source": "./skills/emaillove-eds-converter",
       "description": "Convert an audited legacy Figma design system into a working Email Love design system: foundations that fix one content width, one scale factor where the source's geometry is a specification, and one spacing system per role from the audit's census (so no module invents its own side inset), then modules in batches with design review between batches. Works from the module inventory, source fidelity tier, spacing system and brand foundations in an emaillove-migration-audit report",
-      "version": "1.27.0",
+      "version": "1.28.0",
       "author": {
         "name": "Email Love"
       }
