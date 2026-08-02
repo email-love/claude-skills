@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "779fd40",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.31.1",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "779fd40",
       "summary": "Red Paddle defect fix: unsubscribe.com magic link convention documented inline (task #44). Phase 2 inline plugin data key section now carries a 'Magic link values the exporter rewrites' table listing unsubscribe.com as the href the exporter substitutes with the selected ESP's unsubscribe merge tag at export time. Works on text, buttons and images. Never invent a placeholder URL, never hand-type an ESP merge tag unless customer asks. Send-readiness pass (task #35) updated to name unsubscribe.com as the default portable value. Rationale: Red Paddle agent invented `redpaddleco.com/unsubscribe-placeholder`, escalated as legal problem not polish; customer pointed at help.emaillove.com/plugin/links/unsubscribe. Bumps converter 1.31.0 to 1.31.1 (patch: documentation of an existing plugin convention).",
       "codexStatus": "Not yet ported. Task #44 of Red Paddle queue, third of ~10 defect fixes."
     },
