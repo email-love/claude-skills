@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "dc4a545",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.33.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "dc4a545",
       "summary": "Red Paddle defect fix: Figma cloud fonts have no Helvetica/Arial, build in Arimo (task #48). Phase 2 step 3 (Type mapping): call figma.listAvailableFontsAsync() and look for the target family by name before building. Figma environment for agents typically serves Google Fonts only (~1,900 families); Helvetica, Helvetica Neue, and Arial are all absent even though they are the most common email-safe answer. When target is Arial or Helvetica and unavailable, build in Arimo (metrically compatible Arial clone, identical advance widths). State consequence in foundations report: exporter writes fontName.family into font-family so export will say Arimo until family is swapped. Expect weight count to drop (Regular/Bold only from email-safe stack). Rationale: every agent-run migration whose customer picks the standard email-safe stack hits this; silent failure mode is building the ramp in Inter. Bumps converter 1.32.2 to 1.33.0.",
       "codexStatus": "Not yet ported. Task #48 of Red Paddle queue, seventh of ~10 defect fixes."
     },
