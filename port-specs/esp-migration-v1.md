@@ -84,11 +84,11 @@ Compressed form for Codex's SKILL.md:
 
 Ask the customer where their emails live before touching anything else:
 
-- (a) Figma file — current default, richest metadata, cross-source deduplication for free
-- (b) Local folder of HTML / EML / PNG — Claude Code or Codex CLI required for file access
-- (c) Klaviyo — via the official Klaviyo MCP
-- (d) Marketo — via the customer's Marketo REST API credentials (no MCP exists)
-- (e) Customer.io — via the Customer.io MCP
+- (a) Figma file: current default, richest metadata, cross-source deduplication for free
+- (b) Local folder of HTML / EML / PNG: Claude Code or Codex CLI required for file access
+- (c) Klaviyo: via the official Klaviyo MCP
+- (d) Marketo: via the customer's Marketo REST API credentials (no MCP exists)
+- (e) Customer.io: via the Customer.io MCP
 
 An unstated source is the failure mode that silently walks a folder as if it were a Figma
 page. **Do not skip this question.**
