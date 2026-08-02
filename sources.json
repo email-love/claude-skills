@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "252bc05",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.30.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "252bc05",
       "summary": "Red Paddle defect fix (first of queue): mj-group columns shrink on mobile (task #42). New render-spec section 3.3.2 with resolved-width formula: `resolved = columnWidth / groupWidth * (mobileViewport - side padding)`. Per column: text carrier needs resolved >= widthOf(longest unbreakable word) * 1.05; fixed-aspect image needs resolved >= image natural width. Three remedies when a column fails (reflowing mj-text with setRangeHyperlink ranges, drop the group so columns stack, or hide with mobileStylesHideInMobileDevice). Phase 3 step 5 checklist gets a new group-columns-resolve-wide-enough bullet. Explicit: section 3.3.1 (font drift at pinned width) does not protect against this. Red Paddle: four-item nav 137/86/133/89 in a 560 group rendered CHA/NGI/NG, G/E/A/R at 375px because the 86px GEAR column resolved to 51px. Invisible on canvas and desktop preview by construction. Bumps converter 1.29.0 to 1.30.0.",
       "codexStatus": "Not yet ported. Task #42 of Red Paddle queue, first of ~10 defect fixes surfaced by Red Paddle Co end-to-end migration. Batch with the rest and port after the queue closes."
     },
