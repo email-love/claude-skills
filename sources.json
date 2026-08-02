@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-01",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "8fd68a5de71611196fdbefe241f8711bbe476c37",
+    "currentCommit": "e0d597de451f50281cb244307d3881fb6f3c15a7",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.12.0"
+      "emaillove-migration-audit": "1.13.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "e0d597d",
+      "summary": "Six more ESP source adapters added (Brevo, Kit, ActiveCampaign, Iterable, Omnisend, HubSpot), one per ESP verified via web search (Aug 2026) to have an official MCP. Each adapter written against public MCP docs and directs the agent to introspect the connected MCP's tools at session start since no loaded tool signatures were available to verify names. Per-ESP quirks named (Brevo full-account API key, Kit's three content pools, ActiveCampaign DND vs HTML, Iterable beta/self-hosted, Omnisend product-block placeholders, HubSpot smart content and CTA library). Step 0 now has 13 source options. Bumps audit 1.12.0 to 1.13.0.",
+      "codexStatus": "Not yet ported. The Notion port spec is now 4 commits behind (Portsmouth Marketo v1.11.2, CIO v1.11.3, cloud sources v1.12.0, these six ESPs v1.13.0). Simplest: wait until Portsmouth v2 fixes ship and port everything in one pass."
+    },
     {
       "claudeCommit": "8fd68a5",
       "summary": "ESP migration v1.5: Google Drive + SharePoint cloud-source adapters added. Both use the same 'walk a location via MCP, pull HTML/EML/PNG, feed downstream' pattern as Local Folder. Drive adapter uses the reference Google Drive MCP with the drive.readonly scope caveat named. SharePoint adapter uses a Microsoft Graph MCP with the enterprise-IT-blocking-OAuth friction named. Step 0 gets choices (f) Google Drive and (g) SharePoint. Bumps audit 1.11.3 to 1.12.0.",
