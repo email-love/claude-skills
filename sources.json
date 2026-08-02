@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "5938ffe",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.32.2",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "5938ffe",
       "summary": "Red Paddle defect fix: open every exported PNG before uploading it (task #47). Render-spec 4.2.1 now has an explicit step between download and upload. Three failure modes: baked-in white (node with white background exports opaque, reads as white box on colored band; key white to transparency for line art, flood-fill surround for photographic cutouts), neighbour's content (check crop's far edge against adjacent column start, not source node declared width; a node can be wider than its visible content), and fused row not missing (already 4.2.2). Red Paddle: 4 asset defects presented as layout bugs; the T-shirt baked in 28px of neighbouring column text, cost layout chased twice and component rebuilt once. Bumps converter 1.32.1 to 1.32.2 (patch: enhancement to existing 4.2.1 rule).",
       "codexStatus": "Not yet ported. Task #47 of Red Paddle queue, sixth of ~10 defect fixes."
     },
