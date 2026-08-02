@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "88ac033",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.31.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "88ac033",
       "summary": "Red Paddle defect fix: mobile visual via emaillove_preview_email, not get_screenshot (task #43). Phase 3 step 5 Visual bullet rewritten. Figma's canvas has no mobile breakpoint, so get_screenshot at 390px just renders desktop-shaped pixels at 390px; the old 'second screenshot pair at mobile width' instruction silently degraded to a recorded intention. Replaced with a headless render via emaillove_preview_email after the batch is uploaded provisionally to the plugin library. Fail conditions named: word broken mid-string (task #42 defect), image aspect ratio differs from desktop, stacked column carrying desktop gutter as indent, section that stacked where step 3 Part A recorded group (or vice versa). Order stated for migrations: build, upload provisionally, render, diff, only then open next batch. Rationale: three of the four Red Paddle corrections were mobile-only, every one caught by the customer manually exporting screenshots. Bumps converter 1.30.0 to 1.31.0.",
       "codexStatus": "Not yet ported. Task #43 of Red Paddle queue, second of ~10 defect fixes."
     },
