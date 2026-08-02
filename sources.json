@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-01",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "cb2551919baf867094471ce28626ca111c0fd820",
+    "currentCommit": "10239377eac2aad0b99bf599df719bfd4f0b9eb1",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.19.3",
-      "emaillove-migration-audit": "1.11.0"
+      "emaillove-migration-audit": "1.11.1"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "1023937",
+      "summary": "ESP migration v1 commit 2: Klaviyo Source adapter added. Uses official Klaviyo MCP for discover (get_account_details + list_email_templates with -updated sort, pagination), fetch (get_email_template returning HTML, then headless-Chrome render to PNG, then design-converter worker). Deliberately avoids render_email_template due to its 3/s burst rate limit. Report carries Klaviyo template ID, direct edit URL, and editor_type per row. v1 pulls templates only, not campaigns/flows.",
+      "codexStatus": "Not yet ported. Still waiting for commit 3 (Customer.io) so all three v1 source adapters port to Codex as one commit."
+    },
     {
       "claudeCommit": "cb25519",
       "summary": "ESP migration v1 commit 1: audit skill no longer assumes Figma. New Step 0 source selector, plus a Local Folder Source adapter with Discover, Fetch, and audit-step adaptations. Report shape for non-Figma sources is deliberately slimmer. Klaviyo and Customer.io adapters land in commits 2 and 3 of the v1 series.",
