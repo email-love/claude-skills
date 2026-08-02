@@ -26,6 +26,24 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.25.0
+- **New "Send-readiness pass on every campaign" step at Hand-off** (Portsmouth v3 defect).
+  Before the hand-off conversation, walk every mainFrame campaign root and confirm each is
+  safe to send. Portsmouth's Codex review found the delivered file had zero shared hrefs,
+  zero shared altText, blank subject and preheader on all three campaigns, one root with
+  blank lightThemeBackgroundColor, placeholder legal, and the literal word "Address" in the
+  footer.
+- Send-readiness pass covers, per campaign root: all nine theme keys populated with real
+  values (empty is not neutral); non-blank subject and preheader; fallBackFontName is a
+  single family name not a CSS stack; the root has a non-generic name (rename QA roots with
+  "QA only, do not send" prefix). Per mj-image: href is a real URL or explicitly empty for
+  decorative, altText is meaningful copy or empty for decorative. In the footer: no
+  placeholder legal, no "Lorem ipsum", no literal "Address" string, unsubscribe link
+  present as merge tag or real URL not "#".
+- List every violation by node id under a "Send-readiness violations" heading in the batch
+  report. Empty list is the only pass. Do not open hand-off until clean.
+- Bumps to 1.25.0 (minor: new required step at Hand-off, converter behavior change).
+
 ### 1.24.0
 - **Inline plugin-data key table at the top of Phase 2** (Portsmouth v2 defect, last of the
   queue). The skill cites `references/render-spec.md` and `references/structure.md` by

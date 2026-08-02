@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "8cdc022",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.24.0",
+      "emaillove-eds-converter": "1.25.0",
       "emaillove-migration-audit": "1.17.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v3.0.1 ported the model-choice guidance (c0719be) and the Portsmouth batch 1 fixes (0c67f86) from the Claude skills. v3.0.0 originally repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Portsmouth v3 defect fix: send-readiness pass at hand-off (task #35). New '### Send-readiness pass on every campaign' step at the top of Hand-off in the converter. Before the hand-off conversation, walk every mainFrame campaign root and confirm safe to send. Per campaign root: all nine theme keys populated (not empty, since empty is not neutral and the exporter substitutes dark defaults), non-blank emailSubject and emailPreHeader, fallBackFontName is a single family name not a CSS stack, root has a non-generic name (QA roots renamed with 'QA only, do not send' prefix). Per mj-image: href is real URL or explicitly empty for decorative, altText is meaningful copy or empty for decorative. In footer: no placeholder legal, no 'Lorem ipsum', no literal 'Address' string, unsubscribe as merge tag or real URL not '#'. List every violation by node id under 'Send-readiness violations' heading. Empty list is the only pass. Rationale: Portsmouth's Codex review found the delivered file had zero shared hrefs, zero shared altText, blank subject/preheader on all three campaigns, one root with blank lightThemeBackgroundColor, placeholder legal, and literal 'Address' string in footer. Closes Codex findings 3 and 4. Bumps converter 1.24.0 to 1.25.0.",
+      "codexStatus": "Not yet ported. Task #35 of Portsmouth v3 queue, second of 7 defect fixes."
+    },
     {
       "claudeCommit": "8cdc022",
       "summary": "Portsmouth v3 defect fix (first of queue): palette census in audit (task #34). Audit Step 6 palette bullet rewritten from sampled ('their named paint styles') to a full census: enumerate every distinct fill hex in the file, cluster near-duplicates within a small delta (2-3 units per channel so #3C023C and #3C004A do NOT collapse but #009EE2 and #009FE1 do). Report Step 7 gets a new required 'Palette' section between Spacing system and Module inventory: source hex, count of fills using it, module list, plus proposed theme colors with every deviation from source hex listed with the delta so a designer approving the theme approves the drift too. Additional source colors not carried into theme roles listed at the bottom. Rationale: Portsmouth's Codex review found four accent primitives lightened from source (Pink #C4014B -> #D03E75, Magenta, Teal, Orange) with no documentation of the drift, and two source colors absent from theme entirely (a decorative green, a bright blue). Palette section prevents undocumented drift and silent drops. Same shape as the spacing (task #27) and type ramp (task #30) censuses. Bumps audit 1.16.0 to 1.17.0.",

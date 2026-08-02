@@ -1325,6 +1325,62 @@ until the user says the review happened.
 
 ## Hand-off after the final batch
 
+### Send-readiness pass on every campaign
+
+**Before hand-off, walk every campaign root on the Campaigns page and confirm each is safe
+to send.** A migration that ships modules the plugin can render but campaigns that will fail
+in a real inbox is not done. The Portsmouth Codex review found this exact gap on a delivered
+file: three campaign roots, zero shared `href` values, zero shared `altText`, blank subject
+and preheader on all three, one campaign root with a blank `lightThemeBackgroundColor`,
+placeholder legal copy and the literal word `Address` in the footer. Fix every violation
+before the hand-off conversation, and list each by node id in the batch report.
+
+For every `mainFrame` campaign root, confirm:
+
+- **All nine theme keys are populated with real values**, not empty strings (`backgroundColor`,
+  `contentColor`, `textColor`, `linkColor`, `buttonTextColor`, `buttonContentColor`,
+  `lightThemeBackgroundColor`, `fallBackFontName`, and the `nodeType = 'mainFrame'` marker
+  itself). Empty theme keys are not neutral: the exporter substitutes dark defaults and
+  wrecks a light email. See the Phase 2 inline key table for what each value should look
+  like.
+- **`emailSubject` and `emailPreHeader` are non-blank** and are real copy, not the module
+  name or a `TODO`. A campaign whose subject reads `Campaign, Full library proof` or blank
+  reaches an inbox with that string in the preview pane.
+- **`fallBackFontName` is a single font family name**, not a CSS stack. `Arial` is correct;
+  `Arial, Helvetica, sans-serif` is not (the plugin's export treats the whole string as one
+  font name and picks a fallback that never matches). Standardise on one value across every
+  campaign root in the file.
+- **The campaign root has a specific, non-generic name.** A root literally named
+  `EmailLove` or `Campaign - Full library proof` reads as a valid reusable template when it
+  is really a scratch composition; rename QA roots with a `QA only, do not send` prefix, or
+  move them off the Campaigns page.
+
+For every `mj-image` node inside every campaign, confirm:
+
+- **`href` is a real URL or explicitly empty for a decorative image**, not the string
+  `#` and not absent-because-nobody-set-it. Record which images are deliberately unlinked so
+  a reviewer can tell "no link" from "forgot the link".
+- **`altText` is meaningful copy or empty for a decorative image**, again not
+  absent-because-nobody-set-it. The default of "empty because Figma did not surface a value
+  to set" is not accessible.
+
+For the footer:
+
+- **No placeholder legal text**, no `Lorem ipsum`, no literal string `Address`. Every
+  campaign the customer sends has a real postal address, a real company name, and a real
+  unsubscribe mechanism (usually a merge tag their ESP resolves). A migration that leaves
+  `Address` as the footer contents ships an email that CAN-SPAM violates.
+- **The unsubscribe link is present** and points at either a merge tag (`{{unsubscribe_url}}`
+  or the ESP's equivalent) or a real URL, not `#`.
+
+List every violation by node id in the batch report under a "Send-readiness violations"
+heading. Empty list is the only pass. On a fail, either fix the violation (populate the theme
+key, add the alt text, rewrite the footer, rename the root) or record it as a deliberate
+"this campaign is a QA scratch, will not send" decision and rename the root accordingly.
+Do not open the hand-off conversation with the customer until this pass is clean.
+
+### Hand-off itself
+
 The design system is on the canvas but not yet in the plugin. Walk the user through the
 upload: pick the design system in the plugin, open the Assets section the batch belongs to,
 select the wrapper components on the canvas, click **Upload**, confirm. A multi-selection of
@@ -1338,7 +1394,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.24.0 of this skill. If you have web access, check once per conversation
+This is version 1.25.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
