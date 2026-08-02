@@ -112,7 +112,8 @@ Ask the customer where their existing emails live, in one question:
 > - (a) A Figma file (design system or template library)
 > - (b) A local folder of HTML files or PNG screenshots
 > - (c) Klaviyo (via the official Klaviyo MCP)
-> - (d) Customer.io (via the CIO MCP)
+> - (d) Marketo (via the customer's Marketo REST API credentials)
+> - (e) Customer.io (via the CIO MCP)
 
 Their answer decides everything downstream. The rest of the audit uses the source adapter for
 whichever they picked. **You cannot skip this question.** An unstated source is the default
@@ -133,8 +134,9 @@ Source adapters:
 - **(b) Local folder:** load the Local Folder Source section at the end of this file, then
   follow its Discover, Fetch, and audit-step adaptations in place of the Figma-specific
   behavior below.
-- **(c) Klaviyo:** load the Klaviyo Source section. (Coming in v1.)
-- **(d) Customer.io:** load the Customer.io Source section. (Coming in v1.)
+- **(c) Klaviyo:** load the Klaviyo Source section at the end of this file.
+- **(d) Marketo:** load the Marketo Source section at the end of this file.
+- **(e) Customer.io:** load the Customer.io Source section. (Coming in v1.)
 
 ## Step 1: Scope the input
 
@@ -879,7 +881,7 @@ item to the design-converter worker in Phase 3), and the specific audit-step ada
 that apply because the source is not Figma.
 
 The adapters are ordered by simplicity and by how much of the audit report they can populate.
-Local Folder is the simplest and the most bare-bones; Klaviyo and Customer.io carry more
+Local Folder is the simplest and the most bare-bones; Klaviyo, Marketo, and Customer.io carry more
 template metadata forward.
 
 ### Source: Local Folder
@@ -1049,13 +1051,159 @@ paths: create standalone templates from their best campaigns and re-run the audi
 v1.1 which extends to campaign and flow messages. Do not silently pull only templates and
 present it as their whole library.
 
+### Source: Marketo
+
+The customer's emails live in Marketo. **No official Marketo MCP exists at time of writing**,
+so this adapter uses direct Marketo REST API calls with the customer's OAuth 2.0 credentials.
+Requires an environment where the agent can make outbound HTTP calls (Claude Code and Codex
+CLI both support this via `curl` or the standard fetch capability). Not usable from Claude.ai
+in its current form, because Claude.ai does not permit arbitrary outbound HTTP.
+
+**One-time credential collection.**
+
+Before Discover, get four things from the customer:
+
+1. **Munchkin ID.** The account identifier that prefixes their Marketo URL. Format:
+   `123-ABC-456`. They find it in Marketo Admin → Integration → Web Services → "Munchkin ID".
+2. **Client ID** and **Client Secret** for a REST API service. If they do not have one yet:
+   - Marketo Admin → Integration → LaunchPoint → New → New Service
+   - Service type: **Custom** (Marketo confusingly also has other service types)
+   - Assign a role with "Access API - Read-Only" (Access Assets is enough for this workflow)
+   - Save, then click **View Details** to reveal the client ID and secret
+3. **Workspace name** (optional). Enterprise Marketo installs partition assets by workspace.
+   If the customer has only one workspace, skip. If multiple, ask which one to migrate.
+
+The three required values (Munchkin ID, client ID, client secret) are as sensitive as an API
+key. Confirm the customer wants to paste them into the current session, or offer to run
+against shell environment variables they set locally (`MARKETO_MUNCHKIN_ID`,
+`MARKETO_CLIENT_ID`, `MARKETO_CLIENT_SECRET`) so nothing literal appears in the conversation
+history.
+
+**Base URL.** Every Marketo API call uses the Munchkin ID as a subdomain:
+`https://{munchkinId}.mktorest.com`. Substitute their actual Munchkin ID into every URL
+below.
+
+**Auth (do this once per session, cache the token).**
+
+```
+POST https://{munchkinId}.mktorest.com/identity/oauth/token
+  ?grant_type=client_credentials
+  &client_id={clientId}
+  &client_secret={clientSecret}
+```
+
+The response contains `access_token` valid for `expires_in` seconds (typically 3600). Cache
+and reuse it for every subsequent call this session; re-auth only on a 401 response or when
+approaching expiration. Pass it on every asset call as `Authorization: Bearer {access_token}`.
+
+**Discover.**
+
+1. If the customer said they have more than one workspace, list workspaces first
+   (`GET /rest/asset/v1/workspaces.json`) and confirm which workspace's assets to walk.
+
+2. List email templates with the minimal parameters for discovery:
+
+   ```
+   GET https://{munchkinId}.mktorest.com/rest/asset/v1/emailTemplates.json
+     ?maxReturn=200
+     &offset=0
+     &status=approved
+   ```
+
+   Paginate by incrementing `offset` by `maxReturn` (200) until the response's `result`
+   array is empty. Do not include `status=draft` in v1: drafts are typically one-off
+   experiments, not the templates the customer wants to migrate. The API does not have a
+   native sort parameter for templates, so sort the accumulated list by `updatedAt`
+   descending after fetching.
+
+   Response items include `id`, `name`, `workspace`, `folder`, `status`, `createdAt`,
+   `updatedAt`.
+
+3. **When the customer has more than about 50 templates, ask them to filter rather than
+   pulling everything.** Marketo template lists are often dominated by legacy A/B variants,
+   one-off event emails, and templates from teams that no longer exist. Suggest filtering
+   options: by folder (most Marketo orgs use folder hierarchies), by the last 90 days of
+   `updatedAt`, or by a name pattern (`Welcome*`, `Winback*`).
+
+Report the discovery to the customer:
+
+> Marketo account: OpenAI (munchkin `123-ABC-456`), workspace: Marketing. Found 87 approved
+> templates, 24 updated in the last 90 days. Top 20 by last-updated: Welcome v4, Onboarding
+> Day 1, ... Confirm which to migrate.
+
+**Fetch.**
+
+For each template the customer approves:
+
+1. Get the HTML content:
+
+   ```
+   GET https://{munchkinId}.mktorest.com/rest/asset/v1/emailTemplate/{id}/content.json
+   ```
+
+   The response's `result[0].content` is the raw HTML template. Marketo does not have a
+   drag-and-drop equivalent to Klaviyo's `SYSTEM_DRAGGABLE`; every Marketo template is HTML.
+
+2. **Marketo templates use Marketo's own templating syntax** for variables and editable
+   modules: `${var:name}`, `${module.name}`, `<mktEditable>`, `<mktModuleContent>`. These
+   will render as literal strings in the PNG. The design-converter reads pixels, so it does
+   not care, and the customer's Email Love design system will use its own merge-tag syntax
+   for the target ESP anyway. Do not attempt to substitute Marketo tags before conversion.
+
+3. Render the HTML to PNG at the target email width using the same headless Chrome command
+   as the other adapters. Trim trailing blank space.
+
+4. Feed the resulting PNG to the design-converter worker on the same Path B route.
+
+**Rate limits.**
+
+Marketo enforces two limits: 100 API calls per 20-second window, and 10,000 API calls per
+day per instance. The daily cap is generous: a 100-template migration is roughly 200 calls
+(auth + list pagination + one content call per template). The 20-second cap is what to
+watch. **Do not parallelize template fetches.** Serial fetch keeps you well under the
+window without any bookkeeping.
+
+If you hit the burst limit anyway, the response returns error code `606` (rate limit
+exceeded). Back off for the remainder of the 20-second window and retry the same request.
+
+**Audit-step adaptations.**
+
+Same as Local Folder and Klaviyo, because a Marketo template carries no styles/variables/
+component metadata the audit could read: always REFERENCE ONLY, no scale factor,
+per-template modules with no cross-template dedup in v1, foundations from the first 3
+templates.
+
+Two Marketo-specific report additions:
+
+- **Include the Marketo template ID and the direct edit URL for every row**
+  (`https://app-{munchkinId}.marketo.com/#EMTP{id}A1`), so the customer can jump back to
+  the source when reviewing.
+- **Include folder path and workspace per template.** Marketo customers often organize
+  templates in nested folders (`Marketing / Lifecycle / Welcome`), which is useful signal
+  for grouping modules into the target design system's category pages.
+
+**One honest v1 caveat, worth naming for the customer up front.** Marketo has three places
+a customer's actual email content lives:
+
+- **Email Templates** (what this adapter pulls). Reusable design templates.
+- **Emails** (`GET /rest/asset/v1/emails.json`). Individual email assets, usually inside
+  Programs. This is where most customers' actual sent content lives.
+- **Content Blocks** (`GET /rest/asset/v1/contentBlocks.json`). Reusable snippets (headers,
+  footers, disclaimers) used across many emails.
+
+v1 pulls **Templates only**. Tell the customer this up front: if their best current content
+lives inside individual Emails (common) or Content Blocks (very common for headers and
+footers), this migration will get their design system foundations right but miss the
+campaign-level content. v1.1 will extend to Emails and Content Blocks. Do not silently pull
+only Templates and present it as their whole library.
+
 ### Source: Customer.io
 
 Coming in v1 (next commit).
 
 ## Staying current
 
-This is version 1.11.1 of this skill. If you have web access, check once per conversation
+This is version 1.11.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

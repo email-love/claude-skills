@@ -71,6 +71,35 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.11.2
+
+- **ESP migration v1, commit 3 of the series. Marketo Source adapter added, prioritized
+  ahead of Customer.io** for an enterprise onboarding on Marketo. No official Marketo MCP
+  exists, so the adapter uses direct Marketo REST API calls with the customer's OAuth 2.0
+  client-credentials.
+- One-time credential collection: Munchkin ID, client ID, client secret, optional workspace
+  name. The three secrets are treated as sensitive; adapter offers an environment-variable
+  path so they never appear in the conversation.
+- Auth: single OAuth token request at session start, cached and reused for `expires_in`
+  seconds (typically 3600), re-auth only on 401.
+- Discover: list `emailTemplates.json` with `status=approved` and `maxReturn=200`,
+  paginated by offset until empty. Sort locally by `updatedAt` since the API has no native
+  sort. Same 50-template threshold as Klaviyo: ask for a filter rather than pull the
+  whole list, because Marketo template lists are dominated by legacy variants.
+- Fetch: `emailTemplate/{id}/content.json` returns HTML directly. Render to PNG via
+  headless Chrome at the target email width, feed to the design-converter worker on the
+  same Path B route the other adapters use.
+- Rate limits called out explicitly: 100 calls / 20 seconds, 10,000 / day. Adapter
+  directs the agent to serial fetch (not parallel) to stay under the burst window without
+  any bookkeeping, and to back off on error code 606.
+- Marketo-specific report additions: template ID, direct edit URL, folder path, and
+  workspace per row.
+- Named the honest v1 caveat: pulls Marketo Templates only, not Emails (individual sends
+  inside Programs, where most Marketo customers keep their active content) or Content
+  Blocks (reusable header/footer snippets). v1.1 will extend to both.
+- Step 0 updated to include Marketo as choice (d), Customer.io renumbered to (e).
+- Customer.io adapter still to come as commit 4.
+
 ### 1.11.1
 
 - **ESP migration v1, commit 2 of the series.** Klaviyo Source adapter added, replacing the
