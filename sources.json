@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "b437b5a",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.29.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "b437b5a",
       "summary": "Portsmouth v3 defect fix (closes queue): Getting Started page correctness + image workflow accuracy (task #40). Phase 2 Getting Started page section: the frame is vertical HUG with clipsContent OFF, never a fixed height (Portsmouth shipped a 100px-fixed frame that clipped 940px of instruction text and the page rendered as the bottom edge of its own title). After writing the block, screenshot the whole page and confirm every line visible; a screenshot showing only the title is a fail. Image workflow described accurately: text edited through component properties (correct), images edited by selecting the image rectangle inside the instance and replacing its image fill (correct), never by detaching. Figma has no image component-property type so 'swap images using the component properties panel' is wrong and reads to a user as a workflow that does not exist. Phase 2 completion checklist Getting Started bullet updated with both requirements. Closes the Portsmouth v3 queue (7 defect fixes total). Bumps converter 1.28.0 to 1.29.0. Closes Codex findings 1 and 5.",
       "codexStatus": "Not yet ported. Task #40 of Portsmouth v3 queue, seventh and last defect fix. Portsmouth v3 queue is now complete. Ready to port the whole batch (v1 + v1.5 + six ESPs + Portsmouth v2 + Portsmouth v3 = 15 commits) as one clean spec."
     },
