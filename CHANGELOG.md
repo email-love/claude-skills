@@ -26,6 +26,22 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.31.1
+- **`unsubscribe.com` magic link convention documented inline** (Red Paddle defect). Phase
+  2 inline plugin data key section now carries a "Magic link values the exporter rewrites"
+  table listing `unsubscribe.com` as the href the exporter substitutes with the selected
+  ESP's unsubscribe merge tag at export time. Works on text, buttons, and images. Never
+  invent a placeholder unsubscribe URL and never hand-type an ESP merge tag unless the
+  customer asks for a specific one; a design system that hard-codes one ESP's tag stops
+  being portable, which is the whole point of the magic value.
+- Send-readiness pass at hand-off (task #35) updated to name `unsubscribe.com` as the
+  default unsubscribe target so an agent building a footer reaches for the portable value.
+- Rationale: Red Paddle agent could not determine the ESP, invented
+  `https://www.redpaddleco.com/unsubscribe-placeholder`, wrote it into the footer, and
+  escalated as "the one item that is a legal problem, not a polish problem". The answer
+  was one word. Source: `help.emaillove.com/plugin/links/unsubscribe`.
+- Bumps to 1.31.1 (patch: documentation of an existing plugin convention).
+
 ### 1.31.0
 - **Mobile visual: render it, do not reason about it** (Red Paddle defect). Phase 3 step 5
   Visual bullet rewritten. Figma's canvas has no mobile breakpoint, so `get_screenshot` at

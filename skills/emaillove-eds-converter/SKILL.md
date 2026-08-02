@@ -292,6 +292,22 @@ ship. The render spec keeps the prose, the worked examples, and the rationale.
 | `href` | `mj-image` | absolute URL | link target; omit when absent, never write `#`. |
 | `altText` | `mj-image` | plain string | image alt text. |
 
+**Magic link values the exporter rewrites at export time.** Some hrefs are not links, they are
+instructions to the exporter: write the magic value on the link (text, button, or image; the
+link is what matters, not what surrounds it) and the plugin substitutes the right thing for
+the customer's ESP at export. Never invent a placeholder for these and never hand-type an
+ESP's merge tag unless the customer explicitly asks for a specific one; a design system that
+hard-codes one ESP's tag stops being portable, which is the whole point of the magic value.
+A customer who already knows their tag can link to it directly and the exporter preserves it.
+
+| Put this on the link | What the exporter does |
+| --- | --- |
+| `unsubscribe.com` | Replaced with the selected ESP's unsubscribe merge tag. Works on text, buttons and images. Source: `help.emaillove.com/plugin/links/unsubscribe`. |
+
+Red Paddle shipped a footer with `https://www.redpaddleco.com/unsubscribe-placeholder`
+because this convention was not surfaced in the skill; the agent escalated it as the one
+item that was a legal problem, not a polish problem. The answer was one word.
+
 **Mobile behaviors that are NOT shared plugin data keys** (a common trap: Portsmouth spent
 rounds hunting for keys that do not exist because these behaviors are Figma-side, not
 data-side):
@@ -1466,7 +1482,10 @@ For the footer:
   campaign the customer sends has a real postal address, a real company name, and a real
   unsubscribe mechanism (usually a merge tag their ESP resolves). A migration that leaves
   `Address` as the footer contents ships an email that CAN-SPAM violates.
-- **The unsubscribe link is present** and points at either a merge tag (`{{unsubscribe_url}}`
+- **The unsubscribe link is present** and points at either the magic value `unsubscribe.com`
+  (the exporter substitutes the ESP's merge tag at export time, and this is the default the
+  design system should carry so it stays ESP-portable), or a merge tag the customer explicitly
+  asked for (`{{unsubscribe_url}}`
   or the ESP's equivalent) or a real URL, not `#`.
 
 List every violation by node id in the batch report under a "Send-readiness violations"
@@ -1490,7 +1509,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.31.0 of this skill. If you have web access, check once per conversation
+This is version 1.31.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
