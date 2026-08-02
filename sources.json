@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "7818bc5",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.25.1",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "7818bc5",
       "summary": "Portsmouth v3 defect fix: enforcement teeth on Phase 3 step 5 structural rules (task #36). Rules that shipped violated on Portsmouth (18 alignment axis mismatches, 18 untagged button TEXT children) get list-every-violation-by-node-id treatment; empty list is the only pass. The `name` key check explicitly includes the TEXT child of every mj-button (must carry mj-button-text). The alignment axis check names the exporter contract (mismatched axes render one way in Figma, another in HTML) and asks for each mismatch reported as `<node id>: primary=X, counter=Y`. Closes findings 2 and 7. Bumps converter 1.25.0 to 1.25.1 (patch: enforcement tightening on existing rules).",
       "codexStatus": "Not yet ported. Task #36 of Portsmouth v3 queue, third of 7 defect fixes."
     },
