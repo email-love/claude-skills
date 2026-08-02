@@ -1534,6 +1534,39 @@ text color. `transparent` or absent means `fills = []`. The exporter converts
 text/button/spacer container checks, so never leave a "hidden" 0-opacity
 fill lying around.
 
+#### 5.2.1 Measuring a type size off a screenshot
+
+When the worker returns a size and the ramp says a different one, or when two
+plausible sizes disagree by 4 pixels, do not guess. Measure ink height off a
+screenshot of the source and settle it arithmetically:
+
+1. Crop tightly to one line of text in the source screenshot.
+2. Threshold to isolate the glyphs from the background (any binarisation with
+   the threshold set to catch the ink and reject the fill will do).
+3. Measure the pixel height of the ink; call it `measuredCapHeight`.
+4. Pick a reference line elsewhere in the source whose size you already know
+   from the audit's ramp, in the same casing (all-caps for all-caps, mixed-case
+   for mixed-case), and measure its ink height too; call these `knownSize` and
+   `knownCapHeight`.
+5. Solve:
+
+   ```
+   size = knownSize * (measuredCapHeight / knownCapHeight)
+   ```
+
+**Compare all-caps against all-caps and mixed-case against mixed-case.**
+Ascenders and descenders change the cap-to-em ratio, so mixing casings drops a
+constant into the arithmetic and the answer shifts by two or three px. Two
+measured references from the Red Paddle migration: an all-caps line at 28px
+measured 20px of ink; a mixed-case line at 36px measured 33px.
+
+**Round the result onto the audit's ramp, never to the nearest round number.**
+The point of measuring is to choose between ramp steps, not to invent one. A
+computed 39.2 that rounds to 40 introduces a 40 step the audit never had; the
+same 39.2 rounded onto the ramp lands on either 36 or 44 depending on where the
+next step is, and one of the two is correct. A step the audit is missing is
+task #45's foundations decision, not this step's discovery.
+
 ### 5.3 Alignment master table
 
 | Node | Property read by exporter | Exported as |

@@ -1093,7 +1093,7 @@ This mapping covers almost everything you will meet:
   land on plausible round numbers rather than the customer's ramp, and fonts flatten to
   Arial when unpinned; the worker returns all of these confidently. So transcribe its tree,
   then replace every color with one sampled from the source pixels, every type size with one
-  measured (cap-height method in render spec section 5.3, task #46), and pin every font
+  measured (cap-height method in render spec section 5.2.1), and pin every font
   against the audit's ramp before accepting the value.
   **A size the worker returns that is not on the audit's ramp is the loudest signal it
   guessed.** The ramp is the specification; a 40 where the ramp says 36 is a per-module
@@ -1538,7 +1538,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.32.0 of this skill. If you have web access, check once per conversation
+This is version 1.32.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

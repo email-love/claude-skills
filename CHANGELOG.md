@@ -26,6 +26,21 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.32.1
+- **Cap-height measurement method** for settling type-size disagreements (Red Paddle
+  defect). New render-spec section 5.2.1: when the worker returns a size and the ramp says
+  a different one, or when two plausible sizes disagree by 4 pixels, crop tightly to one
+  line, threshold to isolate glyphs, measure pixel ink height, compare against a known
+  reference in the same casing via `size = knownSize * (measuredCapHeight / knownCapHeight)`.
+  Compare all-caps against all-caps and mixed-case against mixed-case (ascenders and
+  descenders change the ratio). Round onto the audit's ramp, never to the nearest round
+  number. Red Paddle references: 28px all-caps measured 20px ink, 36px mixed-case measured
+  33px.
+- Task #45's worker-vs-measurement rule now references this section as the actual method.
+- Inserted as 5.2.1 rather than a new top-level section so existing 5.3-5.6 references
+  keep their numbers.
+- Bumps to 1.32.1 (patch: method documentation for an existing discipline).
+
 ### 1.32.0
 - **STRUCTURE from worker, NUMBERS from measurement** (Red Paddle defect). Phase 3 step 2
   "unpinned drifts" bullet rewritten to say plainly what the old wording undersold: the
