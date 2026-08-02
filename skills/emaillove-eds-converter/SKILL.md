@@ -616,6 +616,28 @@ Build the scaffold every later batch depends on:
    the user confirms web-font hosting). Name styles as the customer named theirs. **The typefaces
    come from the source on every tier. Where the SIZES come from is the tier's answer.**
 
+   **Check the font is installed before you build the ramp, and know the substitute.** Call
+   `figma.listAvailableFontsAsync()` and look for the target family by name. The Figma
+   environment an agent runs in typically serves Google Fonts only (about 1,900 families),
+   which means **Helvetica, Helvetica Neue and Arial are all absent** even though they are
+   the most common email-safe answer and every migration whose customer picks the standard
+   email-safe stack (`'Helvetica Neue', Helvetica, Arial, sans-serif`) will hit this. The
+   failure mode without the check is silently building the ramp in Inter or whatever Figma
+   substituted, which then flows into every module.
+   When the target family is Arial or Helvetica and unavailable, **build in Arimo**. It is
+   the metrically compatible clone of Arial: identical advance widths, so a string that fits
+   on the canvas fits in the email and section 3.3.1's slack arithmetic stays accurate
+   rather than approximate. Arimo is in the Google Fonts set and the Figma environment
+   loads it.
+   **State the consequence in the foundations report**, because it is real: the exporter
+   writes `fontName.family` into `font-family`, so an export will say Arimo until the family
+   is swapped or Arial is accepted at send time. Say it once, plainly, rather than leaving
+   it for someone to find in a send.
+   Also expect the weight count to drop. The email-safe stack offers Regular and Bold; a
+   brand font with Light, XBold, and Black collapses to two, and that collapse belongs in
+   the report so a designer sees which weights they lost and can push back if any were
+   load-bearing.
+
    **REFERENCE ONLY: build the conventional ramp, and do not divide anything.** 12 fine print, 14
    secondary, 16 body, 20 subhead, 24 to 30 headline, line height 1.4 to 1.5 on body copy and
    tighter on headings. These are the defaults from the top of this phase, stated rather than
@@ -1538,7 +1560,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.32.2 of this skill. If you have web access, check once per conversation
+This is version 1.33.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

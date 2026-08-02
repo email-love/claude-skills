@@ -26,6 +26,25 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.33.0
+- **Check the font is installed before building the ramp; know the substitute** (Red
+  Paddle defect). Phase 2 step 3 (Type mapping) now says: call
+  `figma.listAvailableFontsAsync()` and look for the target family by name before building.
+  The Figma environment an agent runs in typically serves Google Fonts only (about 1,900
+  families); Helvetica, Helvetica Neue, and Arial are all absent even though they are the
+  most common email-safe answer.
+- **When the target is Arial or Helvetica and unavailable, build in Arimo** — the
+  metrically compatible Arial clone. Identical advance widths, so a string that fits on
+  the canvas fits in the email and section 3.3.1's slack arithmetic stays accurate.
+- State the consequence in the foundations report: the exporter writes `fontName.family`
+  into `font-family`, so an export will say Arimo until the family is swapped or Arial is
+  accepted at send time.
+- Expect the weight count to drop (Regular and Bold only from email-safe stack); collapse
+  belongs in the foundations report so a designer sees which weights they lost.
+- Rationale: every agent-run migration whose customer picks the standard email-safe stack
+  hits this, and the silent failure mode is building the ramp in Inter.
+- Bumps to 1.33.0 (minor: new Phase 2 step 3 rule + external tool call added).
+
 ### 1.32.2
 - **Open every exported PNG before uploading it** (Red Paddle defect). Render-spec 4.2.1
   now has an explicit step between download and upload: open the PNG and look at it. Three
