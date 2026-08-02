@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "0a3bdf4",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.32.1",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "0a3bdf4",
       "summary": "Red Paddle defect fix: cap-height measurement method (task #46). New render-spec section 5.2.1: for settling type-size disagreements, crop tightly to one line, threshold to isolate glyphs, measure pixel ink height, compare against a known reference in same casing via size = knownSize * (measured/known). All-caps against all-caps, mixed-case against mixed-case (ascenders/descenders change ratio). Round onto ramp, never to nearest round number. Task #45's worker-vs-measurement rule now references this section. Inserted as 5.2.1 to avoid renumbering existing 5.3-5.6 references. Red Paddle references: 28px all-caps measured 20px ink; 36px mixed-case measured 33px. Bumps converter 1.32.0 to 1.32.1 (patch: method documentation).",
       "codexStatus": "Not yet ported. Task #46 of Red Paddle queue, fifth of ~10 defect fixes."
     },
