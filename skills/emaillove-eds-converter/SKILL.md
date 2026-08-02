@@ -1234,6 +1234,16 @@ checklist at the end of `references/render-spec.md`:
   twenty-eight modules, one of them broken on mobile) the moment the batch grows. Confirm too that
   no mobile padding is greater than 160px on a 320 viewport, because that is a defect regardless of
   what the system carries.
+- **Semantic-token bind count: every non-placeholder solid fill in the module resolves to a
+  variable binding from the audit's Palette**, not to a raw hex. Walk every fillable node,
+  list any unbound solid fill by node id with the raw hex and the role it should have
+  (`brand background`, `headline text`, `button background`, `divider`, `footer fill`, and
+  so on). Empty list is the only pass. Placeholder gray fills for editable image regions are
+  the only allowed exception, and each one gets a line saying it is an intentional
+  placeholder. Portsmouth shipped 43 unbound fills (31 real, 12 placeholder) and every
+  downstream color change had to touch each of the 31 by hand, which is exactly the state
+  a design system is meant to remove. When an unbound fill has no theme role, that is a
+  question for the designer about extending the palette, not a silent leave-it-raw.
 - **Content width: read the resolved x and width of the text-bearing column off the built module
   and confirm it equals the library content width from foundations**, not the worker's number. On a
   multi-column row confirm the columns plus gutters sum to it. This is a cross-module check by
@@ -1407,7 +1417,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.25.1 of this skill. If you have web access, check once per conversation
+This is version 1.26.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

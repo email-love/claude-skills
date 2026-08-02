@@ -26,6 +26,20 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.26.0
+- **New Phase 3 step 5 verification line: semantic-token bind count** (Portsmouth v3
+  defect). Every non-placeholder solid fill in a module must resolve to a variable binding
+  from the audit's Palette, not to a raw hex. Walk every fillable node, list unbound solid
+  fills by node id with the raw hex and the role they should have (brand background,
+  headline text, button background, divider, footer fill). Empty list is the only pass.
+  Placeholder gray fills for editable image regions are the only allowed exception, each
+  named as an intentional placeholder.
+- Rationale in the skill: Portsmouth shipped 43 unbound fills (31 real, 12 placeholder)
+  and every downstream color change had to touch each of the 31 by hand, exactly the state
+  a design system is meant to remove. When an unbound fill has no theme role, that is a
+  question for the designer about extending the palette, not a silent leave-it-raw.
+- Bumps to 1.26.0 (minor: new required verification line, closes Codex finding 8).
+
 ### 1.25.1
 - **Enforcement teeth on Phase 3 step 5 structural rules** (Portsmouth v3 defect). Rules
   that shipped violated on Portsmouth (18 alignment axis mismatches, 18 untagged button
