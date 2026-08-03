@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "e6b532b",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.34.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "e6b532b",
       "summary": "Codex-3col defect fix: multi-column gutter guardrail (task #52). Codex built a three-column component with zero column padding during a v4.1.0 shakedown; geometry validated (0-gutter columns sum to content-width trivially) but adjacent card headlines visually concatenated into one sentence. New Phase 3 step 5 blocking checklist bullet: a section with more than one column and zero horizontal column padding is a FAIL unless the source design has a measured zero gutter AND the batch report says so. Render-spec gets new subsection 3.4.0 'Multi-column gutters' generalising 3.4.1's spacing-on-one-side rule to every multi-column row. Failure signature named (headlines concatenate, card images touch, button a pixel from neighbour). Worked example for three equal cards. Do not infer card width by content/count unless source gutter is zero. 3.4.0 numbering keeps 3.4.1's Two Column Swap number stable. Bumps converter 1.33.2 to 1.34.0.",
       "codexStatus": "Not yet ported. First fix of the next port batch. Codex found this defect in v4.1.0, so it self-catches now."
     },
