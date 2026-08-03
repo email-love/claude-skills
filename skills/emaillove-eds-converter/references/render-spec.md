@@ -1036,6 +1036,51 @@ would have wrapped ugly on every phone. The arithmetic is cheap; run it.
   `mj-button-Frame`, `mj-divider-Frame`) and `mj-spacer`, top to bottom.
   After appending, set each child's `layoutSizingHorizontal = 'FILL'`.
 
+#### 3.4.0 Multi-column gutters: a section with more than one column needs one
+
+Every rule above lets a multi-column section sum to the library content width
+with zero gutter between columns: three 186.67 columns in a 560 content box add
+to 560, and no attribute mapping catches that adjacent cards touch. The
+content-width equation passes trivially. The visual result is a section whose
+headlines from adjacent columns visually concatenate into one sentence, whose
+card images abut the next card's edge, and whose buttons sit a pixel from a
+neighbour. That is a gutter failure, not a typography problem, and the
+arithmetic gate cannot see it.
+
+**A section with more than one column and zero horizontal column padding is a
+FAIL unless the source design has a measured zero gutter and the batch report
+says so.** Record the source gutter as a distinct measurement (the audit's
+Spacing system census already carries it as a role), express it in the built
+module as horizontal padding on the `mj-column` frames rather than as Figma
+`itemSpacing`, an absolute position, or a visual gap.
+
+Section 3.4.1 (Two Column Swap) restates the same rule as "spacing on one side
+of each boundary only, never both" for the image-beside-text case. This section
+generalises it to every multi-column row: each internal column boundary carries
+the source's measured gutter, on ONE side of the boundary, expressed as column
+padding.
+
+Worked example, three equal cards in a 560 content box with a 16px source
+gutter:
+
+```
+card content = (560 - 32) / 3 = 176px
+column box   = 186.67px, with 8px horizontal padding on each side
+adjacent boundary  = 8 + 8 = 16px between adjacent card content
+```
+
+Do not infer card width by dividing content width by column count unless the
+measured source gutter is zero. That inference is how the failure lands: an
+agent computes `560 / 3 = 186.67`, builds three 186.67 columns with zero
+padding, and the columns sum correctly to the content width while the built
+module has no breathing room.
+
+The batch verification for this rule is in the skill's Phase 3 step 5 checklist
+under "Multi-column gutter present": list the horizontal padding on each column,
+confirm at least one side of each internal boundary carries the source gutter,
+and reject the module if not. Zero-padding multi-column layouts pass only with
+an explicit batch-report note saying the source intentionally uses no gutter.
+
 #### 3.4.1 THE TWO COLUMN SWAP: the standard rebuild for an overlapping or bleeding image
 
 **The failure it replaces.** Source designs routinely place a photograph so it

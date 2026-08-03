@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "73e3038",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.33.2",
+      "emaillove-eds-converter": "1.34.0",
       "emaillove-migration-audit": "1.18.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "v4.1.0 ported the 10-commit Red Paddle batch from claude-skills (252bc05 through 73e3038) as codex-agents commit 3148c2b: mj-group mobile shrink formula (render-spec 3.3.2), mobile visual via emaillove_preview_email (not get_screenshot), unsubscribe.com magic link, STRUCTURE from worker + NUMBERS from measurement + ramp gaps at foundations, cap-height measurement method (render-spec 5.2.1), open every PNG before placing, Figma cloud fonts check + Arimo substitute, mj-navbar mapping, palette census by role + type ramp 12px floor, CF 403 error-code-1010 workaround. Minor bump because audit report structure is unchanged; no partly-audited migration breaks. v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1, v1.5 cloud adapters, v1.13 six more ESPs, Portsmouth v2 (six defect fixes), Portsmouth v3 (seven defect fixes). Major bump because audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). v3.0.1 previously ported model-choice guidance (c0719be) and Portsmouth batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Codex-3col defect fix: multi-column gutter guardrail (task #52). Codex built a three-column component with zero column padding during a v4.1.0 shakedown; geometry validated (0-gutter columns sum to content-width trivially) but adjacent card headlines visually concatenated into one sentence. New Phase 3 step 5 blocking checklist bullet: a section with more than one column and zero horizontal column padding is a FAIL unless the source design has a measured zero gutter AND the batch report says so. Render-spec gets new subsection 3.4.0 'Multi-column gutters' generalising 3.4.1's spacing-on-one-side rule to every multi-column row. Failure signature named (headlines concatenate, card images touch, button a pixel from neighbour). Worked example for three equal cards. Do not infer card width by content/count unless source gutter is zero. 3.4.0 numbering keeps 3.4.1's Two Column Swap number stable. Bumps converter 1.33.2 to 1.34.0.",
+      "codexStatus": "Not yet ported. First fix of the next port batch. Codex found this defect in v4.1.0, so it self-catches now."
+    },
     {
       "claudeCommit": "73e3038",
       "summary": "Red Paddle defect fix (closes queue): Cloudflare 403 error code 1010 workaround (task #51). Phase 3 step 1 POST-to-worker instructions: if worker returns 403 with body 'error code: 1010', that is a Cloudflare browser check not an auth failure. Retry with a normal browser User-Agent header; Bearer/provider headers are correct. Rationale: Red Paddle agent hit this, every POST returned 403 with error code 1010, auth was irrelevant (empty Bearer, no Bearer, real token all failed identically); setting a browser User-Agent fixed it instantly. The 403 sat next to Bearer/license-key instructions so the natural conclusion was an auth problem. Closes Red Paddle queue (10 defect fixes total). Bumps converter 1.33.1 to 1.33.2.",

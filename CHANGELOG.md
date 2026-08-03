@@ -26,6 +26,27 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.34.0
+- **New multi-column gutter guardrail: zero column padding on a multi-column section is a
+  FAIL** unless the source design has a measured zero gutter and the batch report says so
+  (defect surfaced by Codex during a v4.1.0 shakedown; three-column module built with zero
+  padding passed the content-width equation trivially because 0-gutter columns sum to
+  content-width by construction). Phase 3 step 5 gets a new checklist bullet; render-spec
+  gets a new subsection 3.4.0 "Multi-column gutters" that generalises 3.4.1's
+  "spacing on one side of each boundary only" rule to every multi-column row.
+- **Failure signature named:** headlines from adjacent columns visually concatenate into
+  one sentence; a card image touches the next card's edge; a button sits a pixel from a
+  neighbour. Treat any of those as a gutter failure, not a typography problem. The
+  arithmetic gate cannot see this.
+- **Worked example for three equal cards** in a 560 content box with 16px source gutter:
+  `card content = (560 - 32) / 3 = 176px`, expressed as 186.67px column boxes with 8px
+  horizontal padding on each side, so adjacent card content is separated by 16px.
+- Do not infer card width by dividing content width by column count unless the measured
+  source gutter is zero. That inference is how the failure lands.
+- Section 3.4.0 numbering used (not a new top-level section) so 3.4.1's Two Column Swap
+  keeps its number.
+- Bumps to 1.34.0 (minor: new required checklist rule + new render-spec subsection).
+
 ### 1.33.2
 - **Cloudflare 403 `error code: 1010` workaround documented** (Red Paddle defect, closes
   queue). Phase 3 step 1 POST-to-worker instructions now say: if the worker returns 403
