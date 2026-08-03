@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "12130ec",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.34.0",
