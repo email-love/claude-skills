@@ -75,6 +75,12 @@ def check_skill(name, marketplace_version):
         fm = text.split("---", 2)[1] if text.count("---") >= 2 else ""
         if "name:" not in fm: fail(f"{name}: frontmatter missing name")
         if "description:" not in fm: fail(f"{name}: frontmatter missing description")
+        # Claude.ai skill upload rejects descriptions over 1024 chars
+        dm = re.search(r"^description:\s*(.*?)(?=\n[a-z_]+:\s|\Z)", fm, re.DOTALL | re.MULTILINE)
+        if dm:
+            dlen = len(dm.group(1).strip())
+            if dlen > 1024:
+                fail(f"{name}: frontmatter description is {dlen} chars (claude.ai upload limit: 1024)")
 
     # "This is version X of this skill" matches the manifest
     m = re.search(r"This is version ([0-9]+\.[0-9]+\.[0-9]+) of this skill", text)

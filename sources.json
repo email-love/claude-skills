@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-02",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "e6b532b",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.34.0",
-      "emaillove-migration-audit": "1.18.0"
+      "emaillove-migration-audit": "1.18.1"
     }
   },
   "codexPlugin": {

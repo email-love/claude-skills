@@ -441,6 +441,17 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-migration-audit
 
+### 1.18.1
+- **Frontmatter description trimmed under claude.ai's 1024-char upload limit.** The census
+  fixes each appended a clause to the description and Batch 3 pushed it to 1106 chars, at
+  which point the claude.ai skill upload rejected the bundle with "field 'description' in
+  SKILL.md must be at most 1024 characters". Consolidated the three census clauses into one
+  ("censuses spacing, palette, and type ramp into one system each"); now 1004 chars. All
+  trigger keywords preserved.
+- `validate_repo.py` now checks every skill's frontmatter description against the 1024
+  limit, so CI catches the next overflow before an upload does.
+- Bumps to 1.18.1 (patch: frontmatter-only change, no behavior change).
+
 ### 1.18.0
 - **Palette census now clusters by ROLE as well as by VALUE** (batch 4 defect enhancement
   to task #34). Sample text-node fills as well as background fills; the same hex used as a
