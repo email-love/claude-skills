@@ -12,60 +12,60 @@
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
-    "currentRelease": "v4.0.0",
-    "portsClaudeCommit": "b437b5a91102b352dadb1df2fffda7d3c6035cf1",
-    "note": "v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1 (four source adapters), v1.5 (Google Drive + SharePoint cloud adapters), v1.13 (six more ESP adapters), Portsmouth v2 (six defect fixes from a real customer migration), Portsmouth v3 (seven defect fixes from a Codex review of the built Portsmouth file). Major bump because the audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). Next port: v4.1.0 spec ready in Notion (page id 3b0eabcb-09b7-817f-a797-e532658bcc9e, pinned to Claude commit 73e3038), covering the 10 Red Paddle Co defect fixes (mj-group mobile shrink, mobile visual via emaillove_preview_email, unsubscribe.com magic link, worker-vs-measurement + ramp gaps at foundations, cap-height method, open every PNG, Figma fonts + Arimo, mj-navbar mapping, palette by role, CF 403 workaround). Minor bump because audit report structure is unchanged; no partly-audited migration breaks. v3.0.1 previously ported model-choice guidance (c0719be) and Portsmouth batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
+    "currentRelease": "v4.1.0",
+    "portsClaudeCommit": "73e30383fd32659975a78667af97410d014aaba0",
+    "note": "v4.1.0 ported the 10-commit Red Paddle batch from claude-skills (252bc05 through 73e3038) as codex-agents commit 3148c2b: mj-group mobile shrink formula (render-spec 3.3.2), mobile visual via emaillove_preview_email (not get_screenshot), unsubscribe.com magic link, STRUCTURE from worker + NUMBERS from measurement + ramp gaps at foundations, cap-height measurement method (render-spec 5.2.1), open every PNG before placing, Figma cloud fonts check + Arimo substitute, mj-navbar mapping, palette census by role + type ramp 12px floor, CF 403 error-code-1010 workaround. Minor bump because audit report structure is unchanged; no partly-audited migration breaks. v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1, v1.5 cloud adapters, v1.13 six more ESPs, Portsmouth v2 (six defect fixes), Portsmouth v3 (seven defect fixes). Major bump because audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). v3.0.1 previously ported model-choice guidance (c0719be) and Portsmouth batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
     {
       "claudeCommit": "73e3038",
       "summary": "Red Paddle defect fix (closes queue): Cloudflare 403 error code 1010 workaround (task #51). Phase 3 step 1 POST-to-worker instructions: if worker returns 403 with body 'error code: 1010', that is a Cloudflare browser check not an auth failure. Retry with a normal browser User-Agent header; Bearer/provider headers are correct. Rationale: Red Paddle agent hit this, every POST returned 403 with error code 1010, auth was irrelevant (empty Bearer, no Bearer, real token all failed identically); setting a browser User-Agent fixed it instantly. The 403 sat next to Bearer/license-key instructions so the natural conclusion was an auth problem. Closes Red Paddle queue (10 defect fixes total). Bumps converter 1.33.1 to 1.33.2.",
-      "codexStatus": "Not yet ported. Task #51 of Red Paddle queue, tenth and last defect fix. Red Paddle queue is now complete."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "45cea89",
       "summary": "Red Paddle defect fix: palette census clusters by ROLE + type ramp floor (task #50, enhancement to task #34). Palette census: sample text-node fills as well as background fills; same hex used as a band and as text on white are TWO theme tokens, not one, because the theme layer needs to move them independently. A palette built from fills alone finds bands and buttons and misses type. Type ramp: where the smallest cluster is below 12px, recommend a floor at 12 (or customer-confirmed floor). Rationale: Red Paddle shipped nav link #888888 and body color #222222 (used only on text) missing from the theme roles list, both added mid-batch; value-prop captions at ~11px standardised up to 12 mid-build. Bumps audit 1.17.0 to 1.18.0.",
-      "codexStatus": "Not yet ported. Task #50 of Red Paddle queue, ninth of 10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "8bf9bd6",
       "summary": "Red Paddle defect fix: mj-navbar mapping documented (task #49). Render-spec section 6.1 note: when the worker returns mj-navbar, do not invent a mapping. Rebuild as one mj-text node whose characters carry every label, with setRangeHyperlink per label, separated by a normal space plus non-breaking spaces so gap survives HTML whitespace collapsing while line can break between labels but never inside one. Type styling from audit's Nav Link ramp entry. Two reasons this wins over alternatives past three items: reflows (a group of pinned columns cannot per 3.3.2), satisfies 'split single text run into N separately linked items' constraint without per-item column. Red Paddle met mj-navbar twice and improvised twice, ending at this shape both times; task #42's four-item nav shipped this way after group build failed twice. Bumps converter 1.33.0 to 1.33.1 (patch: documentation of a mapping previously punted on).",
-      "codexStatus": "Not yet ported. Task #49 of Red Paddle queue, eighth of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "dc4a545",
       "summary": "Red Paddle defect fix: Figma cloud fonts have no Helvetica/Arial, build in Arimo (task #48). Phase 2 step 3 (Type mapping): call figma.listAvailableFontsAsync() and look for the target family by name before building. Figma environment for agents typically serves Google Fonts only (~1,900 families); Helvetica, Helvetica Neue, and Arial are all absent even though they are the most common email-safe answer. When target is Arial or Helvetica and unavailable, build in Arimo (metrically compatible Arial clone, identical advance widths). State consequence in foundations report: exporter writes fontName.family into font-family so export will say Arimo until family is swapped. Expect weight count to drop (Regular/Bold only from email-safe stack). Rationale: every agent-run migration whose customer picks the standard email-safe stack hits this; silent failure mode is building the ramp in Inter. Bumps converter 1.32.2 to 1.33.0.",
-      "codexStatus": "Not yet ported. Task #48 of Red Paddle queue, seventh of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "5938ffe",
       "summary": "Red Paddle defect fix: open every exported PNG before uploading it (task #47). Render-spec 4.2.1 now has an explicit step between download and upload. Three failure modes: baked-in white (node with white background exports opaque, reads as white box on colored band; key white to transparency for line art, flood-fill surround for photographic cutouts), neighbour's content (check crop's far edge against adjacent column start, not source node declared width; a node can be wider than its visible content), and fused row not missing (already 4.2.2). Red Paddle: 4 asset defects presented as layout bugs; the T-shirt baked in 28px of neighbouring column text, cost layout chased twice and component rebuilt once. Bumps converter 1.32.1 to 1.32.2 (patch: enhancement to existing 4.2.1 rule).",
-      "codexStatus": "Not yet ported. Task #47 of Red Paddle queue, sixth of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "0a3bdf4",
       "summary": "Red Paddle defect fix: cap-height measurement method (task #46). New render-spec section 5.2.1: for settling type-size disagreements, crop tightly to one line, threshold to isolate glyphs, measure pixel ink height, compare against a known reference in same casing via size = knownSize * (measured/known). All-caps against all-caps, mixed-case against mixed-case (ascenders/descenders change ratio). Round onto ramp, never to nearest round number. Task #45's worker-vs-measurement rule now references this section. Inserted as 5.2.1 to avoid renumbering existing 5.3-5.6 references. Red Paddle references: 28px all-caps measured 20px ink; 36px mixed-case measured 33px. Bumps converter 1.32.0 to 1.32.1 (patch: method documentation).",
-      "codexStatus": "Not yet ported. Task #46 of Red Paddle queue, fifth of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "95b78bd",
       "summary": "Red Paddle defect fix: STRUCTURE from worker, NUMBERS from measurement + ramp gaps at foundations (task #45). Phase 3 step 2 'unpinned drifts' bullet rewritten: worker is a good structure detector (columns, rows, stacking order, which things are buttons, sometimes structural fixes the source does not advertise) but not a measuring instrument (colors drift, sizes land on plausible round numbers rather than the ramp, unpinned fonts flatten to Arial). Take structure from worker, every color from source pixels, every size measured, every font pinned. A size the worker returns that is not on the audit's ramp is the loudest signal it guessed (per-module factor sneaking back in). Phase 2 step 3 Type specimen: a gap in the ramp is a decision for foundations, not batch 3; if the specimen shows a jump with nothing between it and the source has content that would sit in the gap, add the step now and record as a standardisation. Red Paddle: 9 worker mismatches from #CCCCCC-for-#FFFFFF to four different wrong reds to a 40px headline where the ramp said 36. Foundations report predicted the ramp-gap cost verbatim and deferred anyway; three modules in batch 3 wanted the missing 20px step. Bumps converter 1.31.1 to 1.32.0.",
-      "codexStatus": "Not yet ported. Task #45 of Red Paddle queue, fourth of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "779fd40",
       "summary": "Red Paddle defect fix: unsubscribe.com magic link convention documented inline (task #44). Phase 2 inline plugin data key section now carries a 'Magic link values the exporter rewrites' table listing unsubscribe.com as the href the exporter substitutes with the selected ESP's unsubscribe merge tag at export time. Works on text, buttons and images. Never invent a placeholder URL, never hand-type an ESP merge tag unless customer asks. Send-readiness pass (task #35) updated to name unsubscribe.com as the default portable value. Rationale: Red Paddle agent invented `redpaddleco.com/unsubscribe-placeholder`, escalated as legal problem not polish; customer pointed at help.emaillove.com/plugin/links/unsubscribe. Bumps converter 1.31.0 to 1.31.1 (patch: documentation of an existing plugin convention).",
-      "codexStatus": "Not yet ported. Task #44 of Red Paddle queue, third of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "88ac033",
       "summary": "Red Paddle defect fix: mobile visual via emaillove_preview_email, not get_screenshot (task #43). Phase 3 step 5 Visual bullet rewritten. Figma's canvas has no mobile breakpoint, so get_screenshot at 390px just renders desktop-shaped pixels at 390px; the old 'second screenshot pair at mobile width' instruction silently degraded to a recorded intention. Replaced with a headless render via emaillove_preview_email after the batch is uploaded provisionally to the plugin library. Fail conditions named: word broken mid-string (task #42 defect), image aspect ratio differs from desktop, stacked column carrying desktop gutter as indent, section that stacked where step 3 Part A recorded group (or vice versa). Order stated for migrations: build, upload provisionally, render, diff, only then open next batch. Rationale: three of the four Red Paddle corrections were mobile-only, every one caught by the customer manually exporting screenshots. Bumps converter 1.30.0 to 1.31.0.",
-      "codexStatus": "Not yet ported. Task #43 of Red Paddle queue, second of ~10 defect fixes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "252bc05",
       "summary": "Red Paddle defect fix (first of queue): mj-group columns shrink on mobile (task #42). New render-spec section 3.3.2 with resolved-width formula: `resolved = columnWidth / groupWidth * (mobileViewport - side padding)`. Per column: text carrier needs resolved >= widthOf(longest unbreakable word) * 1.05; fixed-aspect image needs resolved >= image natural width. Three remedies when a column fails (reflowing mj-text with setRangeHyperlink ranges, drop the group so columns stack, or hide with mobileStylesHideInMobileDevice). Phase 3 step 5 checklist gets a new group-columns-resolve-wide-enough bullet. Explicit: section 3.3.1 (font drift at pinned width) does not protect against this. Red Paddle: four-item nav 137/86/133/89 in a 560 group rendered CHA/NGI/NG, G/E/A/R at 375px because the 86px GEAR column resolved to 51px. Invisible on canvas and desktop preview by construction. Bumps converter 1.29.0 to 1.30.0.",
-      "codexStatus": "Not yet ported. Task #42 of Red Paddle queue, first of ~10 defect fixes surfaced by Red Paddle Co end-to-end migration. Batch with the rest and port after the queue closes."
+      "codexStatus": "Ported in v4.1.0 (codex-agents commit 3148c2b)."
     },
     {
       "claudeCommit": "b437b5a",
