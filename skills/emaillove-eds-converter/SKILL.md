@@ -262,7 +262,7 @@ say so to the user before you start, name what you will not be able to verify (t
 for any tag not covered inline below, structural checklist items keyed by render-spec section,
 worked examples of the Two Column Swap and the group rule, most of Phase 3 step 5's
 verification), and either fetch a fresh skill bundle before continuing or agree with the
-user on a reduced scope. This exact absence bit a Portsmouth batch four modules in and cost
+user on a reduced scope. This exact absence bit an earlier customer batch four modules in and cost
 five rounds of design review to work around; a one-line check catches it before the first
 module.
 
@@ -304,11 +304,11 @@ A customer who already knows their tag can link to it directly and the exporter 
 | --- | --- |
 | `unsubscribe.com` | Replaced with the selected ESP's unsubscribe merge tag. Works on text, buttons and images. Source: `help.emaillove.com/plugin/links/unsubscribe`. |
 
-Red Paddle shipped a footer with `https://www.redpaddleco.com/unsubscribe-placeholder`
+Batch 4 shipped a footer with `https://www.example.com/unsubscribe-placeholder`
 because this convention was not surfaced in the skill; the agent escalated it as the one
 item that was a legal problem, not a polish problem. The answer was one word.
 
-**Mobile behaviors that are NOT shared plugin data keys** (a common trap: Portsmouth spent
+**Mobile behaviors that are NOT shared plugin data keys** (a common trap: Batch 2 spent
 rounds hunting for keys that do not exist because these behaviors are Figma-side, not
 data-side):
 
@@ -380,7 +380,7 @@ audit's census consolidated the source's ad-hoc side insets, vertical rhythm, gu
 paddings, and their mobile equivalents, into one system per role, with a designer decision on
 each. That system is what every module in every batch inherits. When a module conversion asks
 "what side padding does this section get", the answer is the audit's row, not a number measured
-off this module's own screenshot: a per-module measurement is exactly how the Portsmouth defect
+off this module's own screenshot: a per-module measurement is exactly how the batch 2 defect
 landed, thirty distinct side insets across twenty-eight modules and one that broke mobile.
 Named exceptions (a full-bleed image band with zero side padding, a wide-quote outset) are
 allowed only where the audit's Spacing system listed them as exceptions, with the reason. A
@@ -499,7 +499,7 @@ Build the scaffold every later batch depends on:
    - **Getting Started.** How to use the library, in prose a designer or marketer new to the file
      can follow.
      **The frame is vertical HUG with clipsContent OFF, never a fixed height.** A fixed height
-     clips the content invisibly and the page functionally disappears; Portsmouth shipped a
+     clips the content invisibly and the page functionally disappears; batch 2 shipped a
      100px-fixed frame that clipped 940px of instruction text and the page rendered as the
      bottom edge of its own title. After you finish writing the block, screenshot the whole page
      and confirm every line is visible; a screenshot that shows only the title is a fail.
@@ -547,9 +547,9 @@ Build the scaffold every later batch depends on:
      subheads, fine print. If any exists, add the step now and record it as a standardisation.
      Adding it later means editing every module that would have used it, and the ramp gap will
      not have gone away, it will have been resolved module by module into per-module sizes.
-     Red Paddle's foundations report predicted this cost verbatim ("adding it later means
+     Batch 4's foundations report predicted this cost verbatim ("adding it later means
      touching every module that would have used it") and deferred anyway; three modules in
-     batch 3 wanted exactly the missing 20px step. Predicting the cost and deferring is not a
+     Batch 3 wanted exactly the missing 20px step. Predicting the cost and deferring is not a
      judgement, it is the rule the skill is now naming.
      **A step added this way sits outside the ratio check** and must say so, exactly like the
      spacing scale: the check proves one factor was applied uniformly across the sizes the audit
@@ -702,7 +702,7 @@ Build the scaffold every later batch depends on:
    **The render-node-not-fill rule fires here, in Phase 2 step 6, and again in Phase 3 step 1
    where the module gets screenshotted for the worker.** They are two different actions, taken
    at two different times, on two different pipelines. A bulk canvas-crop pass done for
-   efficiency in either phase reintroduces the same defect: on Portsmouth the hero photograph
+   efficiency in either phase reintroduces the same defect: on batch 2 the hero photograph
    was cropped out of a canvas render and the overlapping white card baked into the image,
    producing a ghost headline inside the picture that only surfaced at the visual check.
    Bulk pipelines that crop from a canvas render are the failure mode; export each image
@@ -745,11 +745,11 @@ Build the scaffold every later batch depends on:
    and label each row `pass` (>=4.5:1 for normal text, >=3:1 for large text at 18pt or 14pt bold
    and above) or `fail` with the ratio. Flag any pairing that fails 4.5:1 for normal text since
    most email body copy sits under that threshold, and any button pairing whose ratio sits at
-   exactly the 3:1 large-text floor since it leaves no safety margin. Portsmouth shipped
+   exactly the 3:1 large-text floor since it leaves no safety margin. Batch 2 shipped
    `color/text/accent = #009EE2` at 3.00:1 on white and used it on 18px bold subheads, which
    fails AA for text below 18pt bold; the table is what surfaces that before the designer
    confirms the palette. On a fail, name the darker semantic token that reaches the threshold
-   (Portsmouth's `blue/700 = #0078B4` reaches 4.83:1) or note that the designer needs to
+   (batch 3's `blue/700 = #0078B4` reaches 4.83:1) or note that the designer needs to
    supply one.
    Then the tier's own numbers:
 
@@ -938,7 +938,7 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    over a photograph, a badge over a product shot), which then survives every downstream step
    and only surfaces at the visual check as a ghost. This is the same render-node-not-fill
    rule as Phase 2 step 6, restated here because the pipeline is different: a bulk
-   canvas-crop pass for efficiency in either phase is exactly how the Portsmouth hero shipped
+   canvas-crop pass for efficiency in either phase is exactly how the batch 2 hero shipped
    with a ghost headline inside the picture. When you need a per-module image asset (for
    example a hero photograph the customer wants placed rather than a gray fill), export that
    image node in isolation even when it is slower than cropping the module screenshot.
@@ -1093,7 +1093,7 @@ This mapping covers almost everything you will meet:
   narrower than a single word. A single inline text line with wide spacing wraps into nonsense
   for the same reason. Ungrouped columns stack cleanly, one link per row, and that is the
   shipped shape. Record the stacking decision as "loose columns, stack expected, no keys set,
-  nav bar exceeds group-safe width" in step 3 Part A, and move on. On Portsmouth this cost two
+  nav bar exceeds group-safe width" in step 3 Part A, and move on. On batch 2 this cost two
   attempts before landing on the stacked build; the rule saves them.
 - **A badge, pill, or icon sitting beside text is an `mj-group`, not a loose frame inside
   `mj-text-Frame`.** A loose frame there flattens to an image and detaches from the text.
@@ -1128,7 +1128,7 @@ This mapping covers almost everything you will meet:
   **A size the worker returns that is not on the audit's ramp is the loudest signal it
   guessed.** The ramp is the specification; a 40 where the ramp says 36 is a per-module
   factor sneaking back in, which is the exact drift the single-factor rule exists to prevent.
-  Red Paddle carried nine color and size mismatches on the worker output where the delta
+  Batch 4 carried nine color and size mismatches on the worker output where the delta
   ranged from "one shade off" to "not even close" (`#CCCCCC` for measured `#FFFFFF`, four
   different wrong reds for one button color, a 40px headline where the ramp said 36 and 40
   was not on the ramp at all).
@@ -1190,7 +1190,7 @@ This mapping covers almost everything you will meet:
 mobile decision is structural (mj-group vs loose columns), made in step 2, and it does not live
 in Mobile Styles data. An earlier version of this skill made this step "merge the mobile twin"
 and skipped it silently on unstructured legacy sources with no mobile frames, which is where the
-Portsmouth batch shipped with header lockups that stacked on mobile. Do not repeat that. This is
+Batch 2 batch shipped with header lockups that stacked on mobile. Do not repeat that. This is
 the ONE mobile checkpoint every module gets, twin or no twin.
 
 **Part A: for every multi-column section, record the stacking decision.**
@@ -1263,7 +1263,7 @@ properties you added, and why, in the module's report line.
 module-root level**, named `Button label` on a single-CTA module or `Card 1 button label`,
 `Card 2 button label` in a grid. The foundation button component already owns a Label
 property; that property is not surfaced on instances placed inside a module unless the
-module root re-exposes it. Portsmouth shipped 18 buttons across 18 modules, every one with
+module root re-exposes it. Batch 2 shipped 18 buttons across 18 modules, every one with
 a working label property on the foundation and none of them surfaced at the module the
 marketer instances, so a user following the Getting Started page could not change any CTA
 copy from the top-level property panel. The Show button BOOLEAN is a separate decision from
@@ -1302,7 +1302,7 @@ checklist at the end of `references/render-spec.md`:
 - Structural checklist, and each of these is a walk-and-list, not a walk-and-eyeball. **List
   every violation by node id in the batch report; an empty list is the only pass.** A
   "walked the tree, looked fine" pass is what shipped 18 alignment mismatches and 18
-  untagged button TEXT children on Portsmouth without a single line of the checklist
+  untagged button TEXT children on batch 2 without a single line of the checklist
   reporting anything:
   - `name` plugin data key resolves to a real tag on **every** tagged node (nothing relying
     on the layer-name fallback). Includes the TEXT child of every `mj-button`, which must
@@ -1311,7 +1311,7 @@ checklist at the end of `references/render-spec.md`:
   - Every leaf is a complete tagged pair.
   - **Both alignment axes match on every auto-layout frame** (`primaryAxisAlignItems`
     equals `counterAxisAlignItems`). This is the exporter contract, not a style preference:
-    a mismatched pair renders one way in Figma and another way in HTML. Portsmouth shipped
+    a mismatched pair renders one way in Figma and another way in HTML. Batch 2 shipped
     18 mismatches, propagated to 37 across three campaigns through instances. Walk every
     auto-layout frame; report each mismatch as `<node id>: primary=X, counter=Y`.
   - No detached instances.
@@ -1345,7 +1345,7 @@ checklist at the end of `references/render-spec.md`:
   module and list each padding with the role and system value it satisfies; a padding that resolves
   to nothing is a fail, and the remedy is a designer question about the system, not a silent
   override inside the module. This is a cross-module check by nature: a per-module value looks
-  reasonable on its own and produces the Portsmouth defect (thirty distinct side insets across
+  reasonable on its own and produces the batch 2 defect (thirty distinct side insets across
   twenty-eight modules, one of them broken on mobile) the moment the batch grows. Confirm too that
   no mobile padding is greater than 160px on a 320 viewport, because that is a defect regardless of
   what the system carries.
@@ -1366,7 +1366,7 @@ checklist at the end of `references/render-spec.md`:
   (`brand background`, `headline text`, `button background`, `divider`, `footer fill`, and
   so on). Empty list is the only pass. Placeholder gray fills for editable image regions are
   the only allowed exception, and each one gets a line saying it is an intentional
-  placeholder. Portsmouth shipped 43 unbound fills (31 real, 12 placeholder) and every
+  placeholder. Batch 2 shipped 43 unbound fills (31 real, 12 placeholder) and every
   downstream color change had to touch each of the 31 by hand, which is exactly the state
   a design system is meant to remove. When an unbound fill has no theme role, that is a
   question for the designer about extending the palette, not a silent leave-it-raw.
@@ -1412,7 +1412,7 @@ checklist at the end of `references/render-spec.md`:
   height by that margin. Detect the content bands (runs of non-canvas pixels) in the source
   PNG and in the rebuild PNG, diff the two, and derive exact padding corrections from the
   difference. That turns a subjective back-and-forth loop into a deterministic two-pass one,
-  and on Portsmouth it got 24 of 28 modules onto their source height. The technique is the
+  and on batch 2 it got 24 of 28 modules onto their source height. The technique is the
   same shape as the band detection the audit uses for module boundaries; the difference is
   that here it fires on one module at a time and produces a padding number rather than a
   boundary.
@@ -1451,7 +1451,7 @@ checklist at the end of `references/render-spec.md`:
 Everything in step 5 is a Figma-side check. The plugin's exporter is what decides whether a
 group overflows, whether a button goes full width, whether an image scales, and no other step
 in this phase looks at its output. A batch that passes every Figma check can still ship with
-mobile defects that only exist in the exported HTML: on Portsmouth this ate five rounds of
+mobile defects that only exist in the exported HTML: on batch 2 this ate five rounds of
 design review, each spent reverse-engineering exporter behavior by pixel-measuring preview
 PNGs, when one export read would have surfaced the group overflow, the button width and the
 fluid-image behavior together in the first batch.
@@ -1483,7 +1483,7 @@ Once per batch, after the individual modules have passed step 5:
   - **Column widths add up.** For each `mj-section`, the column `width` attributes plus any
     gutters should sum to the intended content box, and no single column should exceed the
     body width. A `mj-group` that overflows is visible here as a per-column width sum that
-    exceeds the section content width, and that is the failure mode Portsmouth's footer had
+    exceeds the section content width, and that is the failure mode batch 2's footer had
     for five rounds before it was caught.
 - **Record the four confirmations in the batch report** with the module name you sniffed. On
   a fail, do not open the review: fix the defect on the Figma side (that is where the export
@@ -1492,7 +1492,7 @@ Once per batch, after the individual modules have passed step 5:
   that from happening.
 - **The sniff is not a replacement for step 5**, it is a second-pass check on a different
   artifact. A module that passes both is much less likely to surface a mobile defect at
-  design review. A module that passes step 5 alone is Portsmouth.
+  design review. A module that passes step 5 alone is batch 2.
 
 ### 7. Batch report and gate
 
@@ -1515,7 +1515,7 @@ until the user says the review happened.
 
 **Before hand-off, walk every campaign root on the Campaigns page and confirm each is safe
 to send.** A migration that ships modules the plugin can render but campaigns that will fail
-in a real inbox is not done. The Portsmouth Codex review found this exact gap on a delivered
+in a real inbox is not done. The batch 2 Codex review found this exact gap on a delivered
 file: three campaign roots, zero shared `href` values, zero shared `altText`, blank subject
 and preheader on all three, one campaign root with a blank `lightThemeBackgroundColor`,
 placeholder legal copy and the literal word `Address` in the footer. Fix every violation

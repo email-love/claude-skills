@@ -48,19 +48,19 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.34.0 (minor: new required checklist rule + new render-spec subsection).
 
 ### 1.33.2
-- **Cloudflare 403 `error code: 1010` workaround documented** (Red Paddle defect, closes
+- **Cloudflare 403 `error code: 1010` workaround documented** (batch 4 defect, closes
   queue). Phase 3 step 1 POST-to-worker instructions now say: if the worker returns 403
   with body `error code: 1010`, it is a Cloudflare browser check, not an auth failure.
   Retry with a normal browser User-Agent header; the Bearer/provider headers are correct
   as documented.
-- Rationale: Red Paddle agent hit this and every POST returned 403 with body
+- Rationale: Batch 4 hit this and every POST returned 403 with body
   `error code: 1010`. Auth was irrelevant (empty Bearer, no Bearer, and a real token all
   failed identically); setting a browser User-Agent fixed it instantly. The 403 sat next
   to Bearer/license-key instructions, so the natural conclusion was an auth problem.
 - Bumps to 1.33.2 (patch: infrastructure workaround note).
 
 ### 1.33.1
-- **`mj-navbar` mapping documented** (Red Paddle defect). Render-spec section 6.1 note now
+- **`mj-navbar` mapping documented** (batch 4 defect). Render-spec section 6.1 note now
   says: when the worker returns `mj-navbar`, do not invent a mapping. Rebuild as one
   `mj-text` node whose characters carry every label, with `setRangeHyperlink` per label,
   separated by a normal space plus non-breaking spaces so the visible gap survives HTML
@@ -70,14 +70,13 @@ independent per skill. Every release attaches all three `.skill` bundles.
   reflows (a group of pinned columns cannot, per section 3.3.2), and it satisfies audit
   constraints of the form "split the single text run into N separately linked items"
   without a per-item column.
-- Rationale: Red Paddle met `mj-navbar` twice and improvised twice, ending at the
+- Rationale: Batch 4 met `mj-navbar` twice and improvised twice, ending at the
   reflowing-text shape both times. Task #42's four-item nav shipped this way after the
   group build failed twice.
 - Bumps to 1.33.1 (patch: documentation of a mapping the skill previously punted on).
 
 ### 1.33.0
-- **Check the font is installed before building the ramp; know the substitute** (Red
-  Paddle defect). Phase 2 step 3 (Type mapping) now says: call
+- **Check the font is installed before building the ramp; know the substitute** (batch 4 defect). Phase 2 step 3 (Type mapping) now says: call
   `figma.listAvailableFontsAsync()` and look for the target family by name before building.
   The Figma environment an agent runs in typically serves Google Fonts only (about 1,900
   families); Helvetica, Helvetica Neue, and Arial are all absent even though they are the
@@ -95,7 +94,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.33.0 (minor: new Phase 2 step 3 rule + external tool call added).
 
 ### 1.32.2
-- **Open every exported PNG before uploading it** (Red Paddle defect). Render-spec 4.2.1
+- **Open every exported PNG before uploading it** (batch 4 defect). Render-spec 4.2.1
   now has an explicit step between download and upload: open the PNG and look at it. Three
   failure modes named, each of which presents as a layout bug rather than an asset bug:
   baked-in white (a node whose own background is white exports opaque and reads as a white
@@ -103,20 +102,20 @@ independent per skill. Every release attaches all three `.skill` bundles.
   band color for photographic cutouts), neighbour's content (check the crop's far edge
   against where the adjacent column starts, not against the source node's declared width;
   a node can be wider than its visible content), and fused row not missing (already 4.2.2).
-- Red Paddle: four asset defects, all presented as layout bugs. The T-shirt one baked in
+- Batch 4: four asset defects, all presented as layout bugs. The T-shirt one baked in
   28px of the neighbouring column's text; the layout got chased twice and the component
   rebuilt once before anyone opened the PNG.
 - Bumps to 1.32.2 (patch: enhancement to existing 4.2.1 rule).
 
 ### 1.32.1
-- **Cap-height measurement method** for settling type-size disagreements (Red Paddle
+- **Cap-height measurement method** for settling type-size disagreements (batch 4
   defect). New render-spec section 5.2.1: when the worker returns a size and the ramp says
   a different one, or when two plausible sizes disagree by 4 pixels, crop tightly to one
   line, threshold to isolate glyphs, measure pixel ink height, compare against a known
   reference in the same casing via `size = knownSize * (measuredCapHeight / knownCapHeight)`.
   Compare all-caps against all-caps and mixed-case against mixed-case (ascenders and
   descenders change the ratio). Round onto the audit's ramp, never to the nearest round
-  number. Red Paddle references: 28px all-caps measured 20px ink, 36px mixed-case measured
+  number. Batch 4 references: 28px all-caps measured 20px ink, 36px mixed-case measured
   33px.
 - Task #45's worker-vs-measurement rule now references this section as the actual method.
 - Inserted as 5.2.1 rather than a new top-level section so existing 5.3-5.6 references
@@ -124,7 +123,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.32.1 (patch: method documentation for an existing discipline).
 
 ### 1.32.0
-- **STRUCTURE from worker, NUMBERS from measurement** (Red Paddle defect). Phase 3 step 2
+- **STRUCTURE from worker, NUMBERS from measurement** (batch 4 defect). Phase 3 step 2
   "unpinned drifts" bullet rewritten to say plainly what the old wording undersold: the
   worker is a very good structure detector (find columns, rows, stacking order, which
   things are buttons, and sometimes structural fixes the source does not advertise) but
@@ -135,16 +134,16 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - **A size the worker returns that is not on the audit's ramp is the loudest signal it
   guessed.** The ramp is the specification; a 40 where the ramp says 36 is a per-module
   factor sneaking back in.
-- **A gap in the ramp is a decision for foundations, not for batch 3** (Red Paddle defect).
+- **A gap in the ramp is a decision for foundations, not for batch 3** (batch 4 defect).
   Phase 2 step 3 Type specimen instruction now says: if the specimen shows a jump with
   nothing between it, look at the source for content that would sit in the gap (eyebrows,
   captions, small subheads); if any exists, add the step now and record it as a
-  standardisation. Red Paddle foundations report predicted this exact cost and deferred
+  standardisation. Batch 4 foundations report predicted this exact cost and deferred
   anyway; three modules in batch 3 wanted exactly the missing 20px step.
 - Bumps to 1.32.0 (minor: rewritten bullet in Phase 3 step 2 + new rule in Phase 2 step 3).
 
 ### 1.31.1
-- **`unsubscribe.com` magic link convention documented inline** (Red Paddle defect). Phase
+- **`unsubscribe.com` magic link convention documented inline** (batch 4 defect). Phase
   2 inline plugin data key section now carries a "Magic link values the exporter rewrites"
   table listing `unsubscribe.com` as the href the exporter substitutes with the selected
   ESP's unsubscribe merge tag at export time. Works on text, buttons, and images. Never
@@ -153,14 +152,14 @@ independent per skill. Every release attaches all three `.skill` bundles.
   being portable, which is the whole point of the magic value.
 - Send-readiness pass at hand-off (task #35) updated to name `unsubscribe.com` as the
   default unsubscribe target so an agent building a footer reaches for the portable value.
-- Rationale: Red Paddle agent could not determine the ESP, invented
-  `https://www.redpaddleco.com/unsubscribe-placeholder`, wrote it into the footer, and
+- Rationale: Batch 4 could not determine the ESP, invented
+  `https://www.example.com/unsubscribe-placeholder`, wrote it into the footer, and
   escalated as "the one item that is a legal problem, not a polish problem". The answer
   was one word. Source: `help.emaillove.com/plugin/links/unsubscribe`.
 - Bumps to 1.31.1 (patch: documentation of an existing plugin convention).
 
 ### 1.31.0
-- **Mobile visual: render it, do not reason about it** (Red Paddle defect). Phase 3 step 5
+- **Mobile visual: render it, do not reason about it** (batch 4 defect). Phase 3 step 5
   Visual bullet rewritten. Figma's canvas has no mobile breakpoint, so `get_screenshot` at
   390px just renders desktop-shaped pixels at 390px, not the plugin's mobile treatment.
   The old "second screenshot pair at mobile width" instruction silently degraded to a
@@ -173,14 +172,14 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Order stated for migrations: build the batch, upload provisionally, render, diff, only
   then open the next batch. A construction mistake found at batch 1 is one fix; at batch
   5 it is five.
-- Rationale: three of the four Red Paddle corrections were mobile-only, every one caught
+- Rationale: three of the four batch 4 corrections were mobile-only, every one caught
   by the customer manually exporting screenshots from the plugin and sending a zip. The
   customer should not be the mobile test harness when there is an MCP tool for it.
 - Bumps to 1.31.0 (minor: workflow change to Phase 3 step 5 verification).
 
 ### 1.30.0
 - **New render spec section 3.3.2: group columns shrink on mobile, and 3.3.1 does not
-  protect them** (Red Paddle defect). Section 3.3.1 protects a pinned column against font
+  protect them** (batch 4 defect). Section 3.3.1 protects a pinned column against font
   drift at the pinned width; it does nothing about the other risk which only exists for
   group columns: a group never stacks so its columns shrink proportionally at every
   smaller viewport. Formula: `resolved = columnWidth / groupWidth * (mobileViewport - side padding)`.
@@ -191,7 +190,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
   usually not available because widths must sum to the content box.
 - **Phase 3 step 5 checklist gets a new "group columns resolve wide enough on mobile"
   bullet** referencing 3.3.2. Empty violation list is the only pass.
-- Rationale in the skill: Red Paddle shipped a four-item nav pinned at 137/86/133/89 in
+- Rationale in the skill: Batch 4 shipped a four-item nav pinned at 137/86/133/89 in
   a 560 group that rendered `CHA/NGI/NG`, `G/E/A/R`, `CLO/THIN/G`, `GI/F/T/S` at 375px;
   the 86px GEAR column resolved to 51px which cannot hold "GEAR" at 17px. Invisible on
   the Figma canvas and in the desktop preview by construction. Also caught a second
@@ -200,13 +199,13 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ### 1.29.0
 - **Getting Started page: HUG height, screenshot verification, accurate image workflow**
-  (Portsmouth v3 defect, closes queue). Phase 2 Getting Started page section now says: the
+  (Batch 3 defect, closes queue). Phase 2 Getting Started page section now says: the
   frame is vertical HUG with clipsContent OFF, never a fixed height (a fixed height clips
-  the content invisibly and the page functionally disappears; Portsmouth shipped a
+  the content invisibly and the page functionally disappears; batch 2 shipped a
   100px-fixed frame that clipped 940px of instruction text and the page rendered as the
   bottom edge of its own title). After writing the block, screenshot the whole page and
   confirm every line is visible; a screenshot that shows only the title is a fail.
-- **Image workflow described accurately, not the way it was described on Portsmouth.**
+- **Image workflow described accurately, not the way it was described on batch 2.**
   Text is edited through component properties (correct); images are edited by selecting the
   image rectangle inside the instance and replacing its image fill (correct), never by
   detaching or reparenting. Figma has no image component-property type, so the wording
@@ -215,17 +214,17 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Phase 2 completion checklist Getting Started bullet updated with both requirements
   (HUG-not-fixed, image workflow accuracy) so the check surfaces both defects before the
   next step runs.
-- Bumps to 1.29.0 (minor: closes Portsmouth v3 queue, Codex findings 1 and 5).
+- Bumps to 1.29.0 (minor: closes Batch 3 queue, Codex findings 1 and 5).
 
 ### 1.28.0
-- **Button label MUST be exposed at module-root level** (Portsmouth v3 defect). Phase 3 step 4
+- **Button label MUST be exposed at module-root level** (Batch 3 defect). Phase 3 step 4
   (properties): every module that contains a button re-exposes the foundation button's Label
   as a TEXT property on the module root, named `Button label` (single-CTA) or
   `Card N button label` (grid). The foundation button's Label property is not surfaced on
   instances placed inside a module unless the module root re-exposes it.
 - Phase 3 step 5 checklist adds: any module with a button and no top-level Button label
   property is a fail. List by node id each button whose label is not surfaced at module level.
-- Rationale: Portsmouth shipped 18 buttons across 18 modules, each with a working label
+- Rationale: Batch 2 shipped 18 buttons across 18 modules, each with a working label
   property on the foundation and none surfaced at the module the marketer instances, so a
   user following the Getting Started page could not change any CTA copy from the top-level
   property panel.
@@ -234,35 +233,35 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.28.0 (minor: new required property rule, closes Codex finding 6).
 
 ### 1.27.0
-- **New WCAG contrast table in the Phase 2 foundations report** (Portsmouth v3 defect).
+- **New WCAG contrast table in the Phase 2 foundations report** (Batch 3 defect).
   For every text-on-fill pairing the theme will render (textColor on backgroundColor,
   linkColor on backgroundColor, buttonTextColor on buttonContentColor, plus explicit
   text-on-brand pairings), compute the WCAG contrast ratio, label each `pass` or `fail`
   with the ratio, and flag pairings that fail 4.5:1 for normal text or sit at the 3:1
   large-text floor.
-- Rationale in the skill: Portsmouth shipped `color/text/accent = #009EE2` at 3.00:1 on
+- Rationale in the skill: Batch 2 shipped `color/text/accent = #009EE2` at 3.00:1 on
   white and used it on 18px bold subheads (which requires 4.5:1 under WCAG AA). The
   darker `blue/700 = #0078B4` reaches 4.83:1 on white; the contrast table is what
   surfaces the choice before the designer confirms the palette.
 - Bumps to 1.27.0 (minor: new required report row, closes Codex finding 9).
 
 ### 1.26.0
-- **New Phase 3 step 5 verification line: semantic-token bind count** (Portsmouth v3
+- **New Phase 3 step 5 verification line: semantic-token bind count** (Batch 3
   defect). Every non-placeholder solid fill in a module must resolve to a variable binding
   from the audit's Palette, not to a raw hex. Walk every fillable node, list unbound solid
   fills by node id with the raw hex and the role they should have (brand background,
   headline text, button background, divider, footer fill). Empty list is the only pass.
   Placeholder gray fills for editable image regions are the only allowed exception, each
   named as an intentional placeholder.
-- Rationale in the skill: Portsmouth shipped 43 unbound fills (31 real, 12 placeholder)
+- Rationale in the skill: Batch 2 shipped 43 unbound fills (31 real, 12 placeholder)
   and every downstream color change had to touch each of the 31 by hand, exactly the state
   a design system is meant to remove. When an unbound fill has no theme role, that is a
   question for the designer about extending the palette, not a silent leave-it-raw.
 - Bumps to 1.26.0 (minor: new required verification line, closes Codex finding 8).
 
 ### 1.25.1
-- **Enforcement teeth on Phase 3 step 5 structural rules** (Portsmouth v3 defect). Rules
-  that shipped violated on Portsmouth (18 alignment axis mismatches, 18 untagged button
+- **Enforcement teeth on Phase 3 step 5 structural rules** (Batch 3 defect). Rules
+  that shipped violated on batch 2 (18 alignment axis mismatches, 18 untagged button
   TEXT children) get list-every-violation-by-node-id treatment. Empty list is the only
   pass. A "walked the tree, looked fine" pass is what shipped those defects with no
   checklist line reporting them.
@@ -275,9 +274,9 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.25.1 (patch: enforcement tightening on existing rules, no new behavior).
 
 ### 1.25.0
-- **New "Send-readiness pass on every campaign" step at Hand-off** (Portsmouth v3 defect).
+- **New "Send-readiness pass on every campaign" step at Hand-off** (Batch 3 defect).
   Before the hand-off conversation, walk every mainFrame campaign root and confirm each is
-  safe to send. Portsmouth's Codex review found the delivered file had zero shared hrefs,
+  safe to send. Batch 2 or 3's Codex review found the delivered file had zero shared hrefs,
   zero shared altText, blank subject and preheader on all three campaigns, one root with
   blank lightThemeBackgroundColor, placeholder legal, and the literal word "Address" in the
   footer.
@@ -293,9 +292,9 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.25.0 (minor: new required step at Hand-off, converter behavior change).
 
 ### 1.24.0
-- **Inline plugin-data key table at the top of Phase 2** (Portsmouth v2 defect, last of the
+- **Inline plugin-data key table at the top of Phase 2** (Batch 2 defect, last of the
   queue). The skill cites `references/render-spec.md` and `references/structure.md` by
-  section number 23 times. Portsmouth received a converter bundle where those files were
+  section number 23 times. Batch 2 received a converter bundle where those files were
   absent (a v1.19.1 packaging bug, since fixed) and spent five rounds of design review
   hunting for load-bearing plugin data keys the SKILL.md would not surface. This adds:
   - A precondition check at the top of Phase 2 that confirms both reference files are
@@ -306,7 +305,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
     theme keys on the mainFrame root, optional email meta, `fullWidth`, `stackColumns`,
     `reverseStack`, `href`, `altText`), with what goes where and what it does.
   - A named "NOT shared plugin data keys" section covering four mobile behaviors
-    Portsmouth spent rounds hunting for that turned out to be Figma-side, not data-side:
+    Batch 2 spent rounds hunting for that turned out to be Figma-side, not data-side:
     full-width mobile button (`layoutSizingHorizontal='FILL'` on `mj-button`),
     fluid-on-mobile image (width-relationship to column content width), mobile padding
     overrides (node properties, not shared keys), mobile column stacking (`stackColumns`
@@ -315,11 +314,11 @@ independent per skill. Every release attaches all three `.skill` bundles.
   table is the irreducible contract that makes the skill functional even when a bundle
   ships without references (which should never happen again, but the belt-and-braces is
   worth the forty lines).
-- Bumps to 1.24.0 (minor: material additions to Phase 2 preamble, closes Portsmouth v2
+- Bumps to 1.24.0 (minor: material additions to Phase 2 preamble, closes Batch 2
   queue).
 
 ### 1.23.0
-- **Render-once-crop-locally documented for unstructured sources** (Portsmouth v2 technique).
+- **Render-once-crop-locally documented for unstructured sources** (Batch 2 technique).
   Phase 3 step 1 (screenshot the module) now says: on an unstructured source, render the whole
   design page once at 1:1 and crop locally per module. Per-node `get_screenshot` calls fail on
   a file with no grouping because a loose rectangle comes back rendered in isolation without
@@ -327,23 +326,23 @@ independent per skill. Every release attaches all three `.skill` bundles.
   z-order. One full-canvas render costs one call and gives exact pixels for every module the
   audit's source refs bound. On an email-native source with proper components, per-node
   screenshots remain correct; the choice is per source, not per module.
-- **Band detection for padding correction** (Portsmouth v2 technique). Phase 3 step 5 visual
+- **Band detection for padding correction** (Batch 2 technique). Phase 3 step 5 visual
   check now includes: on a module that comes out 20-40px too tall (the common first-pass
   overshoot because Figma text renders taller than the hand-placed box reports), detect
   content bands in the source PNG and the rebuild PNG, diff them, and derive exact padding
   corrections from the difference. Turns a subjective back-and-forth loop into a deterministic
-  two-pass one. On Portsmouth this got 24 of 28 modules onto their source height.
-- **Nav bar worked example added to the mj-group visual tells** (Portsmouth v2 exception).
+  two-pass one. On batch 2 this got 24 of 28 modules onto their source height.
+- **Nav bar worked example added to the mj-group visual tells** (Batch 2 exception).
   A row of five or more nav links does NOT survive as a group: the exporter divides body
   width by column count and per-link boxes come out narrower than a single word, breaking
   words mid-letter at phone width. Ungrouped columns stack cleanly, one link per row, and
   that is the shipped shape. Recorded as "loose columns, stack expected, no keys set, nav
-  bar exceeds group-safe width" in step 3 Part A. On Portsmouth this cost two attempts
+  bar exceeds group-safe width" in step 3 Part A. On batch 2 this cost two attempts
   before landing on the stacked build.
 - Bumps to 1.23.0 (minor: two new techniques documented, one worked example).
 
 ### 1.22.0
-- **New Phase 3 step 6: export sniff test (once per batch)** (Portsmouth v2 defect). Every
+- **New Phase 3 step 6: export sniff test (once per batch)** (Batch 2 defect). Every
   check in step 5 is Figma-side, and the plugin's exporter is what decides whether a group
   overflows, whether a button goes full width, whether an image scales. A batch that passes
   every Figma check can still ship with mobile defects that only exist in the exported HTML.
@@ -353,7 +352,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
   exists, mobile classes are present for anything that should stack or go full-width
   (`mj-column-per-100`, `mj-b-full`), and per-section column widths add up to the intended
   content box.
-- Rationale in the skill: on Portsmouth this ate five rounds of design review, each spent
+- Rationale in the skill: on batch 2 this ate five rounds of design review, each spent
   reverse-engineering exporter behavior by pixel-measuring preview PNGs, when one export
   read would have surfaced the group overflow, the button width and the fluid-image
   behavior together in the first batch. The sniff is a second-pass check on a different
@@ -364,14 +363,14 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.22.0 (minor: new required step in Phase 3).
 
 ### 1.21.0
-- **The render-node-not-fill rule now fires in TWO phases, not one** (Portsmouth v2 defect).
+- **The render-node-not-fill rule now fires in TWO phases, not one** (Batch 2 defect).
   It always existed in Phase 2 step 6 (assets round-trip). Phase 3 step 1 (screenshot the
   module) now carries it too, because the mistake happens where the pipeline is: on
-  Portsmouth the hero photograph was cropped out of a canvas render and the overlapping
+  Batch 2 the hero photograph was cropped out of a canvas render and the overlapping
   white card baked into the image, producing a ghost headline inside the picture that only
   surfaced at the visual check. A bulk canvas-crop pass for efficiency in either phase is
   the failure mode; export each image node individually, even when it is slower.
-- **Logos are never resized to fit** (Portsmouth v2 defect). Phase 2 step 6 now says the
+- **Logos are never resized to fit** (Batch 2 defect). Phase 2 step 6 now says the
   intrinsic size is the source of truth: do not stretch a logo to fill a column, scale it
   up to match a hero image, or fold it into a "grow inset images to fill their column" pass.
   Separate rule from image sizing, because a stretched logo damages a brand asset the
@@ -381,7 +380,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ### 1.20.0
 - **Phase 2 now reads the audit's Spacing system section and builds every module against it,
-  not against per-module source values** (Portsmouth v2 headline defect). The audit's census
+  not against per-module source values** (Batch 2 headline defect). The audit's census
   consolidated the source's ad-hoc side insets, vertical rhythm, gutters, card paddings and
   their mobile equivalents into one system per role with a designer decision on each; that
   system is what every module in every batch inherits. Named exceptions (full-bleed image
@@ -392,19 +391,19 @@ independent per skill. Every release attaches all three `.skill` bundles.
   question about the system rather than a silent per-module override. Also confirms no mobile
   padding is greater than 160px on a 320 viewport (a defect regardless of what the system
   carries).
-- Rationale in the skill: Portsmouth shipped with 30-plus distinct side inset values across
+- Rationale in the skill: Batch 2 shipped with 30-plus distinct side inset values across
   28 modules and one that broke on mobile (220/221 on a 320 viewport), and every batch
   report passed. The per-module measurement was exactly how it happened.
 - Bumps to 1.20.0 (minor: new mandatory verification line, converter behavior change).
 
 ### 1.19.3
-- **Mobile stacking now has a mandatory checkpoint** (Portsmouth batch 1 defect). Phase 3
+- **Mobile stacking now has a mandatory checkpoint** (Batch 1 defect). Phase 3
   step 3 renamed from "Merge the mobile twin" to "Decide mobile behavior" and split into
   Part A (always runs: record a stacking decision per multi-column section) and Part B
   (conditional: merge the mobile twin if one exists). The old skill silently skipped step 3
   when there was no mobile twin, which is the common case on unstructured legacy sources,
   and shipped header lockups that stacked on mobile as a result.
-- **The mj-group rule has concrete visual tells now** (Portsmouth defect same class). New
+- **The mj-group rule has concrete visual tells now** (batch 2 defect same class). New
   bullet in the "visual pattern" section names three tells for a lockup: unequal columns
   with one small and fixed, columns sharing a continuous background, or the block being a
   header or footer strip. Patterned on the bleed concession's "recognizing this is its own
@@ -413,7 +412,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
   mobile keys you set" (empty list read as a pass) to require an explicit stacking decision
   per multi-column section plus the keys that produce it. Visual check now takes a second
   screenshot at mobile width so group-vs-loose-columns mistakes surface visually.
-- **Wrapper instance sizing documented** (Portsmouth defect 2). Phase 2 step 7 and Phase 3
+- **Wrapper instance sizing documented** (batch 2 defect 2). Phase 2 step 7 and Phase 3
   step 5 both state: a wrapper is FIXED at the target email width, as a component and as
   every instance of it. Section 0's FILL rule applies inside a wrapper, not to the wrapper
   itself. Previously silent, so the inside-a-module default got misapplied one level up.
@@ -443,22 +442,22 @@ independent per skill. Every release attaches all three `.skill` bundles.
 ## emaillove-migration-audit
 
 ### 1.18.0
-- **Palette census now clusters by ROLE as well as by VALUE** (Red Paddle defect enhancement
+- **Palette census now clusters by ROLE as well as by VALUE** (batch 4 defect enhancement
   to task #34). Sample text-node fills as well as background fills; the same hex used as a
   band and as text on white are TWO theme tokens, not one, because the theme layer needs
   to move them independently. A palette built from `fills` alone finds bands and buttons
   and misses type, which is how a nav link `#888888` and a body color `#222222` used only
-  on text disappear from a theme roles list. Red Paddle shipped both cases and the
+  on text disappear from a theme roles list. Batch 4 shipped both cases and the
   converter added both mid-batch.
 - **Type ramp floor recommendation.** Where the smallest cluster is below 12px, the audit
   now recommends a floor at 12 (or a customer-confirmed floor). The conversion will have
   to standardise below-12 upward anyway (Android and Outlook garbling, readability), and
-  it is better decided at audit than at batch 4. Red Paddle: value-prop captions at ~11px
+  it is better decided at audit than at batch 4. Batch 4: value-prop captions at ~11px
   standardised up to 12 mid-build; the audit would surface the decision now.
 - Bumps to 1.18.0 (minor: two audit-behavior enhancements, no report structure change).
 
 ### 1.17.0
-- **Palette is now CENSUSED, not sampled** (Portsmouth v3 defect). Step 6 palette bullet
+- **Palette is now CENSUSED, not sampled** (Batch 3 defect). Step 6 palette bullet
   rewritten to enumerate every distinct fill hex in the file, cluster near-duplicates within
   a small delta (2-3 units per channel), report each cluster with source hex, count of fills
   using it, and modules it appears on. Same shape as the type ramp and spacing censuses.
@@ -468,7 +467,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
   delta** so a designer approving the theme approves the drift too and does not read a
   lightened value as source fidelity. Additional source colors not carried into theme roles
   listed at the bottom so nothing is silently dropped.
-- Rationale in the skill: Portsmouth's Codex review found four accent primitives lightened
+- Rationale in the skill: Batch 2 or 3's Codex review found four accent primitives lightened
   from source (Pink #C4014B -> #D03E75, Magenta, Teal, Orange) with no documentation of the
   drift, and two source colors absent from the theme entirely (a decorative green, a bright
   blue). The palette section prevents undocumented drift and silent drops.
@@ -477,7 +476,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.17.0 (minor: new required report section, audit behavior change).
 
 ### 1.16.0
-- **Band-detection technique for module boundaries on unstructured sources** (Portsmouth v2
+- **Band-detection technique for module boundaries on unstructured sources** (Batch 2
   technique). Step 5 pass 1 (split each design into blocks) now says: on an unstructured
   source, render the whole design at 1:1 and detect content bands from the pixels. Rows of
   pure canvas background between text and imagery are the gaps between modules; transitions
@@ -489,14 +488,14 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.16.0 (minor: audit technique added, no report structure change).
 
 ### 1.15.0
-- **Type ramp is now CENSUSED, not sampled** (Portsmouth v2 defect). Step 6 replaces the old
+- **Type ramp is now CENSUSED, not sampled** (Batch 2 defect). Step 6 replaces the old
   "each of their text styles mapped" opener with a full census: enumerate every distinct
   `(family, size, weight, line-height)` tuple in the file. On a file with text styles the
   census is the styles page plus any local overrides; on a file without text styles it is a
   walk over every text node across every design surveyed in Step 2. Cluster tuples within a
   point or two of each other, and treat each cluster as one ramp row. The mapping table then
   gets populated from the census, not from what was sampled in content modules.
-- Rationale in the skill: Portsmouth ran the sampling version and missed the nav-link style
+- Rationale in the skill: Batch 2 ran the sampling version and missed the nav-link style
   (15px bold) and the quote style (24/38), both of which had to be added mid-conversion.
   The scale-factor ratio test still passed, because the missing sizes fell inside the
   existing range: the arithmetic gate catches a distorted ramp but not an incomplete one.
@@ -506,7 +505,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
 - Bumps to 1.15.0 (minor: audit behavior change, no report structure change).
 
 ### 1.14.0
-- **Spacing is now CENSUSED, not sampled** (Portsmouth v2 headline defect). Step 6 replaces
+- **Spacing is now CENSUSED, not sampled** (Batch 2 headline defect). Step 6 replaces
   the old "spacing scale from any padding/spacer components" bullet with a full census: read
   every distinct spacing value from every module in Step 5, cluster by role (section side
   padding, vertical rhythm, gutter, card or inset padding, mobile equivalents), state each
@@ -521,7 +520,7 @@ independent per skill. Every release attaches all three `.skill` bundles.
   section instead.
 - Rationale in the skill: a design system's coherence is decided by spacing more than by any
   other quantity, and unlike scale it is invisible in any one module and only visible when
-  modules sit together. Portsmouth ran the old skill and passed every batch report with 30
+  modules sit together. Batch 2 ran the old skill and passed every batch report with 30
   distinct side insets across 28 modules, one broken on mobile.
 - Bumps to 1.14.0 (minor: new required report section, audit behavior change).
 
@@ -687,7 +686,7 @@ their actual MCP install and file corrections here.
 - Klaviyo and Customer.io adapters come in commits 2 and 3.
 
 ### 1.10.3
-- **Lockup rows are now a recognized build constraint** (Portsmouth batch 1 defect,
+- **Lockup rows are now a recognized build constraint** (Batch 1 defect,
   audit-side half). The build-constraints vocabulary now includes "a two-column row that
   reads as a visual lockup" (logo + headline, icon + copy, shared background, header or
   footer strips), which the row records as "`mj-group`; keep side by side on mobile".

@@ -1318,7 +1318,7 @@ The route, since `figma.createImageAsync` is unavailable to an agent:
    cost hours instead of minutes:
    1. **Baked-in white.** A node whose own background is white exports opaque,
       and dropped onto a colored band it reads as a white box. Symptom on
-      Red Paddle: a cart icon and a warranty diamond both rendered as white
+      Batch 4: a cart icon and a warranty diamond both rendered as white
       boxes on the blue and dark bands respectively, and the dry-bag product
       cutout rendered as a white block on the blue band. For line art, key the
       white to transparency and set the color explicitly; for a photographic
@@ -1328,7 +1328,7 @@ The route, since `figma.createImageAsync` is unavailable to an agent:
       (task #32's render-once-crop-locally technique), **check the crop's far
       edge against where the adjacent column starts**, not against the source
       node's declared width. A node can be wider than its visible content, and
-      the difference will be somebody else's text. Symptom on Red Paddle: a
+      the difference will be somebody else's text. Symptom on batch 4: a
       T-shirt photo baked in 28px of the neighbouring column's text (`Lor`,
       `L`, `con`, and a button edge), and the geometry read correct at every
       level (columns at the right x, right widths, no overlapping siblings), so
@@ -1628,7 +1628,7 @@ screenshot of the source and settle it arithmetically:
 **Compare all-caps against all-caps and mixed-case against mixed-case.**
 Ascenders and descenders change the cap-to-em ratio, so mixing casings drops a
 constant into the arithmetic and the answer shifts by two or three px. Two
-measured references from the Red Paddle migration: an all-caps line at 28px
+measured references from the batch 4 migration: an all-caps line at 28px
 measured 20px of ink; a mixed-case line at 36px measured 33px.
 
 **Round the result onto the audit's ramp, never to the nearest round number.**

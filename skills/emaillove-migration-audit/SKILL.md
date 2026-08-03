@@ -702,7 +702,7 @@ comes from Step 3's email standards, with no factor involved anywhere.
   customer's confirmed floor). The conversion will have to standardise below-12 values
   upward anyway (email clients garble smaller sizes on some Android and Outlook builds,
   and a 10 or 11 the source built to a monitor pixel size is not readable in most inboxes),
-  and that is better decided at audit than at batch 4. Red Paddle: the source had value-prop
+  and that is better decided at audit than at batch 4. Batch 4: the source had value-prop
   captions at approximately 11px, which the converter standardised up to 12 mid-build; a
   floor recommendation in the audit would have surfaced the decision at foundations.
 - **Palette, CENSUSED rather than sampled, and CLUSTERED BY ROLE.** Same shape and rationale
@@ -717,7 +717,7 @@ comes from Step 3's email standards, with no factor involved anywhere.
   not one, because the theme layer needs to move them independently: a designer who
   darkens the band should not also darken the caption. A palette built from `fills` alone
   finds bands and buttons and misses type; that is how a nav link `#888888` and a body
-  color `#222222` used only on text disappear from a theme roles list. Red Paddle shipped
+  color `#222222` used only on text disappear from a theme roles list. Batch 4 shipped
   both cases and the converter added both mid-batch.
   On a file with named paint styles this is the styles page plus any local overrides plus
   the text-node walk; on a file without styles it is a walk over every fillable node AND
@@ -862,7 +862,7 @@ On REFERENCE ONLY: the words `Not applicable, source is reference only`, then th
 scale the build uses instead (8, 16, 24, 32, 40, 48) with the one section side padding chosen off
 it. Never omit the section and never populate it with source measurements on this tier: whoever
 converts builds against whatever spacing system is here, and a per-module number reintroduces the
-Portsmouth defect the section exists to prevent.]
+Batch 2 defect the section exists to prevent.]
 ## Palette
 [REQUIRED as a section; same shape as Spacing system. The census from Step 6, one row per
 color cluster: source hex, count of fills that used it, module or modules it appears on.
@@ -955,7 +955,7 @@ can be an M. State the total in designer-days as a range, and say plainly that e
 after the first converted batch.]
 ## Recommended next step
 [The batch plan, naming modules by their Module inventory row names: foundations first, then
-batch 1 of about five of the highest-reuse modules, then the later batches, with a design review
+Batch 1 of about five of the highest-reuse modules, then the later batches, with a design review
 between batches. Then point at Step 8's two routes.]
 
 Numbers in the report come from your actual reads, never estimates presented as counts. Where
