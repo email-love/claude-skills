@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "9378899",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.38.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "9378899",
       "summary": "Batch 7 main body (two shakedown migrations on the plugin install; one ran the batch checks human-driven and caught two defects all arithmetic passed). Audit 1.19.0 to 1.20.0: cluster type tuples WITHIN a family never across (two families at one size = two rows); measure the button component never infer from palette census; apparent mj-* structure in source is a hint not a finding (narrow section = wrapper-padding constraint); get_metadata SSE limits (~80KB / non-ASCII) with use_figma chunked fallback. Converter 1.37.0 to 1.38.0: batch-check ownership established before module 1 + Deferred verification list when checks cannot run in-session; step 1 worker-vs-direct-tree-read decision (email-native sources read the tree); mask-from-geometry as first remedy for baked-in backgrounds (color keying fails at ~11 units/channel); 0.3.1 rewritten to two sanctioned exceptions (full-bleed bands + card/inset blocks) with band-edge invariant and group-sums-to-group note; 8.3 INSTANCE_SWAP snippet corrected for local components (node id + type COMPONENT); inline button construction (Figma rejects nested TEXT property remap); link-bearing text excepted from the 1.37.0 text-properties default (binding wipes hyperlink ranges); bordered groups pinned FIXED with width headroom (borders push column sum past 100 percent and wrap); group narrower-than-content-box + mobile viewport-spread notes; range writes read back via getStyledTextSegments; spacer fill clarified (bound SOLID when the spacer IS a band); Gelasio/Tinos metric clones + display-size caveat; step 5 read-back transport note.",
       "codexStatus": "Not yet ported. Batch 7 lands on top of the pending batch 6 port (v4.2.0 spec) and the verification consolidation + restructure. Recommend one combined v4.2.0 port spec refresh covering batch 6 + consolidation + batch 7 before handing to Codex; batch 6's corrections to disproven guidance remain the priority reason to port soon."
     },
