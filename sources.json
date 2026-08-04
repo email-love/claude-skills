@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "a17827d",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.40.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "a17827d",
       "summary": "Batch 9 (live migration: dark mode turned every card brand green; resolved in-file, rule extracted). Audit 1.20.0 to 1.21.0: contentColor is a global knob, never promote a single surface's brand hex into it; keep the neutral house default and record single-surface brand treatments (a band colored the same in both modes) as per-node override recommendations naming the module; promote to global only when the brand's dark treatment covers most content surfaces; show image-ink contrast against the recolored surface. Converter 1.39.0 to 1.40.0: theme-key priority sanity check mirroring the audit rule; sanctioned per-node override documented (write contentColor once on the module MAIN component, instances mirror shared plugin data, verified by instance read-back; conditional keys only, buttonContentColor/buttonTextColor stay the unconditional pair to avoid).",
       "codexStatus": "Not yet ported. Covered by the combined v4.2.0 Notion spec (page id 3b2eabcb-09b7-8172-bba1-f9c9cc8c3f5c), which is being refreshed to include this batch."
     },
