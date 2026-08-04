@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "1d251f8",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.36.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "1d251f8",
       "summary": "Verification consolidation (Andy-requested simplification): Phase 3 step 5 restructured from seventeen accreted prose checks into ONE read-back pass per module evaluating five predicate groups locally (shape and tags, sizing, geometry against foundations, fills and bindings, mobile data), violations by node id, plus one desktop screenshot. Step 6 renamed 'Batch checks': the mobile render (emaillove_preview_email) moves there beside the export sniff since both share the provisional-upload precondition and operate at batch level. New small-library allowance: 8 or fewer modules may run as ONE batch with one review before upload. No coverage lost; every measured case preserved compressed. Motivation: Figma round trips are the stated bottleneck and a 17-item list of separate walk instructions either costs N walks or gets skimmed. Bumps converter 1.35.0 to 1.36.0.",
       "codexStatus": "Not yet ported. Batch with the batch 6 port (v4.2.0 spec in Notion) or as a follow-up; the restructure commit that follows this one changes repo layout, so pin any port spec to a commit."
     },
