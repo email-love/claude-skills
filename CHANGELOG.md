@@ -64,6 +64,20 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.40.0
+Batch 9, converter side of the contentColor guardrail (see audit 1.21.0).
+
+- **Theme-key priority gains a sanity check** (render-spec 2.1): before writing the audit
+  proposal's contentColor, confirm it is not one surface's brand hex; that case is a
+  per-node override on the module, not the global value.
+- **The sanctioned per-node override documented** (render-spec 2.2): a module whose surface
+  keeps its brand color in both modes writes contentColor once on its MAIN component;
+  instances mirror shared plugin data (verified by writing only the main and reading the
+  key back through the instances inside two QA emails). The four conditional keys are safe
+  here because they emit only when they differ from the enclosing email;
+  buttonContentColor and buttonTextColor remain the unconditional pair to avoid.
+- Bumps to 1.40.0 (minor: reference guidance additions).
+
 ### 1.39.0
 Batch 8: four findings from the completed Batch 1 export cycle (the updated report added
 two defects found only in the exported HTML, one of them dark-mode-only).
@@ -643,6 +657,21 @@ that every arithmetic check passed).
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.21.0
+Batch 9: the dark-mode proposal's contentColor guardrail, from a live migration where the
+customer saw every card turn brand green in dark mode.
+
+- **contentColor is a global knob; never promote a single surface's brand color into it.**
+  The exporter recolors every filled content cell to the one contentColor, so an audit that
+  proposed the source footer's hex (an exact source value) turned every card in the library
+  green on the black page and put brand-green image ink on same-green cards at near 1:1.
+  New rule: contentColor stays at the neutral house default; a single-surface brand
+  treatment (a band that keeps its color in both modes) becomes a per-node override
+  recommendation naming the module. Promote a brand color to the global knob only when the
+  brand's own dark treatment demonstrably covers most content surfaces. The pairing table
+  still shows image-ink contrast against whatever each surface recolors to.
+- Bumps to 1.21.0 (minor: proposal guidance refinement).
 
 ### 1.20.0
 - **Cluster type tuples within a family, never across families** (batch 7 P0). Two typefaces

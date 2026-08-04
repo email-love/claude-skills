@@ -944,6 +944,20 @@ from the exporter's house defaults (`#000000` page, `#1F1F1F` content, `#FFFFFF`
 links, `#FFFFFF` button with `#000000` label) and adjusting only where the brand has a real
 dark treatment, with the WCAG contrast ratio shown per pairing so the designer approves
 legible values, not hex strings.
+**contentColor is a GLOBAL knob; never promote a single surface's brand color into it.**
+The exporter recolors EVERY filled content cell to the one contentColor in dark mode, so
+"the brand's only dark surface is green" does not make green the content proposal: it makes
+every card, strip, and band green on the black page. Measured: an audit proposed the source
+footer's hex as contentColor because it was an exact source value; every filled card in the
+library recolored to that brand color in dark mode, the customer read it as a defect, and
+brand-colored image ink (star rows, a quote glyph) landed on same-color recolored cards at
+near 1:1. Keep contentColor at the neutral house default and record a single-surface brand
+treatment (a footer band that keeps its color in both modes, say) as a PER-NODE override
+recommendation naming the module; the conversion writes it once on that module's main
+component. Promote a brand color to the global contentColor only when the brand's own dark
+treatment demonstrably covers most content surfaces. Either way, show the pairing table's
+contrast for image ink against whatever each surface recolors to, because images cannot
+recolor.
 Close with "designer decision" the same as Scale factor and Spacing system: the
 census is measurement, the theme mapping is a recommendation. On REFERENCE ONLY: the census
 runs, the theme roles map onto census clusters as normal, no theme value invented from
@@ -1870,7 +1884,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.20.0 of this skill. If you have web access, check once per conversation
+This is version 1.21.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

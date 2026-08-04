@@ -3,11 +3,11 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "c61f39e",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.39.0",
-      "emaillove-migration-audit": "1.20.0"
+      "emaillove-eds-converter": "1.40.0",
+      "emaillove-migration-audit": "1.21.0"
     }
   },
   "codexPlugin": {
@@ -17,6 +17,11 @@
     "note": "Next port: COMBINED v4.2.0 spec ready in Notion (page id 3b2eabcb-09b7-8172-bba1-f9c9cc8c3f5c, refreshed 2026-08-04, pinned to Claude commit f3304d8238e061d9a0dbbeafdd91a1d88b13264f), spanning all seven Claude commits since the v4.1.1 pin: batch 6 (23f0d9b), verification consolidation (1d251f8), restructure layout note (aa36f33), converter 1.37.0 text-properties default (d27f960), batch 7 (a9590ed + 9378899), batch 8 (c61f39e). HIGH PRIORITY: v4.0.0 guidance Codex still carries is disproven (mobile-keys-are-node-properties, dark-mode set-equal-to-light) and batch 8 adds the same-class filled-group dark-mode defect. This spec replaces the earlier batch-6-only version of the same page. v4.1.1 ported the one-commit multi-column gutter guardrail from claude-skills e6b532b as codex-agents commit ec6d896. Patch bump: one new Phase 3 step 5 blocking checklist bullet + one new render-spec subsection 3.4.0 (generalises 3.4.1's spacing-on-one-side rule to every multi-column row). Codex found this defect itself while building a three-column module during a v4.1.0 shakedown, so the fix self-catches now. v4.1.0 ported the 10-commit batch 4 from claude-skills (252bc05 through 73e3038) as codex-agents commit 3148c2b: mj-group mobile shrink formula (render-spec 3.3.2), mobile visual via emaillove_preview_email (not get_screenshot), unsubscribe.com magic link, STRUCTURE from worker + NUMBERS from measurement + ramp gaps at foundations, cap-height measurement method (render-spec 5.2.1), open every PNG before placing, Figma cloud fonts check + Arimo substitute, mj-navbar mapping, palette census by role + type ramp 12px floor, CF 403 error-code-1010 workaround. Minor bump because audit report structure is unchanged; no partly-audited migration breaks. v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1, v1.5 cloud adapters, v1.13 six more ESPs, Batch 2 (six defect fixes), Batch 3 (seven defect fixes). Major bump because audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). v3.0.1 previously ported model-choice guidance (c0719be) and Batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Batch 9 (live migration: dark mode turned every card brand green; resolved in-file, rule extracted). Audit 1.20.0 to 1.21.0: contentColor is a global knob, never promote a single surface's brand hex into it; keep the neutral house default and record single-surface brand treatments (a band colored the same in both modes) as per-node override recommendations naming the module; promote to global only when the brand's dark treatment covers most content surfaces; show image-ink contrast against the recolored surface. Converter 1.39.0 to 1.40.0: theme-key priority sanity check mirroring the audit rule; sanctioned per-node override documented (write contentColor once on the module MAIN component, instances mirror shared plugin data, verified by instance read-back; conditional keys only, buttonContentColor/buttonTextColor stay the unconditional pair to avoid).",
+      "codexStatus": "Not yet ported. Covered by the combined v4.2.0 Notion spec (page id 3b2eabcb-09b7-8172-bba1-f9c9cc8c3f5c), which is being refreshed to include this batch."
+    },
     {
       "claudeCommit": "c61f39e",
       "summary": "Batch 8 (updated Batch 1 report: export cycle completed, two new defects found only in exported HTML). Converter 1.38.0 to 1.39.0: never fill an mj-group (dark CSS has no group selector; fill-less children reset to background-color initial while text forced #FFFFFF = white-on-white; move fill to columns; filled group = step 5 FAIL); manage-preferences.com documented as second magic value with injection trap (plugin auto-links unlinked preference wording; backend swaps on Klaviyo only, literal third-party URL ships elsewhere; rule: always link preference text explicitly); third font-drift source in 3.3.1 (substituted family: source-measured column boundaries are stale, clone matches Arial not the replaced face; re-measure hug in the substituted face); band-with-decoration pattern (full-bleed mj-group, fill on copy column, art in decorative column with mobileStylesHideInMobileDevice; mj-section has no background-image mapping).",

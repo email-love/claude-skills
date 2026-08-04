@@ -663,6 +663,14 @@ Create a top-level FRAME on the target page. It may be a COMPONENT instead
   2. Where no audit proposal exists, use the house defaults above, which are
      the exporter's own dark CSS values, and flag for design review. Never
      substitute the light palette as a stand-in.
+  3. Sanity-check the proposal's `contentColor` before writing it: it recolors
+     EVERY filled content cell, so a brand hex that belongs to one surface (a
+     footer band that stays its color in both modes) is a per-node override on
+     that module (section 2.2), not the global value. Measured: a proposal that
+     promoted one surface's green to contentColor turned every card in the
+     library green in dark mode and put brand-green image ink on same-green
+     recolored cards at near 1:1. The global key takes the neutral default;
+     the surface keeps its color through the override.
 - Optional: `emailSubject`, `emailPreHeader` (plain strings).
 - Also give the root frame a visible SOLID fill of the body background so the
   canvas looks right.
@@ -729,7 +737,14 @@ moduleRoot.setSharedPluginData('emaillove', 'name', 'mj-wrapper')    // the ONLY
   to the enclosing email, so a module carrying them ships its own dark-mode CSS
   into every email it is placed in. A module inherits nothing and conflicts with
   everything, so the safe default for a converted module is **no theme keys at
-  all**; the email root supplies them.
+  all**; the email root supplies them. The one sanctioned per-node use from a
+  real migration: a module whose surface keeps its brand color in BOTH modes
+  (a footer band, say). Write `contentColor` with that hex on the module's
+  MAIN component, once: instances mirror shared plugin data (verified by
+  writing only the main and reading the key back through the instances inside
+  two QA emails). The four conditional keys are safe for this because they
+  emit only when they differ from the enclosing email; `buttonContentColor`
+  and `buttonTextColor` remain the unconditional pair to avoid.
 
 ### 2.3 The evidence, so this reads as ground truth rather than preference
 
