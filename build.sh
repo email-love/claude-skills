@@ -10,11 +10,18 @@ set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf dist && mkdir -p dist
 
-for dir in skills/*/; do
-  name="$(basename "$dir")"
+SKILLS_ROOT="plugins/email-love/skills"
+
+# Bundle names keep the LEGACY emaillove-* prefix on purpose: release asset URLs,
+# docs links, and every already-uploaded claude.ai copy know those names. The short
+# directory names are the plugin-bundle namespace, not the .skill distribution name.
+# claude.ai reads the invocation name from SKILL.md frontmatter, not the folder.
+for dir in "$SKILLS_ROOT"/*/; do
+  short="$(basename "$dir")"
+  name="emaillove-$short"
   # -workspace dirs hold customer data and are gitignored; never package them.
-  case "$name" in *-workspace) continue ;; esac
-  [ -f "$dir/SKILL.md" ] || { echo "skip $name (no SKILL.md)"; continue; }
+  case "$short" in *-workspace) continue ;; esac
+  [ -f "$dir/SKILL.md" ] || { echo "skip $short (no SKILL.md)"; continue; }
 
   staging="$(mktemp -d)"
   mkdir -p "$staging/$name"

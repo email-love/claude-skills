@@ -1,5 +1,5 @@
 ---
-name: emaillove-migration-audit
+name: migration-audit
 description: Audit an existing Figma design system or template library for migration to Email Love, producing a read-only migration report with a deduplicated module inventory that classifies every module as live-text convertible, editable-image candidate, hybrid, or not emailable, classifies how much of the source's geometry is a specification worth preserving, detects the scale factor when one applies, censuses spacing, palette, and type ramp into one system each, and extracts the brand foundations. Use this skill whenever a user wants to know whether their existing Figma templates or design system can work with Email Love, asks to audit or scope a migration, mentions converting an existing design system to the mj-wrapper/MJML structure, is a new or prospective Email Love customer sharing their current design files, or asks "can Email Love work with what we already have". Trigger on "audit", "migration", "convert our templates", or a shared Figma file described as their existing/legacy design system.
 ---
 
@@ -11,14 +11,14 @@ tells everyone what they have, what converts, what needs design judgment, and ho
 is. It also settles a question that reframes all of those: whether the source's geometry is a
 specification to preserve or only a reference to take brand and structure from. That is Step 3,
 and it decides how much of the rest of the audit even applies.
-Phase 2 is the conversion, and the report is its input: the emaillove-eds-converter skill
+Phase 2 is the conversion, and the report is its input: the eds-converter skill
 runs it, or Email Love's team runs it for the customer as part of Enterprise onboarding. Step 8
 is the hand-off, and it is part of the job, not an afterthought.
 
 **This skill is strictly read-only.** Never create, modify, rename, or delete anything in the
 customer's file. Every Figma call you make must be an inspection. If the user asks you to start
 converting, that is Phase 2: it happens in a separate target file through the
-emaillove-eds-converter skill (Step 8 has the hand-off), and the source file stays read-only in
+eds-converter skill (Step 8 has the hand-off), and the source file stays read-only in
 that phase too.
 
 **If your environment lets you choose a model, use your most capable one here too.** The whole
@@ -1021,7 +1021,7 @@ because an audit that ends without naming what happens next leaves the customer 
 migration is somebody's private process. There are two routes, and the report is the input to
 both:
 
-1. **Self-serve.** The **emaillove-eds-converter** skill runs Phase 2 from this report:
+1. **Self-serve.** The **eds-converter** skill runs Phase 2 from this report:
    foundations once, then modules in batches with a designer review between batches. It builds
    in a NEW target file and keeps this source file read-only. What it reads out of this report,
    by section name: **Source fidelity** (which tells it whether to preserve the source's geometry,
@@ -1118,7 +1118,7 @@ not a general inbox export or a downloads dump.
   customer the render will be limited by the source resolution.
 
 Send the resulting PNG to the design-converter worker exactly as in Path B of the
-`emaillove-figma-builder` skill (see its B3 step, or the `emaillove-eds-converter` skill's
+`figma-builder` skill (see its B3 step, or the `eds-converter` skill's
 Phase 3 step 1), same headers, same `promptInputs` (with `emailWidth` pinned to the target).
 The converter is source-agnostic once the input is a PNG.
 
@@ -1842,7 +1842,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 This is version 1.19.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
-and compare this skill's own version to its entry there. That file lists each skill's current
+and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
 version, so the check stays correct no matter which skill released most recently; the old
 repository-wide latest-release check reported whichever skill shipped last, which could be a
 different skill entirely. If a newer version exists, mention it once at hand-off with the right

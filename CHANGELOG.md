@@ -3,6 +3,44 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all three `.skill` bundles.
 
+## Repo: plugin restructure (2026-08-03)
+
+The three skills now ship as ONE Claude Code plugin, `email-love`, at
+`plugins/email-love/`. One install carries all three, namespaced
+`/email-love:migration-audit`, `/email-love:eds-converter`,
+`/email-love:figma-builder`:
+
+```
+claude plugin marketplace add email-love/claude-skills
+claude plugin install email-love@email-love
+```
+
+- Skill directories moved to `plugins/email-love/skills/{eds-converter,
+  migration-audit,figma-builder}`; frontmatter `name:` fields renamed to the
+  short names (the frontmatter name determines the invocation name, so the
+  doubled `/emaillove-eds-converter:emaillove-eds-converter` namespace is gone).
+- Skill descriptions untouched: they drive automatic invocation and were tuned
+  for trigger accuracy.
+- **Three legacy shim entries stay in marketplace.json under the old names**,
+  pointing at the moved directories as deprecated single-skill plugins. Old
+  marketplace installs keep resolving and updating, and every shipped copy's
+  "Staying current" check keeps working (each SKILL.md now names its legacy
+  entry explicitly). Shim versions stay synced with each SKILL.md's own version
+  line, in the same commit, every release.
+- Per-skill `.claude-plugin/plugin.json` files removed: skill directories stay
+  plain (SKILL.md + references) so they read as skills inside the bundle AND as
+  single-skill shim plugins without conflict. The bundle carries the one
+  plugin.json.
+- `.skill` release bundles keep their legacy `emaillove-*` names (release asset
+  URLs, docs links, and uploaded claude.ai copies know those names); a plugin
+  ships its whole directory, so the missing-references failure class is
+  structurally gone for plugin installs.
+- validate_repo.py reworked for the new layout (bundle + shim validation, shim
+  version sync, stale-URL detection); build.sh and CI updated; .gitignore paths
+  updated so workspace directories stay excluded.
+- Plugin version starts at 1.0.0 (new distribution shape). Per-skill versions
+  continue in each SKILL.md and its shim entry.
+
 ## emaillove-figma-builder
 
 ### 2.9.2

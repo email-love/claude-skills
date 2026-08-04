@@ -1,12 +1,12 @@
 ---
-name: emaillove-eds-converter
+name: eds-converter
 description: Convert an audited legacy Figma design system into a working Email Love design system, foundations first, then modules in batches with design review between batches. Builds under the audit's source fidelity tier, preserving the source's geometry where it is a specification and building to email standards where it is not. Use this skill whenever the user wants to convert, rebuild, or migrate their existing Figma email templates to the Email Love structure, run foundations, or convert a batch of modules, after the emaillove-migration-audit skill has produced their audit report. The audit report is required input; if it does not exist yet, run the audit first.
 ---
 
 # Email Love EDS Converter
 
 Convert an audited legacy design system into a working Email Love design system. This skill
-follows a migration audit (the emaillove-migration-audit skill produces it) and works in two
+follows a migration audit (the migration-audit skill produces it) and works in two
 phases: foundations once, then modules in batches. A designer reviews between batches; never
 convert the whole library in one unreviewed pass.
 
@@ -46,7 +46,7 @@ faster model is usually the right call.
 
 ## Inputs
 
-1. The migration audit report from the emaillove-migration-audit skill (file or pasted).
+1. The migration audit report from the migration-audit skill (file or pasted).
 2. The source Figma file link (read-only).
 3. The target file: an existing one the team designates, or create one named
    "[Customer] - Email Love Design System" via the Figma MCP.
@@ -128,7 +128,7 @@ work rather than as a quote.
 
 Honest ranges to give a user:
 
-- **The audit** (the emaillove-migration-audit skill): minutes, scaling with library size. It
+- **The audit** (the migration-audit skill): minutes, scaling with library size. It
   creates nothing, so it is the quick part.
 - **Foundations:** a single pass, comparable in length to one batch of modules.
 - **A first batch of about five modules:** expect tens of minutes, and longer on an unstructured
@@ -1655,7 +1655,7 @@ exports count against plan limits.
 This is version 1.36.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
-and compare this skill's own version to its entry there. That file lists each skill's current
+and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
 version, so the check stays correct no matter which skill released most recently; the old
 repository-wide latest-release check reported whichever skill shipped last, which could be a
 different skill entirely. If a newer version exists, mention it once at hand-off with the right

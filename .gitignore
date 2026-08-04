@@ -1,5 +1,5 @@
-skills/emaillove-figma-builder-workspace/
-skills/emaillove-figma-builder/evals/
+plugins/email-love/skills/emaillove-figma-builder-workspace/
+plugins/email-love/skills/figma-builder/evals/
 dist/
 .DS_Store
-skills/emaillove-migration-audit-workspace/
+plugins/email-love/skills/emaillove-migration-audit-workspace/

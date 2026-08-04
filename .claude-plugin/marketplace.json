@@ -8,31 +8,42 @@
   "description": "Official Email Love plugins for Claude: build export-ready emails in Figma from your design system",
   "plugins": [
     {
-      "name": "emaillove-figma-builder",
-      "source": "./skills/emaillove-figma-builder",
-      "description": "Build export-ready marketing and lifecycle emails inside your Figma file, with a guided brief, visual component picker, and inspiration from 500,000+ real brand emails. Two paths: instance your Email Love design system, or start from scratch with AI Import when you do not have one yet",
-      "version": "2.9.2",
+      "name": "email-love",
+      "source": "./plugins/email-love",
+      "displayName": "Email Love",
+      "description": "Design production-ready emails in Figma and export clean HTML to any ESP. Audit an existing design system for migration, convert it to the Email Love structure, and build campaigns from it.",
+      "version": "1.0.0",
       "author": {
-        "name": "Email Love"
-      }
-    },
-    {
-      "name": "emaillove-migration-audit",
-      "source": "./skills/emaillove-migration-audit",
-      "description": "Read-only audit of an existing Figma design system for Email Love migration: a deduplicated module inventory with a verdict per module (live-text, editable-image, hybrid, not emailable), source fidelity classification, scale-factor detection where it applies, spacing-system census (one system per role, not per-module ad hoc values), type-ramp census (every distinct family/size/weight/line-height tuple in the file, not what was sampled), brand foundations including the source's content margin and content width, effort estimate, and a hand-off to the converter",
-      "version": "1.19.0",
-      "author": {
-        "name": "Email Love"
-      }
+        "name": "Email Love",
+        "email": "hello@emaillove.com",
+        "url": "https://emaillove.com"
+      },
+      "homepage": "https://emaillove.com/figma-plugin",
+      "repository": "https://github.com/email-love/claude-skills",
+      "license": "MIT",
+      "category": "design",
+      "tags": ["email", "figma", "design-system", "mjml", "html-email", "esp"]
     },
     {
       "name": "emaillove-eds-converter",
-      "source": "./skills/emaillove-eds-converter",
-      "description": "Convert an audited legacy Figma design system into a working Email Love design system: foundations that fix one content width, one scale factor where the source's geometry is a specification, and one spacing system per role from the audit's census (so no module invents its own side inset), then modules in batches with design review between batches. Works from the module inventory, source fidelity tier, spacing system and brand foundations in an emaillove-migration-audit report",
+      "source": "./plugins/email-love/skills/eds-converter",
+      "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit and figma-builder. This entry remains so existing installs keep resolving and updating.",
       "version": "1.36.0",
-      "author": {
-        "name": "Email Love"
-      }
+      "author": { "name": "Email Love" }
+    },
+    {
+      "name": "emaillove-migration-audit",
+      "source": "./plugins/email-love/skills/migration-audit",
+      "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with eds-converter and figma-builder. This entry remains so existing installs keep resolving and updating.",
+      "version": "1.19.0",
+      "author": { "name": "Email Love" }
+    },
+    {
+      "name": "emaillove-figma-builder",
+      "source": "./plugins/email-love/skills/figma-builder",
+      "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit and eds-converter. This entry remains so existing installs keep resolving and updating.",
+      "version": "2.9.2",
+      "author": { "name": "Email Love" }
     }
   ]
 }

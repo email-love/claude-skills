@@ -5,6 +5,12 @@ Catches the failure classes that have actually bitten this repo: version drift a
 manifests, em dashes (a house rule), customer identifiers leaking into public files, broken
 references, and obsolete Codex install guidance. Runs in CI and locally. Standard library only.
 
+Layout since the plugin restructure: one 'email-love' bundle plugin at plugins/email-love/
+holding three skills (eds-converter, migration-audit, figma-builder), plus three DEPRECATED
+single-skill shim entries in marketplace.json under the legacy names, pointing at the same
+skill directories. Shims exist so old installs and every shipped "Staying current" check keep
+resolving; their versions must stay synced with each SKILL.md's own version line.
+
 Usage:  python3 scripts/validate_repo.py
 Exit 0 if everything passes, 1 otherwise.
 """
@@ -14,15 +20,24 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+SKILLS = ROOT / "plugins" / "email-love" / "skills"
 errors = []
 def fail(msg): errors.append(msg)
 
 EM_DASH = "—"
 
+# Shim entry name -> skill directory name. The shims carry the legacy names every shipped
+# copy looks up; the directories carry the short names the bundle namespaces by.
+SHIM_TO_DIR = {
+    "emaillove-eds-converter": "eds-converter",
+    "emaillove-migration-audit": "migration-audit",
+    "emaillove-figma-builder": "figma-builder",
+}
+
 # Files that ship to users and must stay clean.
 SHIPPED_TEXT = (
-    list((ROOT / "skills").glob("*/SKILL.md"))
-    + list((ROOT / "skills").glob("*/references/*.md"))
+    list(SKILLS.glob("*/SKILL.md"))
+    + list(SKILLS.glob("*/references/*.md"))
     + [ROOT / "README.md", ROOT / "CHANGELOG.md", ROOT / "SECURITY.md"]
 )
 
@@ -35,6 +50,7 @@ FORBIDDEN = [
 ]
 
 def check_marketplace():
+    """Returns {shim_name: version} for the three legacy shim entries."""
     mk = ROOT / ".claude-plugin" / "marketplace.json"
     if not mk.exists():
         fail("marketplace.json missing"); return {}
@@ -42,60 +58,104 @@ def check_marketplace():
         d = json.loads(mk.read_text())
     except json.JSONDecodeError as e:
         fail(f"marketplace.json does not parse: {e}"); return {}
-    versions = {}
-    for p in d.get("plugins", []):
-        name, ver = p.get("name"), p.get("version")
-        if not name or not ver:
-            fail(f"marketplace plugin entry missing name/version: {p}"); continue
-        versions[name] = ver
-        if not (ROOT / "skills" / name).is_dir():
-            fail(f"marketplace lists '{name}' but skills/{name} does not exist")
-    return versions
 
-def check_skill(name, marketplace_version):
-    d = ROOT / "skills" / name
-    pj = d / ".claude-plugin" / "plugin.json"
+    entries = {p.get("name"): p for p in d.get("plugins", []) if p.get("name")}
+
+    # The bundle entry.
+    bundle = entries.get("email-love")
+    if not bundle:
+        fail("marketplace.json has no 'email-love' bundle entry")
+    else:
+        src = ROOT / bundle.get("source", "").lstrip("./")
+        pj = src / ".claude-plugin" / "plugin.json"
+        if not pj.exists():
+            fail(f"bundle source {bundle.get('source')} has no .claude-plugin/plugin.json")
+        else:
+            try:
+                manifest = json.loads(pj.read_text())
+                if manifest.get("version") != bundle.get("version"):
+                    fail(f"bundle plugin.json version {manifest.get('version')} != "
+                         f"marketplace {bundle.get('version')} (strict mode: plugin.json wins; keep them identical)")
+            except json.JSONDecodeError as e:
+                fail(f"bundle plugin.json does not parse: {e}")
+
+    # The three legacy shims. All must exist (deleting one silently kills the shipped
+    # "Staying current" check for every old copy in the wild).
+    shim_versions = {}
+    for shim, dirname in SHIM_TO_DIR.items():
+        entry = entries.get(shim)
+        if not entry:
+            fail(f"marketplace.json is missing legacy shim entry '{shim}'; old installs and "
+                 f"shipped version checks go silently stale without it")
+            continue
+        expected_src = f"./plugins/email-love/skills/{dirname}"
+        if entry.get("source") != expected_src:
+            fail(f"shim '{shim}' source is {entry.get('source')}, expected {expected_src}")
+        if "DEPRECATED" not in entry.get("description", ""):
+            fail(f"shim '{shim}' description does not say DEPRECATED")
+        if not entry.get("version"):
+            fail(f"shim '{shim}' has no version")
+        shim_versions[shim] = entry.get("version")
+        if not (SKILLS / dirname).is_dir():
+            fail(f"shim '{shim}' points at skills/{dirname} which does not exist")
+    return shim_versions
+
+def check_skill(shim_name, shim_version):
+    dirname = SHIM_TO_DIR[shim_name]
+    d = SKILLS / dirname
     skill = d / "SKILL.md"
-    if not pj.exists(): fail(f"{name}: plugin.json missing"); return
-    if not skill.exists(): fail(f"{name}: SKILL.md missing"); return
-    try:
-        manifest = json.loads(pj.read_text())
-    except json.JSONDecodeError as e:
-        fail(f"{name}: plugin.json does not parse: {e}"); return
+    if not skill.exists(): fail(f"{dirname}: SKILL.md missing"); return
 
-    mver = manifest.get("version")
-    if mver != marketplace_version:
-        fail(f"{name}: plugin.json version {mver} != marketplace {marketplace_version}")
+    # Skill dirs stay PLAIN (SKILL.md + references). A per-skill plugin.json would make the
+    # directory read as a plugin root and conflict with its role inside the bundle.
+    if (d / ".claude-plugin" / "plugin.json").exists():
+        fail(f"{dirname}: has a .claude-plugin/plugin.json; skill dirs must stay plain "
+             f"(defined by their marketplace entries only)")
 
     text = skill.read_text()
     # frontmatter present with name + description
     if not text.startswith("---"):
-        fail(f"{name}: SKILL.md has no frontmatter")
+        fail(f"{dirname}: SKILL.md has no frontmatter")
     else:
         fm = text.split("---", 2)[1] if text.count("---") >= 2 else ""
-        if "name:" not in fm: fail(f"{name}: frontmatter missing name")
-        if "description:" not in fm: fail(f"{name}: frontmatter missing description")
+        m = re.search(r"^name:\s*(\S+)", fm, re.MULTILINE)
+        if not m: fail(f"{dirname}: frontmatter missing name")
+        elif m.group(1) != dirname:
+            fail(f"{dirname}: frontmatter name is '{m.group(1)}', expected '{dirname}' "
+                 f"(frontmatter name determines the invocation name)")
+        if "description:" not in fm: fail(f"{dirname}: frontmatter missing description")
         # Claude.ai skill upload rejects descriptions over 1024 chars
         dm = re.search(r"^description:\s*(.*?)(?=\n[a-z_]+:\s|\Z)", fm, re.DOTALL | re.MULTILINE)
         if dm:
             dlen = len(dm.group(1).strip())
             if dlen > 1024:
-                fail(f"{name}: frontmatter description is {dlen} chars (claude.ai upload limit: 1024)")
+                fail(f"{dirname}: frontmatter description is {dlen} chars (claude.ai upload limit: 1024)")
 
-    # "This is version X of this skill" matches the manifest
+    # "This is version X of this skill" matches the SHIM version (the shims are how every
+    # shipped copy learns about updates; a shim that lags tells old copies they are current).
     m = re.search(r"This is version ([0-9]+\.[0-9]+\.[0-9]+) of this skill", text)
     if not m:
-        fail(f"{name}: SKILL.md has no 'This is version X of this skill' line")
-    elif m.group(1) != mver:
-        fail(f"{name}: SKILL.md says version {m.group(1)} but manifest is {mver}")
+        fail(f"{dirname}: SKILL.md has no 'This is version X of this skill' line")
+    elif m.group(1) != shim_version:
+        fail(f"{dirname}: SKILL.md says version {m.group(1)} but shim '{shim_name}' is {shim_version}")
+
+    # The Staying current check must look up the LEGACY entry name, since that is the entry
+    # the shims keep alive for every copy in the wild.
+    if "## Staying current" in text and shim_name not in text.split("## Staying current", 1)[1]:
+        fail(f"{dirname}: Staying current section does not name its legacy marketplace entry "
+             f"'{shim_name}'")
 
     # Cross-skill references by raw GitHub URL must resolve to a real file in this repo.
     for other, ref in re.findall(
-        r"raw\.githubusercontent\.com/email-love/claude-skills/main/skills/"
+        r"raw\.githubusercontent\.com/email-love/claude-skills/main/plugins/email-love/skills/"
         r"([A-Za-z0-9_\-]+)/references/([A-Za-z0-9_\-]+\.md)", text):
-        if not (ROOT / "skills" / other / "references" / ref).exists():
-            fail(f"{name}: cross-skill URL points at skills/{other}/references/{ref}, "
+        if not (SKILLS / other / "references" / ref).exists():
+            fail(f"{dirname}: cross-skill URL points at skills/{other}/references/{ref}, "
                  f"which does not exist")
+    # Old-layout raw URLs are stale after the restructure.
+    if re.search(r"raw\.githubusercontent\.com/email-love/claude-skills/main/skills/", text):
+        fail(f"{dirname}: SKILL.md still carries a pre-restructure raw URL "
+             f"(main/skills/...); update to main/plugins/email-love/skills/...")
 
     # Local references only apply to a skill that owns a references/ directory. A skill without
     # one (the builder) reaches another skill's references by the URLs checked above, so its bare
@@ -103,7 +163,7 @@ def check_skill(name, marketplace_version):
     if (d / "references").is_dir():
         for ref in re.findall(r"(?<![./\w])references/([A-Za-z0-9_\-]+\.md)", text):
             if not (d / "references" / ref).exists():
-                fail(f"{name}: SKILL.md references references/{ref} which does not exist")
+                fail(f"{dirname}: SKILL.md references references/{ref} which does not exist")
 
 def check_shipped_text():
     for f in SHIPPED_TEXT:
@@ -129,16 +189,17 @@ def check_readme_codex():
 def check_build_completeness():
     # the converter delegates to references at runtime; those files must exist so a built
     # bundle is not missing them
-    conv = ROOT / "skills" / "emaillove-eds-converter" / "references"
+    conv = SKILLS / "eds-converter" / "references"
     for needed in ("render-spec.md", "structure.md"):
         p = conv / needed
         if not p.exists() or p.stat().st_size == 0:
             fail(f"eds-converter references/{needed} missing or empty; the bundle would ship broken")
 
 def main():
-    versions = check_marketplace()
-    for name in versions:
-        check_skill(name, versions[name])
+    shim_versions = check_marketplace()
+    for shim in SHIM_TO_DIR:
+        if shim in shim_versions:
+            check_skill(shim, shim_versions[shim])
     check_shipped_text()
     check_readme_codex()
     check_build_completeness()

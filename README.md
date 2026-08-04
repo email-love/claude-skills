@@ -8,14 +8,14 @@ You do not have to install anything to read what these skills actually tell Clau
 
 | Skill | What it does | Read it |
 | --- | --- | --- |
-| **emaillove-figma-builder** | Builds emails in Figma from your design system | [SKILL.md](skills/emaillove-figma-builder/SKILL.md) |
-| **emaillove-migration-audit** | Read-only audit of an existing library | [SKILL.md](skills/emaillove-migration-audit/SKILL.md) |
-| **emaillove-eds-converter** | Converts that library into an Email Love design system | [SKILL.md](skills/emaillove-eds-converter/SKILL.md) |
+| **emaillove-figma-builder** | Builds emails in Figma from your design system | [SKILL.md](plugins/email-love/skills/figma-builder/SKILL.md) |
+| **emaillove-migration-audit** | Read-only audit of an existing library | [SKILL.md](plugins/email-love/skills/migration-audit/SKILL.md) |
+| **emaillove-eds-converter** | Converts that library into an Email Love design system | [SKILL.md](plugins/email-love/skills/eds-converter/SKILL.md) |
 
 The converter also ships two reference documents, which are the most useful things here if you want to understand how Email Love's Figma structure actually works:
 
-- [references/structure.md](skills/emaillove-eds-converter/references/structure.md): the plugin's frame structure as ground truth, extracted from the plugin source rather than inferred. What each `mj-` tag is, how the exporter identifies a node, and the failure modes that are silent.
-- [references/render-spec.md](skills/emaillove-eds-converter/references/render-spec.md): the full specification for turning a design into frames the plugin exports correctly. Sizing, spacing, images, columns, component properties, and a checklist.
+- [references/structure.md](plugins/email-love/skills/eds-converter/references/structure.md): the plugin's frame structure as ground truth, extracted from the plugin source rather than inferred. What each `mj-` tag is, how the exporter identifies a node, and the failure modes that are silent.
+- [references/render-spec.md](plugins/email-love/skills/eds-converter/references/render-spec.md): the full specification for turning a design into frames the plugin exports correctly. Sizing, spacing, images, columns, component properties, and a checklist.
 
 Prefer prose to specifications? The same material is written for humans at [help.emaillove.com](https://help.emaillove.com/plugin/ai/agents-in-figma).
 
@@ -39,8 +39,10 @@ Install from any terminal (inside an interactive `claude` session these also wor
 
 ```bash
 claude plugin marketplace add email-love/claude-skills
-claude plugin install emaillove-migration-audit@email-love
+claude plugin install email-love@email-love
 ```
+
+One install carries all three skills: `/email-love:migration-audit`, `/email-love:eds-converter`, and `/email-love:figma-builder`.
 
 On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
 
@@ -90,8 +92,18 @@ This repo is a Claude Code plugin marketplace. Install once and the plugin loads
 
 ```bash
 claude plugin marketplace add email-love/claude-skills
-claude plugin install emaillove-figma-builder@email-love
+claude plugin install email-love@email-love
 ```
+
+One install, three skills, namespaced `email-love:`:
+
+| Skill | What it does |
+| --- | --- |
+| `/email-love:migration-audit` | Read-only audit of an existing Figma design system: module inventory, verdicts, scale factor, brand foundations |
+| `/email-love:eds-converter` | Converts an audited system into a working Email Love design system, in batches with design review |
+| `/email-love:figma-builder` | Builds export-ready campaigns from your design system |
+
+Update with `/plugin marketplace update email-love`. (The old per-skill installs, `emaillove-figma-builder@email-love` and friends, still resolve as deprecated single-skill plugins and keep updating; new installs should use the bundle.)
 
 Inside an interactive `claude` terminal session, the same two commands work as `/plugin` slash commands.
 
@@ -107,7 +119,7 @@ Inside an interactive `claude` terminal session, the same two commands work as `
     }
   },
   "enabledPlugins": {
-    "emaillove-figma-builder@email-love": true
+    "email-love@email-love": true
   }
 }
 ```
@@ -116,7 +128,7 @@ Inside an interactive `claude` terminal session, the same two commands work as `
 
 ```bash
 git clone https://github.com/email-love/claude-skills.git
-cp -r claude-skills/skills/emaillove-figma-builder ~/.claude/skills/
+cp -r claude-skills/plugins/email-love/skills/figma-builder ~/.claude/skills/
 ```
 
 Then ask Claude Code to build an email in your Figma file.

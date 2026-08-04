@@ -1,5 +1,5 @@
 ---
-name: emaillove-figma-builder
+name: figma-builder
 description: Build export-ready marketing and lifecycle emails inside a Figma file for export through the Email Love plugin, either by instancing the customer's existing Email Love design system or, when they do not have one yet, by generating the structure with Email Love AI Import and transcribing it. Use this skill whenever the user wants to create, assemble, draft, or build an email or email campaign in Figma, mentions Email Love, their email design system, email components, mj-wrapper or mj-section frames, wants emails their team can review in Figma and export to an ESP (Klaviyo, Customer.io, Braze, Iterable, and so on), is starting from scratch with no email design system, or asks to base an email on how another brand does it. Trigger even when the user just says "build me a promo email in Figma", "turn this brief into emails", or shares a campaign brief alongside a Figma file link, without naming Email Love explicitly.
 ---
 
@@ -828,8 +828,8 @@ repository and marketplace. **Path B does not work without them.** If they are n
 environment, read them from the repo before you transcribe anything:
 
 ```
-https://raw.githubusercontent.com/email-love/claude-skills/main/skills/emaillove-eds-converter/references/render-spec.md
-https://raw.githubusercontent.com/email-love/claude-skills/main/skills/emaillove-eds-converter/references/structure.md
+https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/eds-converter/references/render-spec.md
+https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/eds-converter/references/structure.md
 ```
 
 If you cannot reach them and cannot install that skill, say so and stop rather than transcribing
@@ -848,7 +848,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 This is version 2.9.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
-and compare this skill's own version to its entry there. That file lists each skill's current
+and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
 version, so the check stays correct no matter which skill released most recently; the old
 repository-wide latest-release check reported whichever skill shipped last, which could be a
 different skill entirely. If a newer version exists, mention it once at hand-off with the right
