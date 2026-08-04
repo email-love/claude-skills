@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "aa36f33",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.36.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "aa36f33",
       "summary": "Repo restructure per the packaging guide: three skills ship as ONE Claude Code plugin 'email-love' at plugins/email-love/ (skills at plugins/email-love/skills/{eds-converter,migration-audit,figma-builder}, frontmatter names shortened, descriptions untouched). Three DEPRECATED shim entries stay in marketplace.json under the legacy names pointing at the moved directories, so old installs and every shipped Staying-current check keep resolving; shim versions sync with each SKILL.md's version line every release. Per-skill plugin.json files removed (skill dirs stay plain). .skill release bundles keep legacy emaillove-* names. validate_repo.py reworked (bundle+shim validation, shim version sync, stale-URL detection), build.sh and .gitignore paths updated. Install is now: claude plugin install email-love@email-love. NOT a content change to either skill.",
       "codexStatus": "No port needed: repo-layout change on the Claude side only. NOTE for future port specs: raw URLs now use plugins/email-love/skills/<short-name>/ paths; pin specs to a commit as always."
     },
