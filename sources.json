@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "d27f960",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.37.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "d27f960",
       "summary": "Batch 7 (plugin shakedown migration, first finding): customer-facing copy gets TEXT properties BY DEFAULT. The old evidence gate ('a TEXT needs evidence the copy changes between sends') starved single-design sources to zero text properties, shipping a library read-only from the property panel and contradicting the Getting Started page (which says text is edited through component properties). New default: headlines/eyebrows/subheads/body/button labels get TEXT properties without evidence; boilerplate (legal, address, unsubscribe) stays unbound; evidence gate now applies only to BOOLEANs and INSTANCE_SWAPs. Range widens to 2-7; zero legitimate only for modules with no customer-facing copy. Step 5 Group 4 predicate enforces: every customer-facing text node reachable through a module-root TEXT property, violations by node id. Images unchanged (no image property type in Figma; fill-replacement is the documented workflow). Bumps converter 1.36.0 to 1.37.0.",
       "codexStatus": "Not yet ported. Batch 7, first entry. Batch with the pending batch 6 port (v4.2.0 spec in Notion) plus the verification consolidation, or ship v4.2.0 first since it corrects disproven guidance."
     },
