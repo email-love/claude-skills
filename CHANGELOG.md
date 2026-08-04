@@ -64,6 +64,26 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.37.0
+- **Customer-facing copy gets TEXT properties BY DEFAULT** (batch 7, first finding from the
+  plugin shakedown migration). The old rule gated TEXT properties on evidence the copy
+  changes between sends, which worked on multi-design sources and starved single-design
+  sources to zero: on a one-design shakedown, no text node anywhere had "changes between
+  sends" evidence, so a rule-following agent added no text properties at all, module after
+  module, and the library shipped read-only from the property panel. That contradicts the
+  Getting Started page, which tells marketers text is edited through component properties.
+- New default: headlines, eyebrows, subheads, body copy, and button labels get TEXT
+  properties without needing evidence; only boilerplate a marketer should not touch per
+  send stays unbound (legal, postal address, unsubscribe line). The evidence gate now
+  applies only to BOOLEANs (sibling design with the region absent) and INSTANCE_SWAPs
+  (a real variant to swap to). Working range widens to two to seven properties; zero is
+  legitimate only for a module with no customer-facing copy at all.
+- Step 5 Group 4 predicate updated to enforce it: every customer-facing text node reachable
+  through a module-root TEXT property, violations by node id, boilerplate excepted.
+- Images unchanged and correct as-is: Figma has no image component-property type; imagery
+  is edited by replacing the rectangle's fill (the batch 3 Getting Started correction).
+- Bumps to 1.37.0 (minor: default inversion for TEXT properties).
+
 ### 1.36.0
 - **Phase 3 verification consolidated: one read-back pass per module, batch checks hoisted.**
   Step 5 had grown to seventeen prose checks across six defect-fix batches, each written as

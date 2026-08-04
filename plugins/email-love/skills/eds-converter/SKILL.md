@@ -1356,10 +1356,20 @@ render spec: TEXT bound to `characters` on the inner text node, BOOLEAN bound to
 on the block wrapper, INSTANCE_SWAP bound to `mainComponent` on a nested instance. There is
 no image property type.
 
-Derive them from evidence in the source library rather than adding them everywhere: a
-BOOLEAN needs a sibling design where that region is genuinely absent; a TEXT needs evidence
-the copy changes between sends; boilerplate stays unbound. Two to five per module is the
-working range, and zero is a legitimate answer for a fixed block like a logo header.
+**Customer-facing copy gets TEXT properties BY DEFAULT.** Headlines, eyebrows, subheads,
+body copy, and button labels are what a marketer changes every send, and the Getting Started
+page tells them to change text through the property panel; a module with no TEXT properties
+cannot be edited the documented way. Do not wait for evidence that the copy varies: on a
+single-design source there is no such evidence for anything, and an evidence gate applied to
+TEXT starves the whole library into read-only (measured on a one-design shakedown: zero text
+properties module after module, each one individually justified). The only text that stays
+unbound is boilerplate a marketer should NOT touch per send: legal copy, the postal address,
+the unsubscribe line.
+The evidence gate applies to the OTHER property types: a BOOLEAN needs a sibling design
+where that region is genuinely absent (never add "Show X" speculatively), and an
+INSTANCE_SWAP needs a real variant to swap to. Two to seven properties per module is the
+working range; zero is legitimate only for a module with no customer-facing copy at all
+(a full-bleed image band, a divider).
 **A property whose binding is wrong is worse than no property**, so re-read
 `componentPropertyReferences` back off each node to confirm the binding landed. Record the
 properties you added, and why, in the module's report line.
@@ -1458,9 +1468,13 @@ audit, never against how the module looks:
   list unbound fills by node id with raw hex and intended role. Placeholder grays for
   editable-image regions are the only exception, each named as intentional (batch 2: 43
   unbound fills, every downstream color change touched 31 nodes by hand).
-- Component properties re-read and confirmed via `componentPropertyReferences`. If the module
-  contains any button, the module root exposes a TEXT property for its label (`Button label`
-  / `Card N button label`); a label living only on the foundation component fails.
+- Component properties re-read and confirmed via `componentPropertyReferences`. **Every
+  customer-facing text node (headline, eyebrow, subhead, body, button label) is reachable
+  through a module-root TEXT property**; list by node id any that is not, with boilerplate
+  (legal, address, unsubscribe) as the only allowed exceptions. A module whose only
+  text-bearing nodes are boilerplate legitimately has none. If the module contains any
+  button, the label property is named `Button label` / `Card N button label`; a label living
+  only on the foundation component fails.
 - Module root is a direct child of its category page, not inside a component set or Figma
   section, no stray instances loose on the page.
 - Concession honored where the row carries one: Two Column Swap built per 3.4.1 (FIXED
@@ -1652,7 +1666,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.36.0 of this skill. If you have web access, check once per conversation
+This is version 1.37.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

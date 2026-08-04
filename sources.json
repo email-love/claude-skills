@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "aa36f33",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.36.0",
+      "emaillove-eds-converter": "1.37.0",
       "emaillove-migration-audit": "1.19.0"
     }
   },
@@ -17,6 +17,11 @@
     "note": "Next port: v4.2.0 spec ready in Notion (page id 3b2eabcb-09b7-8172-bba1-f9c9cc8c3f5c, pinned to Claude commit 23f0d9b), covering batch 6 (mobile styles as first-class output, verified plugin-data schemas, dark mode corrections). HIGH PRIORITY: batch 6 corrects two things v4.0.0 ported, so Codex currently carries disproven guidance (mobile-keys-are-node-properties and dark-mode set-equal-to-light). v4.1.1 ported the one-commit multi-column gutter guardrail from claude-skills e6b532b as codex-agents commit ec6d896. Patch bump: one new Phase 3 step 5 blocking checklist bullet + one new render-spec subsection 3.4.0 (generalises 3.4.1's spacing-on-one-side rule to every multi-column row). Codex found this defect itself while building a three-column module during a v4.1.0 shakedown, so the fix self-catches now. v4.1.0 ported the 10-commit batch 4 from claude-skills (252bc05 through 73e3038) as codex-agents commit 3148c2b: mj-group mobile shrink formula (render-spec 3.3.2), mobile visual via emaillove_preview_email (not get_screenshot), unsubscribe.com magic link, STRUCTURE from worker + NUMBERS from measurement + ramp gaps at foundations, cap-height measurement method (render-spec 5.2.1), open every PNG before placing, Figma cloud fonts check + Arimo substitute, mj-navbar mapping, palette census by role + type ramp 12px floor, CF 403 error-code-1010 workaround. Minor bump because audit report structure is unchanged; no partly-audited migration breaks. v4.0.0 ported the 15-commit batch from claude-skills (cb25519 through b437b5a) as codex-agents commit 5ba7a49, spanning five feature areas: ESP migration v1, v1.5 cloud adapters, v1.13 six more ESPs, Batch 2 (six defect fixes), Batch 3 (seven defect fixes). Major bump because audit report structure gained three new required sections (Spacing system, Palette, plus Type ramp census reshaped Brand foundations). v3.0.1 previously ported model-choice guidance (c0719be) and Batch 1 fixes (0c67f86). v3.0.0 repackaged the flat AGENTS.md workflows as a progressively loaded plugin with two skills."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Batch 7 (plugin shakedown migration, first finding): customer-facing copy gets TEXT properties BY DEFAULT. The old evidence gate ('a TEXT needs evidence the copy changes between sends') starved single-design sources to zero text properties, shipping a library read-only from the property panel and contradicting the Getting Started page (which says text is edited through component properties). New default: headlines/eyebrows/subheads/body/button labels get TEXT properties without evidence; boilerplate (legal, address, unsubscribe) stays unbound; evidence gate now applies only to BOOLEANs and INSTANCE_SWAPs. Range widens to 2-7; zero legitimate only for modules with no customer-facing copy. Step 5 Group 4 predicate enforces: every customer-facing text node reachable through a module-root TEXT property, violations by node id. Images unchanged (no image property type in Figma; fill-replacement is the documented workflow). Bumps converter 1.36.0 to 1.37.0.",
+      "codexStatus": "Not yet ported. Batch 7, first entry. Batch with the pending batch 6 port (v4.2.0 spec in Notion) plus the verification consolidation, or ship v4.2.0 first since it corrects disproven guidance."
+    },
     {
       "claudeCommit": "aa36f33",
       "summary": "Repo restructure per the packaging guide: three skills ship as ONE Claude Code plugin 'email-love' at plugins/email-love/ (skills at plugins/email-love/skills/{eds-converter,migration-audit,figma-builder}, frontmatter names shortened, descriptions untouched). Three DEPRECATED shim entries stay in marketplace.json under the legacy names pointing at the moved directories, so old installs and every shipped Staying-current check keep resolving; shim versions sync with each SKILL.md's version line every release. Per-skill plugin.json files removed (skill dirs stay plain). .skill release bundles keep legacy emaillove-* names. validate_repo.py reworked (bundle+shim validation, shim version sync, stale-URL detection), build.sh and .gitignore paths updated. Install is now: claude plugin install email-love@email-love. NOT a content change to either skill.",
