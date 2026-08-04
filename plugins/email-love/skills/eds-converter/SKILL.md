@@ -303,6 +303,21 @@ A customer who already knows their tag can link to it directly and the exporter 
 | Put this on the link | What the exporter does |
 | --- | --- |
 | `unsubscribe.com` | Replaced with the selected ESP's unsubscribe merge tag. Works on text, buttons and images. Source: `help.emaillove.com/plugin/links/unsubscribe`. |
+| `manage-preferences.com` | Replaced with the ESP's preference-center merge tag on Klaviyo ONLY (`{% manage_preferences_link %}`). Not on the help site; verified in plugin and backend source 2026-08-04. On every other target the literal URL ships. |
+
+**The exporter also INJECTS the preference placeholder on its own.** Any text
+containing the word "preference(s)" that carries no hyperlink gets
+`https://manage-preferences.com` auto-linked at export (the plugin's
+placeholder, mirroring `unsubscribe.com`). Combined with the row above, that
+means a non-Klaviyo export ships a live link to a third-party domain the
+customer does not control, from text the builder deliberately left unlinked.
+Observed in a real export before the source was checked: the injection is
+intended plugin behavior, only undocumented. The defense is to never leave
+preference wording unlinked: give it an explicit link the plugin will preserve.
+Default to `unsubscribe.com` (the help site itself says a "Manage preferences"
+control should point there), use a real preference-center URL when the customer
+supplies one, or use `manage-preferences.com` deliberately when the target is
+known to be Klaviyo.
 
 Batch 4 shipped a footer with `https://www.example.com/unsubscribe-placeholder`
 because this convention was not surfaced in the skill; the agent escalated it as the one
@@ -1515,6 +1530,10 @@ audit, never against how the module looks:
   text-bearing nodes are boilerplate legitimately has none. If the module contains any
   button, the label property is named `Button label` / `Card N button label`; a label living
   only on the foundation component fails.
+- **No `mj-group` carries a fill of its own.** The exporter's dark CSS never recolors a
+  group, so a filled group ships forced-white text on its original fill the moment a client
+  flips to dark (render-spec 3.3). Band fills live on the group's columns; list any filled
+  group by node id as a FAIL.
 - Module root is a direct child of its category page, not inside a component set or Figma
   section, no stray instances loose on the page.
 - Concession honored where the row carries one: Two Column Swap built per 3.4.1 (FIXED
@@ -1693,6 +1712,11 @@ For the footer:
   design system should carry so it stays ESP-portable), or a merge tag the customer explicitly
   asked for (`{{unsubscribe_url}}`
   or the ESP's equivalent) or a real URL, not `#`.
+- **No unlinked preference wording.** Text containing "preference(s)" with no
+  hyperlink gets the `manage-preferences.com` placeholder injected at export,
+  and only Klaviyo swaps it for a merge tag; every other target ships a live
+  third-party link. Link it explicitly (the magic-value table in Phase 3 step 2
+  has the decision).
 
 List every violation by node id in the batch report under a "Send-readiness violations"
 heading. Empty list is the only pass. On a fail, either fix the violation (populate the theme
@@ -1715,7 +1739,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.38.0 of this skill. If you have web access, check once per conversation
+This is version 1.39.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

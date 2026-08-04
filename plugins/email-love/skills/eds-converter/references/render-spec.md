@@ -852,6 +852,18 @@ and the node type change.
   as the group's horizontal alignment; counter exports as `vertical-align`).
 - `background-color` to fill, `padding-*` to paddings, `border-radius` to
   radius, borders to strokes.
+- **Never fill the group itself: a filled `mj-group` goes white-on-white in
+  dark mode.** The exporter's dark CSS forces every text span to `#FFFFFF` and
+  recolors filled section and column cells to `contentColor`, but it has no
+  group selector, so a group's own fill survives dark mode untouched while the
+  text on it turns white. Measured: a white policy card whose fill sat on the
+  group shipped `#FFFFFF` text on a `#FFFFFF` card, invisible in both batch
+  renders because they were light mode. The mechanism, worth carrying: group
+  children WITHOUT a fill are explicitly reset to `background-color: initial`;
+  group children WITH a fill pick up the dark `contentColor` override. So put
+  the band fill on the group's columns instead: light mode is pixel-identical,
+  dark mode recolors the card like every other filled surface. A filled
+  `mj-group` is a verification FAIL (skill Phase 3 step 5, Group 4).
 - Children: two or more `mj-column` frames with FIXED pixel widths.
 - Width math: the exporter emits the group width as
   `group.width / (section.width - section horizontal padding) * 100%`, and
@@ -895,7 +907,7 @@ rendered on canvas, the email declares a different one, and a pinned column
 cannot grow. Text that fit by a hair on canvas wraps at send time, in a font the
 canvas never showed you.
 
-Two independent sources of drift stack up:
+Three independent sources of drift stack up:
 
 1. **Same family name, different binary.** Figma renders its own bundled Inter.
    The exporter writes `font-family: Inter, Arial` and also emits an `mj-font`
@@ -910,6 +922,15 @@ Two independent sources of drift stack up:
    against Figma's Inter runs as high as +11.5 percent, and it goes both ways:
    do not assume the fallback is always narrower or always wider than what you
    see.
+3. **The whole family was substituted at foundations.** When the source face is
+   not email-safe and the library swapped it (Theinhardt to the Arial clone
+   Arimo, say), a column boundary measured in the SOURCE file was taken in a
+   font the email will never use, and the metric-clone guarantee does not help:
+   the clone matches ARIAL, not the face it replaced. Measured: a nav label
+   that fit its 149px column in Theinhardt hugs at 146px in Arimo and wrapped
+   to two lines at export, after passing every canvas check. Re-measure the
+   hug width in the substituted face and feed THAT number to the formula
+   below; never pin at a boundary measured in the source font.
 
 So take the text node's natural hug width in Figma, then pin the column at:
 
@@ -1893,6 +1914,18 @@ worker returns one of the others, compose the row from mapped primitives instead
 (the visual-pattern mapping in the skill's transcription step), and reserve
 `mj-hero` for the case where a design genuinely needs live text over a
 full-bleed background image.
+
+**A band with decorative art needs neither `mj-hero` nor a baked bitmap.**
+`mj-section` has no background-image mapping in this spec, so the tempting
+"bake band and art into one section background image" route trades live text
+for a picture of text. Build it as a full-bleed `mj-group` instead: the copy
+column carries the band fill and any rounded edge, and a narrow decorative
+column carries the art, marked `mobileStylesHideInMobileDevice` so it drops
+cleanly below the breakpoint. Measured build: a 535px copy column plus a 65px
+decoration column (one of 0.3.1's sanctioned full-bleed exceptions; the copy
+inside still starts at the content margin) rendered exactly as designed on
+desktop and cleanly absent on mobile with no gap, using only mapped
+primitives.
 
 **Specifically for `mj-navbar`, do not invent a mapping. Rebuild as one
 `mj-text` with per-label hyperlinks.** The worker returns `mj-navbar` for any

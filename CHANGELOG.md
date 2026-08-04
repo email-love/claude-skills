@@ -64,6 +64,34 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.39.0
+Batch 8: four findings from the completed Batch 1 export cycle (the updated report added
+two defects found only in the exported HTML, one of them dark-mode-only).
+
+- **Never fill an `mj-group`** (P0, render-spec 3.3 + step 5 Group 4 FAIL). The exporter's
+  dark CSS forces text to #FFFFFF and recolors filled section/column cells, but has no
+  group selector: a filled group ships white-on-white the moment a client flips to dark,
+  invisible in light-mode renders. Mechanism recorded: fill-less group children are reset
+  to background-color initial, filled children pick up the dark contentColor. Fix pattern:
+  move the fill onto the columns; light mode is pixel-identical.
+- **`manage-preferences.com` documented as a second magic value, with its injection trap**
+  (P1, magic-value table + send-readiness pass). Verified in plugin and backend source:
+  the plugin auto-links any unlinked "preference(s)" text to the placeholder at export,
+  and the backend swaps it for a preference-center merge tag on Klaviyo ONLY. On every
+  other target the literal third-party URL ships. New rule: never leave preference wording
+  unlinked; link it explicitly (unsubscribe.com by default) and the plugin preserves it.
+- **Third font-drift source in 3.3.1**: a substituted family. Column boundaries measured
+  in the source file were taken in a face the email never uses, and the metric clone
+  matches Arial, not the face it replaced. Measured: a nav label fitting 149px in
+  Theinhardt hugs 146px in Arimo and wrapped at export. Re-measure hug width in the
+  substituted face before pinning.
+- **Band-with-decoration pattern** (render-spec, below the transcription set):
+  mj-section has no background-image mapping, so build band + art as a full-bleed
+  mj-group with the fill on the copy column and the art in a narrow decorative column
+  marked mobileStylesHideInMobileDevice. Verified rendering exactly as designed on
+  desktop and cleanly absent on mobile.
+- Bumps to 1.39.0 (minor: one new verification predicate plus reference additions).
+
 ### 1.38.0
 Batch 7 continued: twelve fixes from two shakedown migrations on the plugin install, one of
 which ran the batch checks with a human driving and proved them (two real defects caught
