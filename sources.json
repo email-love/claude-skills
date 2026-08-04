@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "23f0d9b",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.35.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "23f0d9b",
       "summary": "Batch 6 (change spec v2 from a live migration, 2026-08-03): mobile styles as first-class output with VERIFIED plugin-data schemas; dark mode stops mirroring light. (1) Converter gains 'Mobile Styles ARE shared plugin data' section: Schema A containers (mobileStylesPadding* + isPaddingActive, values inert without the flag), Schema B type (fontSize/lineHeight/letterSpacing + <prop>_mode='override' on the TEXT node, not the frame). REPLACES the batch 2 inline-key-table claim that mobile padding was node properties, which live observation disproved. New hard rule: never write a plugin-data key not observed from the plugin itself (an invented activation flag shipped 10px body copy). (2) Audit gains required 'Mobile styles' report section + two-anchor mobile ramp derivation (compression not scaling: single factor preserves desktop headline:body ratio which is the failure; anchors body->16-18, headline->26-30, floor 14, NO ratio test vs desktop). (3) Converter Phase 3 step 3 Part B rewritten: 'write the mobile styles', ALWAYS runs, replacing merge-the-twin-if-exists; includes 28px mobile bottom padding on non-last stacking columns. (4) Line heights PERCENT never PIXELS in all text styles (pixel freezes the mobile line box; measured 17px copy on 33px desktop line box) + setRangeFontName detachment trap with the one-segment verification. (5) Dark mode: six theme keys are DARK MODE values; old 'set equal to light colors' guidance verified WRONG against exporter dark CSS (ships light-on-light); house defaults #000000/#1F1F1F/#FFFFFF/#FFFFFF-button-#000000-label; audit Palette gains dark proposal with contrast ratios; render-spec 2.1 + inline table + send-readiness corrected. (6) Asset transparency: key UI icons for dark mode via border-connected flood fill, never brand logos (measured: keyed logo became illegible ink-on-ink); check surviving ink against #1F1F1F before keying. (7) Multi-column rows top-align by default (primary MIN + counter per content; independent exporter reads); batch 3 axis checklist updated to mark these intentional. structure.md mobile rows corrected. Bumps audit 1.18.1 to 1.19.0 and converter 1.34.0 to 1.35.0.",
       "codexStatus": "Not yet ported. Batch 6, first entry of the next port batch. HIGH PRIORITY for the port: this batch CORRECTS two things v4.0.0 ported (the batch 2 mobile-keys claim in the inline table, and the dark-mode set-equal-to-light guidance), so Codex is currently carrying disproven guidance."
     },
