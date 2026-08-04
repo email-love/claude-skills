@@ -64,6 +64,58 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.38.0
+Batch 7 continued: twelve fixes from two shakedown migrations on the plugin install, one of
+which ran the batch checks with a human driving and proved them (two real defects caught
+that every arithmetic check passed).
+
+- **Batch-check ownership is established BEFORE the first module** (P0). If the agent cannot
+  drive the plugin's Upload/Export clicks, it says so in the batch-1 opening message. When
+  the checks cannot run in-session, a Deferred verification list accumulates across batches
+  (one line per module naming the specific thing to confirm) and hands over as a checklist;
+  "checks not run" is not a hand-off. Measured: three batches, sixteen modules, zero renders,
+  three clean reports silent on the axis that matters most.
+- **Step 1 decides worker vs direct tree read** (P1). On AUTHORITATIVE/PARTIAL sources
+  carrying components, auto layout, and frames at the target width, read the node tree
+  directly: exact fills/sizes/paddings, plus facts a render cannot show (a 994px image
+  clipped to 640 would have shipped 55 percent too wide from a screenshot). Worker path
+  stays for unstructured sources and every non-Figma adapter.
+- **Mask-from-geometry is the first remedy for baked-in backgrounds** (render-spec 4.2.1,
+  P0). When the node's own geometry defines the silhouette (cornerRadius >= half the short
+  side, ELLIPSE, vector mask, clipping parent), composite through that mask; color keying
+  cannot separate subject from background at ~11 units per channel and left a measured halo.
+- **0.3.1 now has TWO sanctioned exceptions and a band-edge invariant** (P1): full-bleed
+  image bands AND card/inset blocks (the audit's own "card or inset padding" role). Verify
+  the band edge, not the innermost box; group columns sum to the GROUP width. The literal
+  ONLY-exception reading produced three false failures on correct modules.
+- **8.3 INSTANCE_SWAP snippet corrected** (P1): local unpublished components have an empty
+  `key`; use the node id and `type: 'COMPONENT'`. The printed form failed twice.
+- **Inline button construction** (from the live batch report): Figma rejects remapping a
+  nested instance's TEXT property to a module root (`Unrecognized key(s)`), so modules build
+  buttons inline (styled frame + text node matching the foundations button); the foundations
+  component is the style reference and INSTANCE_SWAP target, not instanced inside modules.
+- **Link-bearing text is excepted from the text-properties default** (amends 1.37.0):
+  binding `characters` wipes `setRangeHyperlink` ranges at bind time and on every later
+  property edit. Footers and CTA bands with live links stay unbound. Step 5 predicate
+  updated to match.
+- **Bordered groups need width headroom** (render-spec 3.3, from the batch-check defect):
+  columns summing to exactly the group width plus 1px borders push past 100 percent and
+  wrap the last column. Pin the group FIXED and sum columns short by the border total
+  (a deliberate deviation from group-is-HUG). Plus: groups may be narrower than the content
+  box (columns sum to the GROUP), and on mobile a group expands to the viewport and spreads
+  its columns, which is documented exporter behavior with no Figma-side remedy.
+- **Range writes need read-back** (render-spec 0.8): setRange* can silently not take;
+  verify with getStyledTextSegments like any geometry write.
+- **Spacer fills clarified** (render-spec 4.5): `[]` for a plain gap; one bound SOLID where
+  the spacer IS a colored band (that is what container-background-color is for).
+- **Metric clone list extended** (Phase 2 step 3): Gelasio for Georgia, Tinos for Times New
+  Roman, alongside Arimo for Arial. Caveat added: clones differ at display sizes (a 64px
+  headline measured 542px against a 540px box and wrapped a third line), which is the
+  argument for resolving font hosting before batch 1.
+- **Read-back transport note** (step 5): get_metadata fails above ~80KB or on non-ASCII
+  names; use use_figma in ~12-node ASCII-sanitised batches.
+- Bumps to 1.38.0 (minor: workflow additions and reference corrections).
+
 ### 1.37.0
 - **Customer-facing copy gets TEXT properties BY DEFAULT** (batch 7, first finding from the
   plugin shakedown migration). The old rule gated TEXT properties on evidence the copy

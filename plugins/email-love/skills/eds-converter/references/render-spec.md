@@ -176,10 +176,24 @@ tier**, because it is about agreement between modules rather than agreement with
 source: on a reference-only source the number is simply 560 on a 600 body, taken from
 the standards instead of derived from a source margin.
 
-**Full-bleed image bands are the ONLY exception**, at the full body width. They are
-an exception because bleeding is the design intent, not a padding difference: a 600
-wide image band beside a 560 content width is correct, and a 600 wide text row is
-not.
+**Two sanctioned exceptions, and the invariant that covers both.** The invariant is
+that the **outer edge of a text-bearing block** sits at the library content width.
+Full-bleed image bands are the first exception and run to the full body width,
+because bleeding is the design intent, not a padding difference: a 600 wide image
+band beside a 560 content width is correct, and a 600 wide text row is not. A
+**card or inset block** is the second: its own edge sits at the library content
+width (or at a narrower width the audit's Spacing system named as an exception),
+and its card padding insets its content further. A 540 card carrying 25px padding
+around 490 of content is correct and is not a content-width violation; the audit's
+Spacing system census defines "card or inset padding" as its own role for exactly
+this case. What is still forbidden is a plain text section arriving at a different
+total side inset from its siblings.
+
+When verifying, compare the **band edge**, not the innermost content box, and
+remember that columns inside an `mj-group` sum to the group's width, not to the
+section content box (section 3.3). A literal ONLY-exception reading of this rule
+produced two false failures on correct card modules and a third on a correct
+centred group before it was rewritten this way.
 
 For a multi-column row the content width is still the number the columns sum to
 (sections 3.3, 3.4, 5.4): a 560 content width takes columns plus gutters summing to
@@ -450,6 +464,13 @@ resize.**
 
 **The symptom is that it looks like the write succeeded**, and that is the whole
 cost of this bug. Nothing surfaces: no exception, no warning, no partial result.
+
+**Range writes on text share the failure mode.** A `setRangeFills` (or any
+`setRange*`) call can silently not take: measured, a two-color headline range
+fill did not apply on the first call, no error raised, discovered only by
+reading segments back. Treat range writes like geometry writes: after writing,
+read back with `getStyledTextSegments` for the property you set and confirm the
+segmentation is what you intended.
 The time goes into re-checking the number you passed, the units, the order of the
 calls, and the parent's sizing, because the one thing that is actually wrong, that
 the write never landed at all, is the one thing the API did not tell you.
@@ -839,6 +860,31 @@ and the node type change.
   setting exact pixel widths and letting the exporter divide. Example: group
   560 wide containing columns 280 + 280 exports 50%/50%.
 - Columns inside a group keep their elements side by side on mobile.
+- **A group may be NARROWER than the section content box**, and real libraries
+  have them (a centred social row at 372 inside a 540 content box exports at
+  68.9 percent). Its columns sum to the GROUP's width, never to the section
+  content box; a verification that compares group columns against the section
+  content width produces false failures on every centred cluster.
+- **A group whose columns carry borders needs headroom.** Exported column
+  percentages are computed from widths alone, so columns summing to exactly the
+  group width plus 1px borders push the total past 100 percent and the last
+  column wraps to a second row. Measured: 192 + 136 + 192 = 520 in a 520 group
+  with two 1px divider borders wrapped its third column on desktop AND mobile,
+  and every arithmetic check passed because a border is not a width. The fix,
+  and a deliberate deviation from the group-is-HUG rule above: pin the group
+  FIXED at its intended width and make the columns sum to LESS than it by at
+  least the total border width (192 + 126 + 192 = 510 in the 520 group, 10px of
+  headroom, percentages summing to 98.08). A HUG group always makes its columns
+  sum to exactly 100 percent of itself, which leaves no room for a border, so a
+  bordered group has to be pinned.
+- **On mobile a group expands to the full viewport width** and its columns take
+  their percentages OF THE VIEWPORT; the group's own width percentage is not
+  honored below the breakpoint. A tight icon cluster therefore spreads across
+  the full width on phones. That is documented exporter behavior, not a build
+  error, and it is not reachable from the Figma side. If clustered mobile icons
+  are a hard requirement, the only route is one combined image with a single
+  href, which costs the per-icon links; say so in the batch report and let the
+  designer choose.
 
 #### 3.3.1 Pinned widths that carry text need slack
 
@@ -1332,6 +1378,20 @@ The route, since `figma.createImageAsync` is unavailable to an agent:
       white to transparency and set the color explicitly; for a photographic
       cutout, flood-fill the surround from the border to the band color
       (preserves white highlights inside the product).
+      **But before either: when the source node's own geometry defines the
+      silhouette, rebuild that geometry as a mask instead of keying by color.**
+      A `cornerRadius` at or above half the node's shorter side is a circle; an
+      ELLIPSE node, a vector mask, or a clipping parent are the same case.
+      Composite the render through that mask onto the band color. This is
+      exact, needs no tolerance, and is the only approach that works when
+      subject and background are within roughly 10 units per channel, which is
+      the normal case for a white product on a cream ground. Measured: a
+      border-connected flood fill at plus or minus 14/14/20 per channel
+      converted 25.6 percent of a 909x909 render and still left a halo visible
+      at 100 percent zoom, because background and subject rim were 11 units
+      apart in one channel; a 4x supersampled elliptical mask from the node's
+      own `cornerRadius: 369.4` gave a clean edge in one pass. Reach for color
+      keying only when the silhouette is not recoverable from node geometry.
    2. **The neighbour's content.** When slicing out of a rendered parent frame
       (task #32's render-once-crop-locally technique), **check the crop's far
       edge against where the adjacent column starts**, not against the source
@@ -1576,8 +1636,11 @@ When you do build one:
 
 - Node: FRAME, direct child of the column.
 - Shared `name` = `mj-spacer`. Layer name e.g. `Spacer`.
-- `layoutMode = 'HORIZONTAL'`, `fills = []` (any visible fill exports as
-  `container-background-color`).
+- `layoutMode = 'HORIZONTAL'`. Fills: `[]` for a plain gap; a single bound SOLID
+  fill where the spacer IS a colored band, which exports as
+  `container-background-color` and is the intended mechanism for that case. The
+  two legitimate spacer reasons above (a colored band, a gap inside a bordered
+  column) split exactly along this line.
 - `resize(width, H)` with H = numeric `height` attr, then
   `layoutSizingVertical = 'FIXED'` and `layoutSizingHorizontal = 'FILL'` as a
   column child. The exporter emits `height: <node.height>px`.
@@ -1682,7 +1745,7 @@ counter axis to the same value as the primary on every one of these frames.
   to, is the one content width foundations settled for the whole library, not the
   side margin the worker happened to return for this screenshot (section 0.3.1).
   Reproduce the worker's paddings everywhere else; this is the one padding you
-  override, and full-bleed image bands at the body width are its only exception.
+  override; full-bleed image bands and card insets are the two sanctioned exceptions (0.3.1).
 
 ### 5.5 href and alt
 
@@ -1995,20 +2058,23 @@ pointing at a foundations button.
 const style = moduleRoot.addComponentProperty(
   'Button Style',
   'INSTANCE_SWAP',
-  primaryButton.key,          // the default the instance starts on
+  primaryButton.id,           // node id: a local component's `key` is empty
   {
     preferredValues: [
-      { type: 'LOCAL_COMPONENT', key: primaryButton.key },
-      { type: 'LOCAL_COMPONENT', key: inverseButton.key },
-      { type: 'LOCAL_COMPONENT', key: textLink.key },
+      { type: 'COMPONENT', key: primaryButton.id },
+      { type: 'COMPONENT', key: inverseButton.id },
+      { type: 'COMPONENT', key: textLink.id },
     ],
   },
 )
 buttonInstance.componentPropertyReferences = { mainComponent: style }
 ```
 
-For a published library component the default value is the component `key`. A
-local component's node id also resolves in practice.
+In a freshly converted library every component is local and unpublished, so its
+`key` is an **empty string** and `type: 'LOCAL_COMPONENT'` is rejected outright.
+Use the node id and `type: 'COMPONENT'`, which is what runs (measured: the
+key-based form failed twice before the error was read). Switch to published keys
+only once the library has been published.
 
 ### 8.4 VARIANT
 
@@ -2109,7 +2175,7 @@ the node.
     not to the side margin the worker returned for this screenshot (section
     0.3.1): read the resolved width back off the column, compare it to the
     foundations number, and check that a multi-column split still sums to it.
-    Full-bleed image bands at the body width are the only exception. That is the
+    Full-bleed image bands and card insets are the two sanctioned exceptions (0.3.1). That is the
     check you cannot do by looking at the module, only by comparing it to the
     library.
 13. If it is a module: the root is a COMPONENT tagged `mj-wrapper`, a direct

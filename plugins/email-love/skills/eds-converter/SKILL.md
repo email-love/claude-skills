@@ -663,7 +663,13 @@ Build the scaffold every later batch depends on:
    the metrically compatible clone of Arial: identical advance widths, so a string that fits
    on the canvas fits in the email and section 3.3.1's slack arithmetic stays accurate
    rather than approximate. Arimo is in the Google Fonts set and the Figma environment
-   loads it.
+   loads it. The same move covers the other two common email-safe stacks: **Gelasio** is
+   the metric clone of Georgia, **Tinos** of Times New Roman, both in the Google Fonts set.
+   One caveat that belongs in the foundations report: metric clones are close, not
+   identical, and display sizes are where the difference shows. Measured: a 64px headline
+   that fits two lines in the original face measured 542px against a 540px content box in
+   the clone and wrapped to a third line, a 58px height change. That is the concrete
+   argument for resolving real font hosting before batch 1.
    **State the consequence in the foundations report**, because it is real: the exporter
    writes `fontName.family` into `font-family`, so an export will say Arimo until the family
    is swapped or Arial is accepted at send time. Say it once, plainly, rather than leaving
@@ -926,6 +932,15 @@ the next two you run:**
 
 ## Phase 3: Module conversion (run per batch)
 
+**Before the first module, establish who runs the batch checks.** Step 6's mobile render and
+export sniff both need the plugin's Upload and Export buttons, which are human clicks on a
+paid seat. If you cannot drive them, say so now, in the batch-1 opening message, and say what
+it means: mobile behaviour will be built and computed but never verified against exporter
+output until a human runs it. Do not discover this at step 6 of batch 3. (Measured on a
+three-batch run: sixteen modules delivered with zero renders and zero sniffs, every mobile
+decision verified as intent only, and three clean batch reports silent on the one axis that
+matters most.)
+
 **Phase 3 builds MODULES, not emails.** A module is one reusable block that gets dropped into
 many emails, so its shape is a **`mj-wrapper` COMPONENT**: the wrapper IS the component, it
 carries shared `name = 'mj-wrapper'`, its layer name is the module name, and it carries **no
@@ -993,7 +1008,19 @@ For each module in the batch, in order:
 
 ### 1. Convert the source design to MJML JSON via the design-converter worker
 
-Do not rebuild by eye and do not run the plugin's Convert button for migration batches. The
+**First decide whether the worker is the right input at all.** The worker is a structure
+detector for sources where structure must be inferred from pixels. When the audit classified
+the source AUTHORITATIVE or PARTIAL *and* the source carries components, auto layout, and
+frames at the target email width, read the source node tree directly instead: it already
+holds exact fills, sizes, paddings and nesting, and it exposes facts a render cannot show
+(crop transforms, container clipping, zero-height text, fills stacked under an image).
+Measured on an email-native source: direct reads gave exact values with no reconciliation
+pass, and caught an image 994px wide clipped to 640 by its container that any screenshot
+would have shipped 55 percent too wide. Use the worker path for unstructured sources,
+flattened mockups, and every non-Figma adapter. Say in the batch report which path you took
+and why.
+
+On the worker path: do not rebuild by eye and do not run the plugin's Convert button for migration batches. The
 pipeline is: screenshot the source module (read-only), POST it to the design-converter
 worker, transcribe the returned MJML JSON into the target file, then verify.
 
@@ -1363,8 +1390,13 @@ cannot be edited the documented way. Do not wait for evidence that the copy vari
 single-design source there is no such evidence for anything, and an evidence gate applied to
 TEXT starves the whole library into read-only (measured on a one-design shakedown: zero text
 properties module after module, each one individually justified). The only text that stays
-unbound is boilerplate a marketer should NOT touch per send: legal copy, the postal address,
-the unsubscribe line.
+unbound is boilerplate a marketer should NOT touch per send (legal copy, the postal address,
+the unsubscribe line) and **text carrying hyperlink ranges**: binding `characters` to a
+component property wipes `setRangeHyperlink` ranges at bind time, and every later edit
+through the property wipes them again, so a footer or CTA band whose links silently break
+the first time someone edits the copy is worse than a fixed block. Observed during a live
+build; the links had to be re-applied after an accidental bind. A link-bearing node stays
+unbound and is edited in place.
 The evidence gate applies to the OTHER property types: a BOOLEAN needs a sibling design
 where that region is genuinely absent (never add "Show X" speculatively), and an
 INSTANCE_SWAP needs a real variant to swap to. Two to seven properties per module is the
@@ -1376,9 +1408,12 @@ properties you added, and why, in the module's report line.
 
 **Every module that contains a button MUST expose the button's label as a TEXT property at
 module-root level**, named `Button label` on a single-CTA module or `Card 1 button label`,
-`Card 2 button label` in a grid. The foundation button component already owns a Label
-property; that property is not surfaced on instances placed inside a module unless the
-module root re-exposes it. Batch 2 shipped 18 buttons across 18 modules, every one with
+`Card 2 button label` in a grid. **Figma rejects remapping a nested instance's TEXT property
+to a module-root property** (measured: `Unrecognized key(s) in object: 'Label#3:0'`), so the
+construction that satisfies this rule is an INLINE button: a styled frame plus a single text
+node matching the foundations button component exactly, with the label property bound on the
+inline text node. The foundations component remains the style reference and the
+INSTANCE_SWAP target for a Button Style property; it is not instanced inside modules. Batch 2 shipped 18 buttons across 18 modules, every one with
 a working label property on the foundation and none of them surfaced at the module the
 marketer instances, so a user following the Getting Started page could not change any CTA
 copy from the top-level property panel. The Show button BOOLEAN is a separate decision from
@@ -1407,7 +1442,11 @@ can correct any misfits in one pass rather than hunting for them later.
 ### 5. Verify per module: ONE read-back pass, then one screenshot
 
 Verification is expensive in Figma round trips, so do not walk the tree once per check.
-**Read the built module back ONCE**, into a single dump per node: node type, layer name,
+**Read the built module back ONCE**, into a single dump per node (transport note:
+`get_metadata` fails with an opaque SSE parse error above roughly 80KB or on non-ASCII layer
+names, so do the read-back with `use_figma` in batches of about a dozen nodes, one compact
+ASCII-sanitised line per node; that is also what makes this single-pass discipline
+practical): node type, layer name,
 layout mode and sizing, both alignment axes, paddings, resolved x/width, fills and their
 variable bindings, all `emaillove` shared plugin data, component property references, and
 (on text nodes) `getStyledTextSegments(['lineHeight'])`. Evaluate every predicate below
@@ -1471,7 +1510,8 @@ audit, never against how the module looks:
 - Component properties re-read and confirmed via `componentPropertyReferences`. **Every
   customer-facing text node (headline, eyebrow, subhead, body, button label) is reachable
   through a module-root TEXT property**; list by node id any that is not, with boilerplate
-  (legal, address, unsubscribe) as the only allowed exceptions. A module whose only
+  (legal, address, unsubscribe) and link-bearing text (binding wipes hyperlink ranges) as
+  the only allowed exceptions. A module whose only
   text-bearing nodes are boilerplate legitimately has none. If the module contains any
   button, the label property is named `Button label` / `Card N button label`; a label living
   only on the foundation component fails.
@@ -1576,6 +1616,15 @@ matches the step 3 Part A decision.
   both is much less likely to surface a mobile defect at design review. A batch that passes
   step 5 alone is batch 2.
 
+**When the checks cannot run in-session, do not mark them skipped and move on.** Accumulate
+a **Deferred verification list** across every batch, one line per module naming the specific
+thing that needs confirming (this group must not stack, this button must go full width, this
+image must stay fluid), and hand it over as a single checklist at step 7. One human session
+against a concrete list is recoverable; a hand-off that merely says "checks not run" is not.
+The two defects a human-run batch check caught on a real library (a bordered group whose
+columns summed past 100 percent, and a nav label wrapping from font drift) were both
+invisible to every arithmetic check in step 5, which is why the deferral must stay loud.
+
 ### 7. Batch report and gate
 
 One report per batch: per module, keyed by its Module inventory row name, what was rebuilt, the
@@ -1666,7 +1715,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.37.0 of this skill. If you have web access, check once per conversation
+This is version 1.38.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
