@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-03",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "c61f39e",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.39.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "c61f39e",
       "summary": "Batch 8 (updated Batch 1 report: export cycle completed, two new defects found only in exported HTML). Converter 1.38.0 to 1.39.0: never fill an mj-group (dark CSS has no group selector; fill-less children reset to background-color initial while text forced #FFFFFF = white-on-white; move fill to columns; filled group = step 5 FAIL); manage-preferences.com documented as second magic value with injection trap (plugin auto-links unlinked preference wording; backend swaps on Klaviyo only, literal third-party URL ships elsewhere; rule: always link preference text explicitly); third font-drift source in 3.3.1 (substituted family: source-measured column boundaries are stale, clone matches Arial not the replaced face; re-measure hug in the substituted face); band-with-decoration pattern (full-bleed mj-group, fill on copy column, art in decorative column with mobileStylesHideInMobileDevice; mj-section has no background-image mapping).",
       "codexStatus": "Not yet ported. Stack with batch 6 (v4.2.0 spec), consolidation, restructure note, 1.37.0, batch 7 into one combined port spec refresh. The dark-mode filled-group rule is the priority item here: it is a silent shipping defect, same class as the batch 6 corrections."
     },
