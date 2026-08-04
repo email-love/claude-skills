@@ -276,13 +276,13 @@ ship. The render spec keeps the prose, the worked examples, and the rationale.
 | --- | --- | --- | --- |
 | `name` | every tagged node | the MJML tag string (`mj-wrapper`, `mj-section`, `mj-column`, `mj-column-inner`, `mj-text`, `mj-image`, `mj-button`, `mj-divider`, `mj-spacer`, `mj-social`, `mj-social-element`, `mj-group`, `mj-hero`, `mj-navbar`, `mj-navbar-link`, `mj-table`, `mj-raw`; frame variants add `-Frame`) | tells the exporter which MJML element this node emits. REQUIRED on every tagged node; the layer-name fallback is a fallback, not the contract. |
 | `nodeType` | ONLY the root frame of a whole email | `'mainFrame'` | marks the frame as an email template. Absent on every module (an `mj-wrapper` component). Present on a module = the block uploads as a whole email and no component JSON is emitted. |
-| `backgroundColor` | mainFrame root | hex, e.g. `'#FFFFFF'` | dark-mode page background. Empty is NOT neutral: the exporter substitutes `#000000` and wrecks a light email. |
-| `contentColor` | mainFrame root | hex | dark-mode content/section background. |
-| `textColor` | mainFrame root | hex | dark-mode text color. |
-| `linkColor` | mainFrame root | hex | link color. |
-| `buttonTextColor` | mainFrame root | hex | button label color. |
-| `buttonContentColor` | mainFrame root | hex | button background color. |
-| `lightThemeBackgroundColor` | mainFrame root | hex | mj-body `background-color`; defaults to `#FFFFFF` when empty. |
+| `backgroundColor` | mainFrame root | hex | DARK MODE page background. House default `'#000000'`. These six keys only fire in dark mode; filling them with the light palette ships light-on-light. |
+| `contentColor` | mainFrame root | hex | DARK MODE content/section background. House default `'#1F1F1F'`. |
+| `textColor` | mainFrame root | hex | DARK MODE text color. House default `'#FFFFFF'`. |
+| `linkColor` | mainFrame root | hex | DARK MODE link color. House default `'#FFFFFF'`. |
+| `buttonTextColor` | mainFrame root | hex | DARK MODE button label color. House default `'#000000'`. |
+| `buttonContentColor` | mainFrame root | hex | DARK MODE button background. House default `'#FFFFFF'`. |
+| `lightThemeBackgroundColor` | mainFrame root | hex | the LIGHT mj-body `background-color`; defaults to `#FFFFFF` when empty. The one light value in the set. |
 | `fallBackFontName` | mainFrame root | font family, e.g. `'Arial'` | fallback for text nodes whose pinned font is unavailable. |
 | `emailSubject` | mainFrame root | plain string | optional. |
 | `emailPreHeader` | mainFrame root | plain string | optional. |
@@ -321,9 +321,6 @@ data-side):
   exporter drops it and the image stays fixed. No plugin data key. So a footer logo that
   should NOT scale is built at less than its column's content width; a hero photo that
   SHOULD scale is built at exactly the content width. Section 4.2 of render spec.
-- **Mobile padding overrides (`mobileStylesPadding*`):** carried by properties on
-  the node, not by a `emaillove` shared key. Only exists on nodes where the design has a
-  distinct mobile padding value; the desktop padding does not double as the mobile one.
 - **Mobile stacking of columns:** default behavior for `mj-column` inside `mj-section`.
   Suppress with `stackColumns='false'` (above) or by wrapping the columns in an
   `mj-group`. The choice between the two is a decision, not a preference: `mj-group`
@@ -335,6 +332,44 @@ The load-bearing rule from all of this: **not every mobile behavior is a plugin 
 When the exporter surprises you, first check whether the intended behavior is Figma-side
 (layout sizing, width relationship, node property) before you go hunting for a key that
 does not exist.
+
+### Mobile Styles ARE shared plugin data: two schemas, both observed
+
+Everything below was read back off nodes AFTER the plugin's own Mobile Styles tab wrote them.
+That provenance is the point: an earlier conversion invented plausible key names
+(`mobileStylesFontSize`, `isFontSizeActive`), wrote them to 23 frames, verified them by reading
+its own writes back, and shipped a library where none of it did anything. Worse, one invented
+activation flag switched a control on at its default value and the customer's body copy rendered
+at 10px. **Never write a plugin-data key you have not observed the plugin itself write.** To
+observe one: have a human set the value once in the Mobile Styles tab, then dump the node's
+shared keys and copy exactly what appeared.
+
+**Schema A, container spacing.** On `mj-wrapper`, `mj-section`, `mj-column`, and leaf pair
+wrappers:
+
+| key | value |
+| --- | --- |
+| `mobileStylesPaddingTop/Right/Bottom/Left` | px number as a string |
+| `isPaddingActive` | `'true'`, REQUIRED. Without it the padding values are stored and silently ignored |
+| `stackColumns` | `'true'` / `'false'` |
+| `mobileStylesHideInMobileDevice` / `mobileStylesHideInDesktopDevice` | `'true'` |
+
+**Schema B, type.** On the `mj-text` / `mj-button-text` TEXT node itself, NOT the frame:
+
+| key | value |
+| --- | --- |
+| `fontSize` | mobile px number as a string |
+| `fontSize_mode` | `'override'`, the switch; without it the value is ignored |
+| `lineHeight`, `lineHeight_mode` | same pattern, only when a mobile line height is genuinely needed (see the percentage rule in Phase 2 step 3; usually it is not) |
+| `letterSpacing`, `letterSpacing_mode` | same pattern |
+
+Two different conventions in one panel: containers use a `mobileStyles` prefix plus a shared
+`isPaddingActive` flag; type uses bare property names plus a per-property `_mode` switch, on a
+different node than the panel is opened from. Do not rationalise them into one scheme, and do
+not trust this table over a fresh observation if the plugin has shipped since it was written.
+
+**Read-back is necessary but NOT sufficient.** Your own write always reads back. The only
+end-to-end verification is a render: export or preview, and measure the mobile output.
 
 ### Build the foundations
 
@@ -672,6 +707,28 @@ Build the scaffold every later batch depends on:
    the ramp passes, that is evidence against the FACTOR, so take it back to the audit and the
    designer and move the whole ramp together. Never adjust the one style and leave the rest of
    the ramp where it was.
+
+   **Line heights in every text style are PERCENT, never PIXELS.** The exporter emits a percent
+   line height as a unitless ratio, which scales with the font size at every breakpoint; a pixel
+   value is frozen at every breakpoint. Measured failure: 17px mobile copy rendering on its
+   desktop 33px line box, double-spaced. Converting is lossless on desktop (27px body at 33px
+   becomes 122.2%, which is still 33px) and makes mobile line heights automatic; no mobile
+   line-height override is needed at all. Convert the ramp's pixel values at build time:
+   `percent = px / fontSize * 100`.
+   **The bold-range trap that comes with this:** `setRangeFontName` (used for a bold run inside
+   a body paragraph) detaches that range from the text style, so a later style-level line-height
+   change leaves the range frozen at the old pixel value: one paragraph tight, its sibling
+   double-spaced, same node. After any per-range font work, `setRangeLineHeight(0, length, ...)`
+   with the style's percent value, and verify with `getStyledTextSegments(['lineHeight'])`
+   returning ONE segment.
+
+   **Then take the MOBILE ramp from the audit's Mobile styles section verbatim.** It is a
+   two-anchor compression, not the scale factor applied again; the audit has the rule and the
+   measured case. Foundations records the numbers (report + Type page, `Body: 27px desktop /
+   18px mobile`); Phase 3 step 3 writes them per module using Schema B (the `fontSize` +
+   `fontSize_mode` keys on the TEXT node; see "Mobile Styles ARE shared plugin data" above).
+   Where the audit predates this contract, derive here with the audit's two-anchor rule and say
+   you did.
 4. **Buttons page.** Rebuild each of their button styles as a component: correct email
    construction (a styled frame with a single text node), not their app-style nested
    instances. These become the sub-components nested inside mj-button-Frames, and they are
@@ -707,6 +764,18 @@ Build the scaffold every later batch depends on:
    producing a ghost headline inside the picture that only surfaced at the visual check.
    Bulk pipelines that crop from a canvas render are the failure mode; export each image
    node individually.
+   **Transparency for dark mode: key UI icons, never brand logos, and check before keying.**
+   Icons rendered off their light band carry that band baked in, and on a dark-mode ground they
+   read as solid light boxes; so social icons, store badges, and decorative marks should be
+   keyed to transparent PNGs. Use a border-connected flood fill, never a global colour replace
+   (artwork legitimately contains the band colour inside itself; a global replace punches holes
+   through it). **But a brand logo is different, and this is a measured failure: a logo whose
+   letterforms depend on its band (dark ink with brand-colour counters, designed for a yellow
+   bar) was keyed transparent and became illegible ink-on-ink in dark mode; the customer's
+   words were "you butchered it".** Before keying ANY asset, check what remains against
+   `#1F1F1F`: if the surviving ink does not clear contrast on a dark ground, ship it opaque
+   with its band intact, and say so in the report. Logos default to opaque; this is the
+   dark-mode sibling of the never-resize-a-logo rule.
 7. **Root EMAIL TEMPLATE frame** on Campaigns at the audit's target email width (600 or 640,
    never the source canvas width when the source was not at email scale; 600 on a REFERENCE ONLY
    source unless the customer's ESP or brand asks for 640): vertical
@@ -715,8 +784,11 @@ Build the scaffold every later batch depends on:
    `setSharedPluginData('emaillove', 'nodeType', 'mainFrame')` plus backgroundColor,
    contentColor, textColor, linkColor, buttonTextColor, buttonContentColor,
    lightThemeBackgroundColor, and fallBackFontName (section 2.1 of the render spec has all
-   nine keys and what each one is for). Empty theme keys are not neutral: the exporter
-   substitutes dark defaults.
+   nine keys and what each one is for). **The six theme keys are DARK MODE values: take them
+   from the audit Palette's dark-mode proposal, or the house defaults (`#000000` page,
+   `#1F1F1F` content, `#FFFFFF` text and links, `#FFFFFF` button with `#000000` label), and
+   never the light palette repeated**, which only fires in dark mode and ships light-on-light
+   there. `lightThemeBackgroundColor` is the one light value in the set.
    **This is the only `mainFrame` foundations produces, and it is an email, not a module.**
    It exists so batch 1 has somewhere to drop modules and see them in context. The modules
    themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
@@ -804,6 +876,9 @@ Pages, in canonical order:
       Then look at it: does the ramp step evenly? A step that reads wrong beside its neighbors is
       a factor problem, not a style problem, on a source built through a factor, and a mis-built
       standard ramp on one that was not (step 3).
+- [ ] **Every text style's line height is PERCENT**: read them back; a PIXELS unit anywhere is
+      a fail (it freezes the mobile line box). And **the mobile ramp is recorded** with its two
+      anchors, in the report and on the Type page. Numbers only; nothing written to nodes yet.
 - [ ] **Buttons:** one component per audit button style, each labeled, each a styled frame with a
       single text node, the label's TEXT property on the component itself, no loose instances left
       on the page.
@@ -1065,6 +1140,15 @@ This mapping covers almost everything you will meet:
 | A photo that overlaps or bleeds past the block it belongs to | a two column row: one `mj-section`, two `mj-column`s, image in one and text in the other (render spec 3.4.1) | Email has no z-order and no absolute positioning, so the overlap cannot be reproduced. The Two Column Swap is the standard substitute, not a judgment call. |
 | A composition that genuinely cannot be rebuilt | an untagged frame in a column | Deliberately flattened to a hosted image, still editable in Figma. |
 
+- **Multi-column rows top-align by default.** Columns holding different amounts of content
+  otherwise centre against each other and the row reads as a jumble. The exporter reads a
+  column's `primaryAxisAlignItems` as `vertical-align` (MIN = top) and its
+  `counterAxisAlignItems` as the column `text-align`, two INDEPENDENT reads, so a column can
+  be top-pinned with centred text: primary MIN, counter CENTER. Set the parent section's
+  `counterAxisAlignItems = 'MIN'` too, so the canvas shows what the export does. This
+  deliberately relaxes the "both axes same value" rule for multi-column rows; single-column
+  sections keep the matched-axes rule as-is. Override to middle only where the design
+  demonstrably centres (a badge beside a headline in a lockup).
 - **Build the pair, do not style the wrapper.** The wrapper carries layout; the inner node
   carries content. An image is an `mj-image-Frame` containing a rectangle whose fill is the
   image, never a frame with an image fill on itself. A divider is an `mj-divider-Frame`
@@ -1208,24 +1292,41 @@ line, per section, in this format:
 A section with more than one column and no recorded decision is not done. Step 5's mobile
 verification fails a module where any multi-column section lacks a decision.
 
-**Part B: merge the mobile twin, if one exists.**
+**Part B: write the mobile styles. This ALWAYS runs.**
 
-Diff the source's mobile frame against its desktop sibling and express every intentional
-difference as Mobile Styles data on the rebuilt nodes, via shared plugin data:
+An earlier version fired only when the source had a mobile twin, which on a typical migration
+means never, and the result was a library correct at 640 and unreadable at 375. The audit's
+Mobile styles section is the input; writing it onto the built nodes is this step. Use ONLY the
+observed schemas from "Mobile Styles ARE shared plugin data" (Schema A containers, Schema B
+text nodes); an invented key fails silently and an invented activation flag actively breaks
+(the measured case shipped 10px body copy).
 
-- Padding: `mobileStylesPaddingTop/Right/Bottom/Left` (inner variants exist as
-  `mobileStylesInnerPadding*`).
-- Visibility: `mobileStylesHideInMobileDevice` / `mobileStylesHideInDesktopDevice` ("true").
-  Desktop-only and mobile-only twins of a region become two nodes, one hidden each way.
-- Alignment: `mobileStylesTextAlign` / `mobileStylesAlign`.
-- Column stacking on the wrapper when the mobile layout stacks: `stackColumns`.
+Per module:
 
-Ignore differences that are just the 390px frame being narrower; capture only deliberate
-changes (padding scale, hidden elements, alignment shifts, reordered stacks). When a
-difference cannot be expressed in these keys (different copy, different image crop), note it
-in the module's report line for the designer.
+- **Mobile font size on every `mj-text` and `mj-button-text` TEXT node** from the audit's
+  mobile ramp: `fontSize` = the mobile px, `fontSize_mode` = `'override'`. On the TEXT node,
+  not the frame.
+- **No mobile line heights**; the percentage line heights from Phase 2 step 3 ride the mobile
+  size automatically. Only write `lineHeight` + `lineHeight_mode` for a genuine per-module
+  exception, and record it.
+- **Mobile padding on every wrapper/section whose horizontal inset exceeds the mobile value**:
+  `mobileStylesPaddingTop/Right/Bottom/Left` plus `isPaddingActive = 'true'` on the same node.
+- **Stacked-column spacing:** every section whose columns stack on mobile (loose columns, not
+  `mj-group`) gets `mobileStylesPaddingBottom = '28'` + `isPaddingActive = 'true'` on each
+  column EXCEPT the last. Their desktop gutter is horizontal and disappears on stack; without
+  this, stacked cards and badges land flush against each other. The last column is excluded so
+  the section's own bottom padding is not doubled (0.7's rule).
+- **Visibility** per the audit's hide-on-mobile list; **alignment** where the mobile layout
+  differs; **stacking** decisions from Part A.
 
-When the source has no mobile twin, Part B is a legitimate skip. Part A is not.
+Then read every key back AND treat that as necessary, not sufficient: your own write always
+reads back, so the only true verification is a render (step 5's mobile check, or the step 6
+export). List everything written in the module's report line.
+
+**Where the source HAS a mobile twin**, diff it first and let measured differences win over the
+derived ramp for that module, noting which. Ignore differences that are only the narrower frame;
+capture deliberate ones. Inexpressible differences (different copy, different crop) go to the
+designer via the report.
 
 ### 4. Confirm the component shape, add properties, and pick its category
 
@@ -1310,10 +1411,14 @@ checklist at the end of `references/render-spec.md`:
     still untagged and still fails.
   - Every leaf is a complete tagged pair.
   - **Both alignment axes match on every auto-layout frame** (`primaryAxisAlignItems`
-    equals `counterAxisAlignItems`). This is the exporter contract, not a style preference:
-    a mismatched pair renders one way in Figma and another way in HTML. Batch 2 shipped
-    18 mismatches, propagated to 37 across three campaigns through instances. Walk every
-    auto-layout frame; report each mismatch as `<node id>: primary=X, counter=Y`.
+    equals `counterAxisAlignItems`), with ONE deliberate exception: a column in a
+    multi-column row may carry primary MIN with counter on the content's horizontal
+    alignment (the top-align default from step 2; the two are independent exporter reads,
+    render spec 3.4). Everywhere else this is the exporter contract, not a style
+    preference: a mismatched pair renders one way in Figma and another way in HTML. Batch 2
+    shipped 18 mismatches, propagated to 37 across three campaigns through instances. Walk
+    every auto-layout frame; report each mismatch as `<node id>: primary=X, counter=Y`,
+    marking multi-column top-align cases as intentional.
   - No detached instances.
   - No unrecognized frames except intentional editable-image regions.
   - `mj-column-inner`, if used, is literally `children[0]` of its column.
@@ -1439,12 +1544,15 @@ checklist at the end of `references/render-spec.md`:
   behavior matches the step 3 Part A decision. **The order matters on a migration**:
   build the batch, upload provisionally, render, diff, only then open the next batch.
   A construction mistake found at batch 1 is one fix; found at batch 5 it is five.
-- Mobile: every multi-column section has an explicit stacking decision from step 3 Part A
-  (either `mj-group` with the lockup reason, or `loose columns` with why stacking is expected),
-  and the shared plugin data keys that produce it are listed. A section with more than one column
-  and no recorded decision is a fail. An empty mobile list is impossible for a module with any
-  multi-column section: even "loose columns, stack expected, no keys set" is a real answer with a
-  visible line.
+- Mobile: every multi-column section has its step 3 Part A stacking decision recorded, and
+  step 3 Part B's keys are all present AND from the observed schemas only: `fontSize` +
+  `fontSize_mode` on every text node (read them back by node id), `isPaddingActive` beside
+  every mobile padding, 28px bottom on every non-last stacking column. **A mobile padding
+  without its flag, or a font size on the frame instead of the text node, is a FAIL that reads
+  back perfectly**, which is why the batch also needs step 6's render check before review.
+- **Range hygiene:** every text node returns ONE segment from
+  `getStyledTextSegments(['lineHeight'])`. A second segment means a bold or colour range is
+  carrying a detached frozen line height.
 
 ### 6. Export sniff test (once per batch)
 
@@ -1526,9 +1634,10 @@ For every `mainFrame` campaign root, confirm:
 - **All nine theme keys are populated with real values**, not empty strings (`backgroundColor`,
   `contentColor`, `textColor`, `linkColor`, `buttonTextColor`, `buttonContentColor`,
   `lightThemeBackgroundColor`, `fallBackFontName`, and the `nodeType = 'mainFrame'` marker
-  itself). Empty theme keys are not neutral: the exporter substitutes dark defaults and
-  wrecks a light email. See the Phase 2 inline key table for what each value should look
-  like.
+  itself). The six theme keys hold DARK MODE values (the audit Palette's dark proposal or
+  the house dark defaults), never the light palette repeated; `lightThemeBackgroundColor`
+  holds the light body background. See the Phase 2 inline key table for what each value
+  should look like.
 - **`emailSubject` and `emailPreHeader` are non-blank** and are real copy, not the module
   name or a `TODO`. A campaign whose subject reads `Campaign, Full library proof` or blank
   reaches an inbox with that string in the preview pane.
@@ -1583,7 +1692,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.34.0 of this skill. If you have web access, check once per conversation
+This is version 1.35.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

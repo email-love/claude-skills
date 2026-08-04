@@ -620,26 +620,28 @@ Create a top-level FRAME on the target page. It may be a COMPONENT instead
   | key | value |
   | --- | --- |
   | `nodeType` | `mainFrame` (this is how the plugin recognizes the template; without it nothing else matters) |
-  | `backgroundColor` | dark-mode page background. Use the mj-body/first-wrapper background hex so dark mode matches the design |
-  | `contentColor` | dark-mode content/section background. Use the dominant section background hex |
-  | `textColor` | dark-mode text color. Use the dominant mj-text `color` |
-  | `linkColor` | link color. Use the design link color, else same as textColor |
-  | `buttonTextColor` | the button label `color` (e.g. `#FFFFFF`) |
-  | `buttonContentColor` | the button `background-color` (e.g. `#2A3C1F`) |
-  | `lightThemeBackgroundColor` | the mj-body background hex; exports as mj-body `background-color` (defaults to `#ffffff` when empty) |
+  | `backgroundColor` | DARK MODE page background. House default `#000000` |
+  | `contentColor` | DARK MODE content/section background. House default `#1F1F1F` |
+  | `textColor` | DARK MODE text color. House default `#FFFFFF` |
+  | `linkColor` | DARK MODE link color. House default `#FFFFFF` |
+  | `buttonTextColor` | DARK MODE button label color. House default `#000000` |
+  | `buttonContentColor` | DARK MODE button background. House default `#FFFFFF` |
+  | `lightThemeBackgroundColor` | the LIGHT mj-body background hex; exports as mj-body `background-color` (defaults to `#ffffff` when empty). The one light value in the set |
   | `fallBackFontName` | `Arial` |
 
-  Empty theme keys are NOT neutral: the exporter substitutes dark defaults
-  (`#000000` background, white text), which wrecks a light email. Always set
-  all of them. Setting the dark keys equal to the light design colors makes
-  dark mode render identical to light, which is the correct behavior for a
-  first conversion pass. Where the values come from, in priority order:
-  1. If the migration has an established design-system palette (a reviewed
-     foundations phase, or theme colors the customer confirmed), use it on
-     EVERY email root, identically. Consistency across the system beats
-     per-email color matching.
-  2. Only when no such palette exists yet, derive the keys from THIS email's
-     own MJML colors as a stand-in, and flag them for design review.
+  **The six theme keys are DARK MODE values, and filling them with the light
+  palette ships light-on-light.** An earlier revision of this table said to use
+  the design's own light hexes ("so dark mode matches the design", "renders
+  identical to light"); that was verified WRONG against the exporter's dark-mode
+  CSS: those keys only fire inside the dark-mode media query, so a light
+  `backgroundColor` puts light text on a light ground the moment a client flips
+  to dark. Always set all of them. Where the values come from, in priority
+  order:
+  1. The audit's Palette section carries a dark-mode proposal per role with
+     contrast ratios; use it on EVERY email root, identically.
+  2. Where no audit proposal exists, use the house defaults above, which are
+     the exporter's own dark CSS values, and flag for design review. Never
+     substitute the light palette as a stand-in.
 - Optional: `emailSubject`, `emailPreHeader` (plain strings).
 - Also give the root frame a visible SOLID fill of the body background so the
   canvas looks right.
@@ -1022,6 +1024,12 @@ would have wrapped ugly on every phone. The arithmetic is cheap; run it.
   hug-height columns the vertical value is visually irrelevant. Do NOT try to
   honor the worker's `vertical-align: top` on a centered column; horizontal
   fidelity wins.
+
+  **Exception, multi-column rows:** when a section holds two or more columns whose content
+  heights differ, set `primaryAxisAlignItems = 'MIN'` (exports vertical-align: top) while
+  keeping `counterAxisAlignItems` on the content's horizontal alignment. The two properties are
+  independent exporter reads, so this does not disturb text-align. Top is the default for
+  multi-column rows; matched axes remain the rule for single-column sections.
 - Attribute mapping:
 
   | MJML attr | Figma property |

@@ -26,6 +26,49 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.35.0
+- **Mobile styles are now a first-class output, with VERIFIED plugin-data schemas** (batch 6,
+  from a live migration on 2026-08-03). New "Mobile Styles ARE shared plugin data" section in
+  Phase 2 replaces the batch 2 claim that mobile padding was node properties, which live
+  observation disproved. Two schemas, both read back off nodes AFTER the plugin's own Mobile
+  Styles tab wrote them: Schema A containers (`mobileStylesPadding*` + `isPaddingActive`,
+  values inert without the flag) and Schema B type (`fontSize`/`lineHeight`/`letterSpacing` +
+  `<prop>_mode='override'` on the TEXT node, not the frame). New hard rule: **never write a
+  plugin-data key you have not observed the plugin itself write**; an invented activation flag
+  switched a control on at its default and shipped 10px body copy.
+- **Phase 3 step 3 Part B rewritten: "write the mobile styles" and it ALWAYS runs.** The old
+  Part B fired only when the source had a mobile twin, which on a typical migration means
+  never, and the result was a library correct at 640 and unreadable at 375. Per module: mobile
+  font size on every TEXT node from the audit's ramp, no mobile line heights (percentages ride
+  the size), mobile padding with its flag, 28px mobile bottom padding on every non-last
+  stacking column (the desktop gutter is horizontal and vanishes on stack), visibility and
+  alignment per the audit. Read-back is necessary but not sufficient; only a render verifies.
+- **Line heights in every text style are PERCENT, never PIXELS.** A percent scales with the
+  font size at every breakpoint; a pixel value freezes (measured: 17px mobile copy on its
+  desktop 33px line box, double-spaced). Plus the `setRangeFontName` detachment trap: a bold
+  range detaches from its style and freezes its old line height; re-apply with
+  `setRangeLineHeight` and verify one segment.
+- **Dark mode: the six theme keys are DARK MODE values, never the light palette repeated.**
+  The old guidance ("set dark keys equal to light colors, renders identical") was verified
+  wrong against the exporter's dark CSS: those keys only fire in dark mode, so a light value
+  ships light-on-light. House defaults are the exporter's own dark CSS (#000000 page, #1F1F1F
+  content, #FFFFFF text/links, #FFFFFF button with #000000 label). Inline key table,
+  Phase 2 step 7, send-readiness pass, and render-spec 2.1 all corrected.
+- **Asset transparency for dark mode: key UI icons, never brand logos, check before keying.**
+  Border-connected flood fill, never a global colour replace. Measured failure: a logo whose
+  letterforms depend on its band was keyed transparent and became illegible ink-on-ink; logos
+  default to opaque (the dark-mode sibling of never-resize-a-logo).
+- **Multi-column rows top-align by default.** `primaryAxisAlignItems` (vertical-align) and
+  `counterAxisAlignItems` (text-align) are independent exporter reads, so primary MIN +
+  counter per content is valid. Relaxes the matched-axes rule for multi-column rows only;
+  the batch 3 enforcement-teeth checklist marks these as intentional.
+- Phase 2 checklist gains the percent-line-height + mobile-ramp-recorded item; Phase 3 step 5
+  Mobile item rewritten around the observed schemas plus a range-hygiene check
+  (`getStyledTextSegments(['lineHeight'])` returns ONE segment).
+- structure.md writable-keys table mobile rows corrected to the observed schemas.
+- Bumps to 1.35.0 (minor: verified schema replaces wrong guidance, Part B behavior change,
+  dark-mode correction).
+
 ### 1.34.0
 - **New multi-column gutter guardrail: zero column padding on a multi-column section is a
   FAIL** unless the source design has a measured zero gutter and the batch report says so
@@ -440,6 +483,31 @@ independent per skill. Every release attaches all three `.skill` bundles.
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.19.0
+- **Mobile type ramp is now a required, DERIVED audit output, and it is a compression, not a
+  scaling** (batch 6, from a live migration on 2026-08-03). Email clients do not scale type:
+  a declared size renders identically on a 375pt phone and a 640px desktop while the line box
+  nearly halves (measured: 27px copy went from 42 chars/line to 21, and the customer read it
+  as "the mobile rendering is not that good"). Single-factor derivation was tried, measured,
+  and rejected by the customer: one factor preserves the desktop headline:body ratio, which
+  is exactly what reads wrong on a phone. New Step 6 bullet derives with TWO anchors (body
+  desktop -> 16-18 mobile, largest workhorse headline -> 26-30 mobile), linear interpolation,
+  whole-pixel rounding, floor at 14. Deliberately NO ratio acceptance test against the
+  desktop ramp: matching the desktop ratio is the failure mode. Worked case: anchors 27->18
+  and 50->28 move headline:body from 1.85 to 1.56.
+- **New required "Mobile styles" report section** between Palette and Module inventory: the
+  two anchors, the mobile ramp table (floored rows marked), the statement that line heights
+  carry no mobile override because desktop styles use percentages, mobile spacing overrides
+  (side padding drop, 28px stacking bottom padding on non-last columns, over-160px sections,
+  group arithmetic), hide-on-mobile items, closing with designer decision. Where the source
+  has mobile variants, census instead of deriving.
+- **Palette section gains a dark-mode proposal**: the six theme keys are DARK MODE values,
+  so the Palette now proposes a dark value per role, starting from the exporter's house
+  defaults, with WCAG contrast ratios shown per pairing.
+- Step 8 hand-off list now names Mobile styles and the Palette's dark-mode proposal among
+  what Phase 2 consumes.
+- Bumps to 1.19.0 (minor: new required report section, new derivation).
 
 ### 1.18.1
 - **Frontmatter description trimmed under claude.ai's 1024-char upload limit.** The census

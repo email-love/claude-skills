@@ -705,6 +705,37 @@ comes from Step 3's email standards, with no factor involved anywhere.
   and that is better decided at audit than at batch 4. Batch 4: the source had value-prop
   captions at approximately 11px, which the converter standardised up to 12 mid-build; a
   floor recommendation in the audit would have surfaced the decision at foundations.
+- **Mobile type ramp, DERIVED, and it is a COMPRESSION, not a scaling.** Required output.
+  Email clients do not scale type: a declared size renders identically on a 375pt phone and a
+  640px desktop while the line box nearly halves. Measured: 27px body copy went from 42
+  characters per line at 640 to 21 at 375, same line pitch, and the customer reported "the
+  mobile rendering is not that good", presenting as a quality feeling, not a type bug.
+  **The remedy is a SECOND ramp via Email Love's Mobile Styles, never a smaller desktop ramp**
+  (that discards a brand decision to fix a problem the product already solves).
+  **Do NOT derive it with one factor.** This was tried, measured, and rejected by the customer:
+  a single factor faithfully preserves the desktop headline-to-body ratio, and that ratio is
+  exactly what reads wrong on a phone: the headline dominates a 375pt measure and body copy
+  looks tiny beside it. Mobile is a re-typesetting for a narrower measure: headlines compress
+  HARDER than body copy. Derive with TWO ANCHORS and interpolate linearly between them:
+
+  ```
+  body anchor:     desktop body    -> 16-18 mobile (18 on a large-ramp brand)
+  headline anchor: desktop largest workhorse headline -> 26-30 mobile
+  mobile(size) = A * size + B   through the two anchors, whole-pixel rounded
+  floor at 14
+  ```
+
+  Worked, from the migration this rule comes from: anchors 27 to 18 and 50 to 28 give
+  `64->34, 50->28, 34->21, 27->18, 18->14`, moving headline:body from 1.85 on desktop to 1.56
+  on mobile. That compression is the point; there is deliberately NO ratio acceptance test
+  against the desktop ramp here, because matching the desktop ratio is the failure mode, not
+  the goal. State both anchors and the floor as designer decisions.
+  **Line heights: no mobile values needed at all IF the desktop ramp uses percentage line
+  heights**; a ratio rides the mobile font size automatically. Flag any pixel line heights in
+  the source for conversion (Phase 2 step 3 of the converter has the rule and the measured
+  failure).
+  **Where the source HAS mobile variants, census them instead of deriving**; the table reads
+  `measured` in place of the anchors.
 - **Palette, CENSUSED rather than sampled, and CLUSTERED BY ROLE.** Same shape and rationale
   as the type ramp and spacing system above: enumerate every distinct fill hex used in the
   file, cluster near-duplicates within a small delta (2-3 units per channel, so `#3C023C`
@@ -799,8 +830,8 @@ comes from Step 3's email standards, with no factor involved anywhere.
 ## Step 7: Write the migration report
 
 Produce one markdown report, in this exact structure. **Source fidelity, Scale factor, Spacing
-system, Palette and Module inventory are required sections**: they are what Phase 2 consumes,
-and a report missing any one of them cannot be converted from. Source fidelity sits near the top because it changes how every
+system, Palette, Mobile styles and Module inventory are required sections**: they are what
+Phase 2 consumes, and a report missing any one of them cannot be converted from. Source fidelity sits near the top because it changes how every
 section below it should be read.
 
 # Migration audit: [Design system name]
@@ -874,11 +905,33 @@ listed as a line: `proposed pink #D03E75 vs source #C4014B, delta 60/60/42`**, s
 approving the theme is approving the drift too and not reading a lightened value as source
 fidelity. Additional source colors not carried into theme roles listed at the bottom (a
 decorative green used on one badge, a bright blue used on one hero), so nothing is silently
-dropped. Close with "designer decision" the same as Scale factor and Spacing system: the
+dropped.
+**Then the dark-mode proposal, because the six theme keys are DARK MODE values, not the
+light palette repeated.** Filling them with the light palette ships light-on-light in dark
+mode (verified against the exporter's own dark CSS). Propose a dark value per role, starting
+from the exporter's house defaults (`#000000` page, `#1F1F1F` content, `#FFFFFF` text and
+links, `#FFFFFF` button with `#000000` label) and adjusting only where the brand has a real
+dark treatment, with the WCAG contrast ratio shown per pairing so the designer approves
+legible values, not hex strings.
+Close with "designer decision" the same as Scale factor and Spacing system: the
 census is measurement, the theme mapping is a recommendation. On REFERENCE ONLY: the census
 runs, the theme roles map onto census clusters as normal, no theme value invented from
 outside the file, and no deviation line is expected. Never omit the section: without it the
 foundations report reads as source-fidelity and the drift becomes invisible.]
+## Mobile styles
+[REQUIRED as a section. Phase 2 builds the mobile ramp from it and Phase 3 writes it per module.
+Open with the TWO anchors (body and headline, desktop -> mobile) and the interpolation they
+imply. Then the mobile type ramp as a table, one row per style: style, desktop size, mobile size,
+with floored rows (below 14) marked as floored. State that line heights carry no mobile override
+because the desktop styles use percentages, or list the exceptions.
+Then the mobile spacing overrides: the side padding text-bearing sections drop to on mobile (20
+unless the customer says otherwise); the 28px mobile bottom padding on every non-last column of
+every section that stacks (their desktop gutter is horizontal and vanishes on stack; without
+this, stacked content lands flush); any section whose desktop padding exceeds 160px; any
+`mj-group` needing the full viewport for the Step 5 group arithmetic.
+Then hide-on-mobile items, by module and row, with reasons.
+Close with "designer decision". Where the source has mobile variants, report measured values and
+say the derivation was skipped.]
 ## Module inventory
 [REQUIRED, deduplicated, and this is the section Phase 2 works from. One row per DISTINCT
 module: module name | category | appears in (design names) | source ref | verdict A/B/C/D |
@@ -977,8 +1030,12 @@ both:
    with the source refs, verdicts, concessions, build constraints, categories, and effort, and
    its category ORDER, which becomes the order of the component pages in the converted file), the
    **Scale factor** (every number it builds is at that scale, where there is a factor at all), the
+   **Mobile styles** (the two-anchor mobile ramp Phase 2 records and Phase 3 writes per module,
+   plus the mobile spacing overrides and hide-on-mobile list), the
+   **Palette** (including its dark-mode proposal, which is where the six dark theme keys come
+   from), the
    **Brand foundations** (type
-   ramp on email-safe fallbacks, proposed theme colors, spacing, buttons, target email width, and
+   ramp on email-safe fallbacks, spacing, buttons, target email width, and
    the content margin percentage with the content width it converts to, which is where foundations
    gets its one library-wide content width),
    and the **Flags**.
@@ -1782,7 +1839,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.18.1 of this skill. If you have web access, check once per conversation
+This is version 1.19.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current

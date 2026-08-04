@@ -147,11 +147,20 @@ already set in **private** data always wins; agent values apply only where nothi
 | `href` | the tagged INNER node, never its `-Frame` wrapper: the `mj-button` frame, the `mj-image` rectangle, the hero | link. Each extractor is dispatched on the inner node's own tag and calls `getPD(node, 'href')` on it (`nodeJsonExtractor.ts:133` and `3687` for images, `209` and `3291` for buttons) |
 | `altText` | the `mj-image` RECTANGLE, same as `href` | alt text |
 | `emailSubject`, `emailPreHeader` | root | subject and preheader |
-| `mobileStylesPaddingTop/Right/Bottom/Left` (+ `Inner*`) | element frame | mobile padding |
-| `mobileStylesHideInMobileDevice` / `HideInDesktopDevice` = `'true'` | element frame | per-device visibility |
+| `mobileStylesPaddingTop/Right/Bottom/Left` (+ `Inner*`) | wrapper, section, column, or element frame | mobile padding. **Inert without `isPaddingActive`** |
+| `isPaddingActive` = `'true'` | same node as the padding | switches the padding override on. Omitting it is silent: values store, read back, and do nothing |
+| `fontSize` + `fontSize_mode` = `'override'` | the `mj-text` / `mj-button-text` TEXT node | mobile font size. Note: bare property name + `_mode` switch, on the TEXT node, a different convention from the padding keys |
+| `lineHeight` + `lineHeight_mode`, `letterSpacing` + `letterSpacing_mode` | the TEXT node | same pattern |
+| `mobileStylesHideInMobileDevice` / `HideInDesktopDevice` = `'true'` | any node | per-device visibility |
 | `mobileStylesTextAlign`, `mobileStylesAlign` | element frame | mobile alignment |
 | `stackColumns`, `reverseStack` | section/wrapper | mobile stacking |
 | `breakpoint` | root | when mobile styles switch on (defaults to frame width) |
+
+Mobile keys are FLAT on the node. The exporter's serialised JSON groups them into
+`mobileStylesCommonProperties` objects; that is the payload view, not the node store, and writing
+objects back onto nodes does not work. All of the above were observed by having the plugin's
+Mobile Styles tab write them and reading the node back; treat any key NOT in this table as
+unverified until observed the same way.
 
 There is **no** plugin data key that saves a component into a plugin section. Do not write
 `saveName` or `saveCategory`; the plugin reads neither. See "Promoting a frame: an EMAIL
