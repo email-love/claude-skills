@@ -26,6 +26,28 @@ independent per skill. Every release attaches all three `.skill` bundles.
 
 ## emaillove-eds-converter
 
+### 1.36.0
+- **Phase 3 verification consolidated: one read-back pass per module, batch checks hoisted.**
+  Step 5 had grown to seventeen prose checks across six defect-fix batches, each written as
+  its own walk of the tree. Same coverage, restructured: read the built module back ONCE
+  (one dump per node: type, layout, axes, paddings, resolved geometry, fills and bindings,
+  plugin data, property references, line-height segments), then evaluate five predicate
+  groups locally (shape and tags, sizing, geometry against foundations, fills and bindings,
+  mobile data), listing violations by node id. One screenshot for the desktop visual check.
+  Every measured case and rationale preserved in compressed form; no check dropped.
+- **Step 6 is now "Batch checks": the mobile render joins the export sniff.** Both share the
+  provisional-upload precondition, so they run as one flow once per batch. The mobile render
+  (`emaillove_preview_email`) was written per-module in step 5 but always operated at batch
+  level; it now lives where it runs.
+- **Small-library single-batch allowance.** A library of 8 or fewer modules may run as ONE
+  batch with one design review before upload; the batch structure exists to stop defects
+  propagating across batches, and a single batch has nothing to propagate into. Above that,
+  roughly five modules per batch stands: batch 1 always surfaces something.
+- Motivation: Figma round trips are the conversion's stated bottleneck, and a seventeen-item
+  list of separate walk instructions either costs N walks or gets skimmed. One walk, local
+  evaluation, same teeth.
+- Bumps to 1.36.0 (minor: verification restructure, no coverage change).
+
 ### 1.35.0
 - **Mobile styles are now a first-class output, with VERIFIED plugin-data schemas** (batch 6,
   from a live migration on 2026-08-03). New "Mobile Styles ARE shared plugin data" section in

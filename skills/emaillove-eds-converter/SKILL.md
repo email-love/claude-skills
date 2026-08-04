@@ -941,7 +941,11 @@ Read it before the first module of a batch.
 **One module per row of the audit's Module inventory.** The batch is a group of those rows, and
 each row already tells you the module's name (use it verbatim as the component name), its
 category, the designs it appears in, its source ref, its verdict, its concession if any, its
-build constraints, and its effort. Where a module appears in several designs, the source ref
+build constraints, and its effort. **A library of 8 or fewer modules may run as ONE batch**,
+with one design review before upload; the batch structure exists to stop defects propagating
+across batches, and a single batch has nothing to propagate into. Above that, stay at roughly
+five modules per batch: batch 1 always surfaces something, and the review after it is the
+highest-value gate in the whole conversion. Where a module appears in several designs, the source ref
 names the one appearance to convert from, so convert it ONCE from there and note that design; the
 other appearances are the same component placed again, not more work. When a row has no source
 ref, pick the cleanest appearance yourself and record which one in the batch report, so a
@@ -1320,8 +1324,8 @@ Per module:
   differs; **stacking** decisions from Part A.
 
 Then read every key back AND treat that as necessary, not sufficient: your own write always
-reads back, so the only true verification is a render (step 5's mobile check, or the step 6
-export). List everything written in the module's report line.
+reads back, so the only true verification is a render (step 6's batch checks: the mobile
+render and the export sniff). List everything written in the module's report line.
 
 **Where the source HAS a mobile twin**, diff it first and let measured differences win over the
 derived ramp for that module, noting which. Ignore differences that are only the narrower frame;
@@ -1390,171 +1394,100 @@ component name** becomes the component name, so the layer name you set in step 2
 thing that carries. Record the category you chose per module in the batch report, so a human
 can correct any misfits in one pass rather than hunting for them later.
 
-### 5. Verify per module
+### 5. Verify per module: ONE read-back pass, then one screenshot
 
-Verify against `references/structure.md` (the plugin's ground truth) and the post-build
-checklist at the end of `references/render-spec.md`:
+Verification is expensive in Figma round trips, so do not walk the tree once per check.
+**Read the built module back ONCE**, into a single dump per node: node type, layer name,
+layout mode and sizing, both alignment axes, paddings, resolved x/width, fills and their
+variable bindings, all `emaillove` shared plugin data, component property references, and
+(on text nodes) `getStyledTextSegments(['lineHeight'])`. Evaluate every predicate below
+against that dump locally. **List every violation by node id in the batch report; an empty
+list per group is the only pass.** A "walked the tree, looked fine" pass is what shipped 18
+alignment mismatches and 18 untagged button TEXT children on batch 2 without a single line
+of the checklist reporting anything.
 
-- **Shape, first and hardest:** the root is a COMPONENT tagged `mj-wrapper`, its layer name is
-  the module name, and `nodeType` is empty on the root **and on every node below it**. Read it
-  back; do not assume. A module carrying `mainFrame` uploads as a whole email, and a module
-  with a wrapper nested inside another wrapper is an email in disguise. No theme color keys
-  unless a designer asked for a dark-mode treatment on that block.
-- Structural checklist, and each of these is a walk-and-list, not a walk-and-eyeball. **List
-  every violation by node id in the batch report; an empty list is the only pass.** A
-  "walked the tree, looked fine" pass is what shipped 18 alignment mismatches and 18
-  untagged button TEXT children on batch 2 without a single line of the checklist
-  reporting anything:
-  - `name` plugin data key resolves to a real tag on **every** tagged node (nothing relying
-    on the layer-name fallback). Includes the TEXT child of every `mj-button`, which must
-    carry `mj-button-text`; a foundation-button instance whose inner text is untagged is
-    still untagged and still fails.
-  - Every leaf is a complete tagged pair.
-  - **Both alignment axes match on every auto-layout frame** (`primaryAxisAlignItems`
-    equals `counterAxisAlignItems`), with ONE deliberate exception: a column in a
-    multi-column row may carry primary MIN with counter on the content's horizontal
-    alignment (the top-align default from step 2; the two are independent exporter reads,
-    render spec 3.4). Everywhere else this is the exporter contract, not a style
-    preference: a mismatched pair renders one way in Figma and another way in HTML. Batch 2
-    shipped 18 mismatches, propagated to 37 across three campaigns through instances. Walk
-    every auto-layout frame; report each mismatch as `<node id>: primary=X, counter=Y`,
-    marking multi-column top-align cases as intentional.
-  - No detached instances.
-  - No unrecognized frames except intentional editable-image regions.
-  - `mj-column-inner`, if used, is literally `children[0]` of its column.
-- Sizing: walk the tree and confirm every frame is vertical HUG, the only fixed height is an
-  `mj-spacer`, every FIXED width is one of the load-bearing cases, every pinned width that
-  carries text has slack (render spec section 3.3.1), and each button's width sizing was
-  chosen for its mobile behavior (render spec section 0). **The wrapper itself is FIXED at the
-  target email width, on the component AND on every instance placed in the root email frame.**
-  A wrapper set to FILL is a fail: it inherits from its container instead of pinning its own
-  width, so the export math is ambiguous and the same instance breaks the moment it is placed
-  somewhere else. Phase 2 step 7 has the rationale.
-- Concession honored, where the row carried one: on a module built with the Two Column Swap, both
-  columns are FIXED and their widths sum to the section content box, the text column's pin has
-  slack, the `mj-image` rectangle is at the image column's
-  content width with the crop's natural aspect for its height, there is no `mj-group` around the
-  pair, and nothing in the block was flattened to an image (render spec 3.4.1). Confirm too that
-  the overlap was not reproduced by some other means.
-- Scale: the module root is at the audit's target email width, and its type sizes, paddings, and
-  image dimensions are at email scale rather than source scale (render spec section 0.6). A
-  module built at source scale looks correct in isolation and wrong the moment it sits next to
-  another module, so check it before the batch grows. **On a REFERENCE ONLY source, the check is
-  that no source measurement reached the module at all:** every type size is one of the ramp's,
-  every padding is off the spacing scale, and the text column resolves to the library content width.
-  Do not check the module against the source's proportions, because matching them is not the goal
-  and a mismatch is not a finding.
-- **Spacing system: every side padding, vertical padding and gutter in the module resolves to a
-  value listed in the audit's Spacing system section**, no exceptions except the exceptions the
-  audit named (a full-bleed image band with zero side padding, a wide-quote outset). Walk the built
-  module and list each padding with the role and system value it satisfies; a padding that resolves
-  to nothing is a fail, and the remedy is a designer question about the system, not a silent
-  override inside the module. This is a cross-module check by nature: a per-module value looks
-  reasonable on its own and produces the batch 2 defect (thirty distinct side insets across
-  twenty-eight modules, one of them broken on mobile) the moment the batch grows. Confirm too that
-  no mobile padding is greater than 160px on a 320 viewport, because that is a defect regardless of
-  what the system carries.
-- **Group columns resolve wide enough on mobile** (render spec section 3.3.2). For every
-  `mj-group` column in the module, compute the resolved width at a 375px viewport
-  (`columnWidth / groupWidth * (375 - mobile side padding)`), and per column list what it
-  needs to fit: the longest unbreakable word in the exported font times 1.05 for a text
-  carrier, or the natural width of the image for a fixed-aspect-image carrier. Any column
-  whose resolved width fails its requirement is a fail; the remedy is not slack, it is one
-  of the three restructures in 3.3.2 (collapse to one reflowing `mj-text` with
-  `setRangeHyperlink` ranges, drop the group so columns stack, or hide the column with
-  `mobileStylesHideInMobileDevice`). This is invisible on the Figma canvas and in the
-  desktop preview by construction: a group column that fails at 375 renders `CHA / NGI / NG`,
-  `G / E / A / R` on phones and passes every other check in this list.
-- **Semantic-token bind count: every non-placeholder solid fill in the module resolves to a
-  variable binding from the audit's Palette**, not to a raw hex. Walk every fillable node,
-  list any unbound solid fill by node id with the raw hex and the role it should have
-  (`brand background`, `headline text`, `button background`, `divider`, `footer fill`, and
-  so on). Empty list is the only pass. Placeholder gray fills for editable image regions are
-  the only allowed exception, and each one gets a line saying it is an intentional
-  placeholder. Batch 2 shipped 43 unbound fills (31 real, 12 placeholder) and every
-  downstream color change had to touch each of the 31 by hand, which is exactly the state
-  a design system is meant to remove. When an unbound fill has no theme role, that is a
-  question for the designer about extending the palette, not a silent leave-it-raw.
-- **Content width: read the resolved x and width of the text-bearing column off the built module
-  and confirm it equals the library content width from foundations**, not the worker's number. On a
-  multi-column row confirm the columns plus gutters sum to it. This is a cross-module check by
-  nature, so it cannot be judged from the module in front of you: compare the number against
-  foundations, never against how the module looks. A module with the wrong content width passes
-  every other line in this list, which is why it reaches a reviewer as a text edge that moves while
-  scrolling (render spec 0.3.1).
-- **Multi-column gutter present. A section with more than one column and zero horizontal
-  column padding is a FAIL** unless the source design has a measured zero gutter AND the
-  batch report says so verbatim. The content-width equation above passes trivially at zero
-  gutter (`card + 0 + card + 0 + card = content`), so the arithmetic gate cannot catch this
-  by itself. Walk every multi-column section, list the horizontal padding on each column,
-  and confirm at least one side of each column boundary carries the source's measured
-  gutter (render spec section 3.4.0: spacing on one side of each boundary only, never both). On a
-  three-column row with a 560 content box and a 16px source gutter, columns take
-  `(560 - 32) / 3 = 176`px content each, expressed as 186.67px column boxes with 8px on
-  each side, so the boundary carries 16px between adjacent content. **Failure signature:**
-  columns correctly sum to the content width but headlines from adjacent columns visually
-  concatenate into one sentence; a card image touches the next card's edge; a button sits
-  a pixel from a neighbour. Treat any of those as a gutter failure, not a typography
-  problem. From Codex's build of a three-column module with zero column padding: geometry
-  validated, content collapsed.
-- Naming: every layer carries the display name for its tag, and no friendly string leaked
-  into the plugin data `name` key.
-- Component: the module root is a direct child of its category page, not inside a component
-  set or a Figma section, with no stray instances of it left loose on the page. Every property
-  binding re-read and confirmed. **If the module contains any button, the module root exposes
-  a TEXT property for that button's label** (`Button label`, or `Card N button label` in a
-  grid). A button whose label lives only on the foundation component fails this check: the
-  marketer instancing the module cannot reach the label from the top-level property panel.
-  List by node id each button whose label is not surfaced at module level.
-- Visual: screenshot the rebuild next to the source screenshot from step 1; flag
-  divergences rather than silently accepting them. **On a REFERENCE ONLY source, read that
-  comparison for content and structure only:** the same blocks, in the same order, with the same
-  copy and the same imagery. Margins, type sizes, and spacing are expected to differ, and listing
-  them as divergences buries the ones that matter under noise a reviewer will then try to fix.
-  **On a module that comes out taller than the source by 20-40px, do not eyeball a nudge:
-  detect the rendered content bands and compute the padding correction.** Figma text nodes
-  render taller than the hand-placed box reports, and a first-pass rebuild typically overshoots
-  height by that margin. Detect the content bands (runs of non-canvas pixels) in the source
-  PNG and in the rebuild PNG, diff the two, and derive exact padding corrections from the
-  difference. That turns a subjective back-and-forth loop into a deterministic two-pass one,
-  and on batch 2 it got 24 of 28 modules onto their source height. The technique is the
-  same shape as the band detection the audit uses for module boundaries; the difference is
-  that here it fires on one module at a time and produces a padding number rather than a
-  boundary.
-  **Mobile visual: render it, do not reason about it.** Figma's canvas has no mobile
-  breakpoint, so `get_screenshot` at 390px just renders the canvas at 390px, not the
-  plugin's mobile treatment. An agent that follows the older "second screenshot pair at
-  mobile width" instruction is looking at desktop-shaped pixels resized, not at what
-  reaches an inbox on a phone, and the check silently degrades to a recorded stacking
-  intention. Use the plugin's headless render instead: after the batch's modules are
-  built and uploaded to the plugin library (which requires the hand-off's send-readiness
-  pass on this batch first, or a provisional QA upload of just this batch's wrappers),
-  compose a test email from them and call `emaillove_preview_email` on the compose
-  token; the response carries desktop and mobile renders from the exporter. Diff the
-  mobile view against the source's mobile view (or the source screenshot for a source
-  without a mobile design). **Fail the batch on any of these**, each of which is
-  invisible on the Figma canvas and in a desktop pair:
-  - a word broken mid-string (this is the section 3.3.2 group-shrink defect)
-  - an image whose aspect ratio differs from the desktop view (same class)
-  - a stacked column still carrying its desktop gutter as an indent
-  - a section that stacked where step 3 Part A recorded a group decision, or grouped
-    where it recorded stack
+**Group 1: shape and tags.**
+- Root is a COMPONENT tagged `mj-wrapper`, layer name = module name, `nodeType` empty on the
+  root and on every node below it (a module carrying `mainFrame` uploads as a whole email).
+  No theme color keys unless a designer asked for a dark-mode block treatment.
+- `name` key resolves to a real tag on every tagged node, including `mj-button-text` on
+  every button's TEXT child (an untagged inner text of a foundation-button instance still
+  fails). Every leaf is a complete tagged pair. No unrecognized frames except intentional
+  editable-image regions. `mj-column-inner`, if used, is literally `children[0]` of its
+  column. No detached instances. Layer names carry display names; no friendly string leaked
+  into the `name` key.
+- Both alignment axes match on every auto-layout frame, with ONE deliberate exception:
+  multi-column top-align (primary MIN + counter per content, the step 2 default; independent
+  exporter reads, render spec 3.4). Report each mismatch as `<node id>: primary=X,
+  counter=Y`, marking top-align cases intentional. Batch 2 shipped 18 mismatches through
+  instances into 37.
 
-  Then walk every multi-column section on the mobile render and confirm its actual
-  behavior matches the step 3 Part A decision. **The order matters on a migration**:
-  build the batch, upload provisionally, render, diff, only then open the next batch.
-  A construction mistake found at batch 1 is one fix; found at batch 5 it is five.
-- Mobile: every multi-column section has its step 3 Part A stacking decision recorded, and
-  step 3 Part B's keys are all present AND from the observed schemas only: `fontSize` +
-  `fontSize_mode` on every text node (read them back by node id), `isPaddingActive` beside
-  every mobile padding, 28px bottom on every non-last stacking column. **A mobile padding
-  without its flag, or a font size on the frame instead of the text node, is a FAIL that reads
-  back perfectly**, which is why the batch also needs step 6's render check before review.
-- **Range hygiene:** every text node returns ONE segment from
-  `getStyledTextSegments(['lineHeight'])`. A second segment means a bold or colour range is
-  carrying a detached frozen line height.
+**Group 2: sizing.**
+- Every frame vertical HUG; the only fixed height is an `mj-spacer`. Every FIXED width is a
+  load-bearing case; every pinned width carrying text has 3.3.1 slack; each button's width
+  sizing matches its intended mobile behavior (section 0). The wrapper itself is FIXED at
+  the target email width, on the component AND on every placed instance (a FILL wrapper
+  leaves the export math ambiguous; Phase 2 step 7).
 
-### 6. Export sniff test (once per batch)
+**Group 3: geometry against foundations.** These compare numbers against foundations and the
+audit, never against how the module looks:
+- Module root at the audit's target email width; every type size, padding, and image
+  dimension at email scale (0.6). On REFERENCE ONLY the check is that NO source measurement
+  reached the module: ramp sizes, scale paddings, library content width, and a mismatch with
+  the source's proportions is not a finding.
+- Content width: the text-bearing column's resolved x/width equals the library content width
+  from foundations, not the worker's number; multi-column rows sum columns plus gutters to it
+  (0.3.1: the wrong number here reads as a text edge that moves while scrolling).
+- Spacing system: every side padding, vertical padding, and gutter resolves to a value in the
+  audit's Spacing system section, or to an audit-named exception. A value that resolves to
+  nothing is a designer question, not a silent override (batch 2: thirty distinct side insets
+  across twenty-eight modules). No mobile padding greater than 160px on a 320 viewport.
+- Multi-column gutter present: a section with more than one column and zero horizontal column
+  padding is a FAIL unless the source has a measured zero gutter AND the batch report says
+  so. The content-width sum passes trivially at zero gutter, so this predicate exists
+  separately (render spec 3.4.0 has the worked example; failure signature: adjacent
+  headlines concatenate into one sentence).
+- Group mobile shrink: per `mj-group` column, `resolved = columnWidth / groupWidth * (375 -
+  mobile side padding)` must fit the longest unbreakable word times 1.05 (text) or the image's
+  natural width (fixed-aspect image). A failing column needs one of 3.3.2's three
+  restructures, not slack. Invisible on canvas and in desktop renders by construction
+  (`CHA / NGI / NG`).
+
+**Group 4: fills and bindings.**
+- Every non-placeholder solid fill resolves to a variable binding from the audit's Palette;
+  list unbound fills by node id with raw hex and intended role. Placeholder grays for
+  editable-image regions are the only exception, each named as intentional (batch 2: 43
+  unbound fills, every downstream color change touched 31 nodes by hand).
+- Component properties re-read and confirmed via `componentPropertyReferences`. If the module
+  contains any button, the module root exposes a TEXT property for its label (`Button label`
+  / `Card N button label`); a label living only on the foundation component fails.
+- Module root is a direct child of its category page, not inside a component set or Figma
+  section, no stray instances loose on the page.
+- Concession honored where the row carries one: Two Column Swap built per 3.4.1 (FIXED
+  columns summing to the content box, slack on the text pin, image at column content width
+  and natural aspect, no group, nothing flattened, overlap not reproduced by other means).
+
+**Group 5: mobile data.**
+- Every multi-column section has its step 3 Part A stacking decision recorded.
+- Part B keys present AND from the observed schemas only: `fontSize` + `fontSize_mode` on
+  every TEXT node, `isPaddingActive` beside every mobile padding, 28px bottom on every
+  non-last stacking column. A mobile padding without its flag, or a font size on the frame
+  instead of the TEXT node, is a FAIL that reads back perfectly, which is why step 6's batch
+  render exists.
+- Range hygiene: every text node returns ONE segment from
+  `getStyledTextSegments(['lineHeight'])`; a second segment is a detached frozen line height.
+
+**Then one screenshot: the desktop visual check.** Screenshot the rebuild next to the source
+screenshot from step 1; flag divergences rather than silently accepting them. On REFERENCE
+ONLY, read the comparison for content and structure only (margins, type sizes, and spacing
+are expected to differ; listing them buries real divergences). **On a module 20-40px taller
+than the source, do not eyeball a nudge:** detect the content bands (runs of non-canvas
+pixels) in both PNGs, diff, and derive exact padding corrections; the deterministic two-pass
+loop got 24 of 28 batch 2 modules onto their source height.
+
+The mobile render check runs once per batch, not per module: step 6.
+
+### 6. Batch checks: export sniff + mobile render (once per batch)
 
 Everything in step 5 is a Figma-side check. The plugin's exporter is what decides whether a
 group overflows, whether a button goes full width, whether an image scales, and no other step
@@ -1562,9 +1495,35 @@ in this phase looks at its output. A batch that passes every Figma check can sti
 mobile defects that only exist in the exported HTML: on batch 2 this ate five rounds of
 design review, each spent reverse-engineering exporter behavior by pixel-measuring preview
 PNGs, when one export read would have surfaced the group overflow, the button width and the
-fluid-image behavior together in the first batch.
+fluid-image behavior together in the first batch. And three of four batch 4 corrections were
+mobile-only, every one caught by the customer manually exporting screenshots; the customer
+should not be the mobile test harness when there is a headless render for it.
 
-Once per batch, after the individual modules have passed step 5:
+Both checks below share one precondition: **upload the batch's wrappers to the plugin library
+provisionally** (a QA upload of just this batch is fine; the full send-readiness pass happens
+at hand-off). The order matters on a migration: build the batch, upload provisionally, run
+these checks, only then open the next batch. A construction mistake found at batch 1 is one
+fix; found at batch 5 it is five.
+
+**Check A: the mobile render. Render it, do not reason about it.** Figma's canvas has no
+mobile breakpoint, so `get_screenshot` at 390px just renders desktop-shaped pixels at 390px,
+not the plugin's mobile treatment; that check silently degrades to a recorded stacking
+intention. Instead, compose a test email from the batch's uploaded modules and call
+`emaillove_preview_email` on the compose token; the response carries desktop and mobile
+renders from the exporter. Diff the mobile view against the source's mobile design (or the
+source screenshot where none exists). **Fail the batch on any of these**, each invisible on
+the Figma canvas and in a desktop pair:
+
+- a word broken mid-string (the section 3.3.2 group-shrink defect)
+- an image whose aspect ratio differs from the desktop view (same class)
+- a stacked column still carrying its desktop gutter as an indent
+- a section that stacked where step 3 Part A recorded a group decision, or grouped where it
+  recorded stack
+
+Then walk every multi-column section on the mobile render and confirm its actual behavior
+matches the step 3 Part A decision.
+
+**Check B: the export sniff.**
 
 - **Pick one representative module.** A multi-column one is best, because mobile behavior
   lives in the columns; if the batch has both a header lockup and a card row, pick the card
@@ -1598,9 +1557,10 @@ Once per batch, after the individual modules have passed step 5:
   is generated from), re-export, re-read. A batch that ships with a known exporter defect
   costs a design-review round per module the same defect touches; the sniff is what stops
   that from happening.
-- **The sniff is not a replacement for step 5**, it is a second-pass check on a different
-  artifact. A module that passes both is much less likely to surface a mobile defect at
-  design review. A module that passes step 5 alone is batch 2.
+- **The batch checks are not a replacement for step 5**; they are a second pass on a
+  different artifact (the exporter's output rather than the Figma tree). A batch that passes
+  both is much less likely to surface a mobile defect at design review. A batch that passes
+  step 5 alone is batch 2.
 
 ### 7. Batch report and gate
 
@@ -1692,7 +1652,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.35.0 of this skill. If you have web access, check once per conversation
+This is version 1.36.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to its entry there. That file lists each skill's current
