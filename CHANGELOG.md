@@ -564,6 +564,23 @@ claude plugin install email-love@email-love
 
 ## emaillove-migration-audit
 
+### 1.20.0
+- **Cluster type tuples within a family, never across families** (batch 7 P0). Two typefaces
+  at the same size are two ramp rows, because a text style carries one family. Measured: a
+  24-tuple census merged two families at 29px into one row, and a batch 2 module in the
+  second family had no style to bind to.
+- **Buttons: measure the component itself, never infer from the palette census** (batch 7
+  P1). A button's colour is frequently not the dominant band colour; the census attributed
+  the right hex to the wrong role (40/36/22 per-channel miss on the proposal).
+- **Apparent Email Love structure in the source is a hint, not a finding** (batch 7 P1).
+  A frame acting as a section narrower than its wrapper's content box cannot export as
+  drawn (sections span their wrapper); build constraint reads "inset belongs on the wrapper
+  padding, not the section".
+- **Survey transport limits documented**: get_metadata fails with an opaque SSE parse error
+  above ~80KB or on non-ASCII layer names; fall back to use_figma in ~12-node batches with
+  ASCII-sanitised strings rather than improvising.
+- Bumps to 1.20.0 (minor: census behavior fixes + survey guidance).
+
 ### 1.19.0
 - **Mobile type ramp is now a required, DERIVED audit output, and it is a compression, not a
   scaling** (batch 6, from a live migration on 2026-08-03). Email clients do not scale type:

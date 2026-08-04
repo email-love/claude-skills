@@ -169,7 +169,13 @@ end of this file.
 
 ## Step 2: Survey the file
 
-Build the inventory with read-only calls:
+Build the inventory with read-only calls. **Know the transport limits before you lean on
+them:** `get_metadata` returns the whole subtree in one response and fails with an opaque SSE
+parse error (`Failed to parse SSE message`) above roughly 80KB, or on non-ASCII layer names,
+which on a real customer file makes it a coin flip. When it fails, do not go hunting for API
+tokens or improvising: read with `use_figma` in batches of about a dozen nodes, one compact
+line per node, strings sanitised to ASCII (`.replace(/[^\x20-\x7E]/g, '?')`). That pattern
+survived a full survey without a single transport failure.
 
 1. **Pages** and what each holds (component libraries, template galleries, guidelines,
    icon sets, font fallback references).
@@ -503,7 +509,15 @@ Three passes:
    the artifact the reader will actually see rather than the tree structure they will not, and
    it costs one render. Record the y-coordinates you detected on each source ref (`top 128 to
    540` rather than a hand-eyeballed range), so Phase 3 can crop to the same pixels without
-   re-deriving the boundary. **Then write the boundary down on the row.** Whoever converts the module has to
+   re-deriving the boundary.
+   **Apparent Email Love structure in the source is a hint, not a finding.** Where source
+   frames already carry `mj-*` naming or nesting, check that the structure is semantically
+   valid rather than merely present, because a source drawn to look right can still be built
+   in a way that cannot export. The commonest case: a frame acting as a section that is
+   **narrower than its wrapper's content box**. A section always spans its wrapper on export,
+   so a narrow "section" ships as a full-width band. Where you find one, the row's build
+   constraints read `inset belongs on the wrapper padding, not the section`.
+   **Then write the boundary down on the row.** Whoever converts the module has to
    screenshot exactly the region you cut, and a boundary you found but did not record is a
    boundary they have to infer again, differently. So record a source ref per module: the design
    to convert from, plus the node name or node id you cut at, and on a source with no node to
@@ -684,7 +698,16 @@ comes from Step 3's email standards, with no factor involved anywhere.
   line-height)` tuple in the source. On a file with text styles this is the styles page plus any
   local overrides you find; on a file without text styles this is a walk over every text node
   across every design surveyed in Step 2, tabulated. Cluster the tuples where they are within a
-  point or two of each other, and treat each cluster as one ramp row. This is a cheap complete
+  point or two of each other, and treat each cluster as one ramp row.
+  **Cluster within a family, never across families.** Two typefaces at the same size are two
+  ramp rows, not one, because a text style carries a single family. Where the census shows the
+  same size in two families, emit both rows and name them so the difference is visible
+  (`Subhead` and `Subhead Serif`), then decide at foundations whether the second family is
+  load bearing or a consolidation candidate. A row naming two families is not a ramp row; it
+  is an unresolved decision. (Measured cost of getting this wrong: a 24-tuple census with two
+  families at 29px merged into one row, and a batch 2 module in the second family had no
+  style to bind to, forcing a foundations edit after sign-off.)
+  This is a cheap complete
   operation on a file you are already walking and it is strictly better than sampling. The
   arithmetic gate then does its job (an incomplete ramp cannot pass a ratio test on an unseen
   size), and the mapping table below is populated from the census rather than from what got noticed.
@@ -789,7 +812,15 @@ comes from Step 3's email standards, with no factor involved anywhere.
   too, in that the system replaces the source's ad-hoc numbers rather than averaging them. On a
   REFERENCE ONLY source, do not census: the multiples-of-8 scale from Step 3 is the system, label
   it as the email standard rather than as a measurement, and record no source values.
-- **Buttons:** their button styles as candidates for the Email Love button component page.
+- **Buttons: measure the button component itself, never infer it from the palette census.**
+  Open each button style in the source and record its own background hex, label hex, corner
+  radius, inner padding, and label type style. A button's colour is frequently not the
+  dominant band colour, and a census clustered by hex will happily attribute the right value
+  to the wrong role (measured: a proposal of the band colour against an actual button of
+  `#2F2F2F` with a `#FFFFFF` label, a 40/36/22 per-channel miss; the census HAD seen the
+  right hex and attributed it to badge plates). Report each button style as a row of measured
+  values, and where the theme proposal differs from the measurement, that is a deviation line
+  under the Palette section's delta rule like any other.
 - **Target email width:** the width the converted system gets built at, which is 600 or 640 and
   nothing else. It is a hard constraint from the email clients rather than something the factor
   derives, so do not divide the source width by the factor to get it: on the measured case that
@@ -1839,7 +1870,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.19.0 of this skill. If you have web access, check once per conversation
+This is version 1.20.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

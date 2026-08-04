@@ -44,7 +44,7 @@
       "name": "emaillove-migration-audit",
       "source": "./plugins/email-love/skills/migration-audit",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with eds-converter and figma-builder. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.19.0",
+      "version": "1.20.0",
       "author": {
         "name": "Email Love"
       }
