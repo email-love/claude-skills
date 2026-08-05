@@ -64,6 +64,42 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.43.0
+Check the build against the SOURCE, not against itself. Every verification group asked "is this
+build internally consistent?" and none asked "is this the module the customer gave me?" A live
+180-module migration passed all five groups across five batch verifications and still shipped 26
+modules that disagreed with the source, plus an entire type ramp at the wrong weight.
+
+- **New Group 0, parity with the source**, run first and gated. Per module: TEXT node count and
+  the strings themselves, image-bearing node count with dimensions, text alignment, band fills,
+  all compared against the audit row's new `T/I` content census. Exactly three resolutions are
+  allowed for a difference (a deliberately added region shipping `visible = false` and listed, a
+  consolidation the inventory row calls for, a named source defect), and each is written into the
+  report. Measured: one two-column module had lost all 8 of its text nodes, a list all 8 of its
+  row icons, four heroes had a flat fill where the source has a full-bleed background photo.
+- **Called out that a serializer-and-builder pipeline fails totally and silently here**, so Group
+  0 runs on every module rather than a sample. That pattern is what makes a large library
+  tractable and it drops whatever its spec does not model.
+- **Batch reports now OPEN with the Group 0 parity table.** A batch with an unexplained row does
+  not pass the gate, whatever the internal groups say.
+- **Type checks cover WEIGHT, not just size**, and the Phase 2 checklist now asserts that each
+  text style's NAME matches its own read-back VALUE. Measured: five styles named `P1/Regular`,
+  `P2/Regular`, `P2/Italic`, `P3` and `P4` were every one built in Inter Light, putting 271 text
+  nodes at 300 weight against a Regular source, with nothing structural contradicting them.
+- **The `!boundVariables` trap**: Figma returns `{}` on an unbound paint, so the obvious predicate
+  can never fail; it reported zero violations on 242 solid-black fills across 41 modules. Now
+  stated generally: name the value that would make a check fail, and confirm it is reachable.
+- **Text-on-background contrast** added as a standing check, with an explicit instruction never to
+  silently change a brand colour to satisfy it.
+- **New Group 6, asset identity**: same dimensions never means same asset (logo colourways, hit
+  three times in one migration), match the icon SET and not just the size, detect sprite sheets by
+  aspect before placing, always read `placedOnNodeId` back from `upload_assets`, never
+  hand-transcribe image bytes.
+- **Screenshots are per module and explicitly do not become optional as batches accelerate.**
+  Dropping them after batch 2 was the single largest quality failure in the source migration.
+- **Inventing content is named as a failure** with the same weight as dropping it.
+- Bumps to 1.43.0 (minor: new verification group and report section; no report structure removed).
+
 ### 1.42.0
 Batch 11: the step 6 export sniff is agent-run by default via the new headless export tool
 on the Email Love MCP.
@@ -702,6 +738,28 @@ that every arithmetic check passed).
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.23.0
+Give conversion something to check itself against, and stop deriving the content width from the
+wrong nodes. Both gaps were found by the same live migration.
+
+- **Module inventory rows carry a REQUIRED content census**, two integers `T/I`: the source
+  module's TEXT node count and its image-bearing node count (any node whose `fills[0].type` is
+  `IMAGE`, so background photos on frames count). One `findAll` per module during the walk the
+  audit already does, and it is what lets Phase 3's new Group 0 prove it built the right module.
+  Without it the loss is unmeasurable from inside the build: 26 of 180 modules disagreed with the
+  source and five clean batch verifications said nothing.
+- **Content margin is measured from LEAF content bounds, never container padding.** Measured: on
+  the source in question, section-level side padding is 0 on 116 of about 180 modules because
+  those sections are full bleed and the real inset lives on the columns below. Reading sections
+  reported "no margin"; reading leaves gave insets clustered at 16, 20, 24, 30, 32 and 40. The
+  library was set 40px too wide off the first reading, and every module's text then sat closer to
+  the edge than the customer's own file.
+- **Report the margin distribution per category, not just an average.** The same file that
+  scattered from 10 to 60 across the library used exactly 40 on every footer; a category that is
+  internally consistent is a number to match rather than to standardise away, and the report now
+  says which categories those are so foundations does not flatten them.
+- Bumps to 1.23.0 (minor: one new required inventory column; existing rows gain a field).
 
 ### 1.22.0
 Batch 10, audit side: two census gaps found by a live migration, plus the corrected

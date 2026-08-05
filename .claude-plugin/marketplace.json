@@ -12,7 +12,7 @@
       "source": "./plugins/email-love",
       "displayName": "Email Love",
       "description": "Design production-ready emails in Figma and export clean HTML to any ESP. Audit an existing design system for migration, convert it to the Email Love structure, and build campaigns from it.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": {
         "name": "Email Love",
         "email": "hello@emaillove.com",
@@ -35,7 +35,7 @@
       "name": "emaillove-eds-converter",
       "source": "./plugins/email-love/skills/eds-converter",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit and figma-builder. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.42.0",
+      "version": "1.43.0",
       "author": {
         "name": "Email Love"
       }
@@ -44,7 +44,7 @@
       "name": "emaillove-migration-audit",
       "source": "./plugins/email-love/skills/migration-audit",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with eds-converter and figma-builder. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.22.0",
+      "version": "1.23.0",
       "author": {
         "name": "Email Love"
       }

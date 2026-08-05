@@ -850,6 +850,19 @@ comes from Step 3's email standards, with no factor involved anywhere.
   text starting between 109 and 118px in on a 1092 wide design is about 10.5 percent, which on a
   600px target is a 63px margin and a 474px content width. Report the percentage, the converted
   margin, the implied content width, and which designs you measured.
+  - **Measure the leaf content, never the container padding.** Take the resolved left edge of the
+    actual text and image nodes relative to the module root. Container padding answers a different
+    question and will mislead you: on the Ultimate EDS source, section-level side padding is `0` on
+    116 of ~180 modules because those sections are full bleed and the real inset lives one or two
+    levels down on the columns. Reading the sections gave "the source has no margin"; reading the
+    leaves gave insets clustered at 16, 20, 24, 30, 32 and 40. The library was set to a 600 content
+    width off the first reading, and every module's text then sat closer to the edge than the
+    customer's own file, in a way that reads as sloppy without being attributable to any one module.
+  - **Report the distribution, not just the average**, and per category. A source can be tight in
+    one category and consistent in another: the same file that scattered from 10 to 60 across the
+    library used exactly 40 on every footer. Where a category is internally consistent, that is a
+    number to match rather than to standardise away, and the report should say which categories
+    those are so Phase 2 does not flatten them.
   - **A consistent source margin is evidence worth carrying, and say so in those terms.** It means
     the customer's own system has ONE margin, so the converted library should have one too, and
     that is the finding foundations acts on. It is the same measurement the Step 3 margin-consistency
@@ -994,8 +1007,18 @@ say the derivation was skipped.]
 ## Module inventory
 [REQUIRED, deduplicated, and this is the section Phase 2 works from. One row per DISTINCT
 module: module name | category | appears in (design names) | source ref | verdict A/B/C/D |
-concession | build constraints | effort S/M/L | notes. The name is the name the converted
-component will carry. **Source ref is REQUIRED on every row** and names the one appearance to
+concession | build constraints | content census | effort S/M/L | notes. The name is the name the
+converted component will carry. **Content census is REQUIRED on every row** and is two integers,
+`T/I`: the number of TEXT nodes in the source module, and the number of image-bearing nodes (any
+node whose `fills[0].type` is `IMAGE`, which counts background photos on frames as well as placed
+rectangles). It costs one `findAll` per module while you are already walking the file, and it is
+the only number that lets Phase 3 prove it built the module the customer has rather than a
+plausible module. Without it, a converter that transcribes each module into a compact spec and
+rebuilds from that spec silently drops whatever the spec does not model, and no check inside the
+build can see the loss. On the Ultimate EDS migration this went unmeasured across 180 modules and
+five clean batch verifications; the census, run afterwards, found **26 modules disagreeing with
+the source**, including one two-column module that had lost all 8 of its text nodes and a list
+that had lost all 8 of its row icons. **Source ref is REQUIRED on every row** and names the one appearance to
 convert from, precisely enough to screenshot without re-deriving the split (Step 5): a design
 name plus a node name or id, or, where there is no node to name, a position within that design
 ("top 0 to 480", "between the divider and the footer rule"). Every A row states either `none` or
@@ -1898,7 +1921,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.22.0 of this skill. If you have web access, check once per conversation
+This is version 1.23.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

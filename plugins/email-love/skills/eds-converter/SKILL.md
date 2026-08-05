@@ -897,6 +897,14 @@ Pages, in canonical order:
       Then look at it: does the ramp step evenly? A step that reads wrong beside its neighbors is
       a factor problem, not a style problem, on a source built through a factor, and a mis-built
       standard ramp on one that was not (step 3).
+- [ ] **Every text style's NAME matches its own VALUE, read back from the style, not from what
+      you meant to set.** A style called `P2/Regular` whose `fontName.style` is `Light` is a fail,
+      and it is a fail that survives every downstream check: the style exists, applies cleanly,
+      and is named correctly, so nothing structural ever contradicts it. The Ultimate EDS
+      foundations shipped five such styles and put 271 text nodes, essentially every paragraph in
+      the library, at the wrong weight. Also compare the ramp's dominant body weight against the
+      dominant body weight in the audit's census; if the source is overwhelmingly Regular and your
+      body style is Light, the ramp is wrong no matter how evenly it steps.
 - [ ] **Every text style's line height is PERCENT**: read them back; a PIXELS unit anywhere is
       a fail (it freezes the mobile line box). And **the mobile ramp is recorded** with its two
       anchors, in the report and on the Type page. Numbers only; nothing written to nodes yet.
@@ -1476,6 +1484,50 @@ list per group is the only pass.** A "walked the tree, looked fine" pass is what
 alignment mismatches and 18 untagged button TEXT children on batch 2 without a single line
 of the checklist reporting anything.
 
+**Group 0: parity with the source. Run this FIRST, and treat it as the gate the other five are
+not.** Every group below asks "is this build internally consistent?" None of them asks "is this
+the module the customer gave me?" A build can pass all five perfectly and be the wrong design.
+
+For every module in the batch, compare the BUILD against the SOURCE, paired by inventory name:
+
+- **TEXT node count**, against the audit row's content census `T`. Then the strings themselves:
+  the trimmed first 40 characters of every text node, sorted, in both. A count that matches while
+  the strings differ is the failure that hides best (a footer whose four named nav links became
+  three generic `ADD YOUR CTA` buttons passes any count check).
+- **Image-bearing node count** against the census `I`, plus each node's rounded width x height.
+  This is what catches a full-bleed background photo rebuilt as a flat fill, and a 2x3 grid
+  rebuilt as 2x2.
+- **Text alignment** per node, and the module's band fills.
+
+**Any difference is a FAIL that names the module and the delta.** Exactly three resolutions are
+allowed, and each is written into the batch report rather than assumed:
+
+1. an optional region you added deliberately, which ships `visible = false` so an instance out of
+   the box still matches the source exactly, and which the batch report lists by module and node
+   so a reviewer can reject it;
+2. a deliberate consolidation the module's inventory row calls for;
+3. a source defect the rebuild fixes, named as such.
+
+Anything else you add is invented content, and it costs the customer trust faster than a missing
+feature does: three footers in the Ultimate EDS build carried a postal address the source never
+had, and one replaced four named navigation links with three generic `ADD YOUR CTA` buttons. Copy
+comes from the source. When a module genuinely needs a region the source lacks, that is case 1,
+and it is hidden by default.
+
+"The counts differ because the transcription is a summary" is not one of them, and neither is
+"the module looked right". On the Ultimate EDS migration (180 modules) all five internal groups
+reported zero violations across five separate batch verifications while **26 modules disagreed
+with the source**: one two-column module had lost all 8 of its text nodes, a list had lost all 8
+of its row icons, four heroes had a flat fill where the source has a full-bleed background photo,
+and three footers carried an address line the source does not contain. Every one of those was
+invisible to a structural predicate and obvious to a count.
+
+**If you build modules through a serializer-and-builder pair** (compress each source module into
+a compact spec, rebuild from the spec), this group is not optional and not a sampling exercise.
+That pattern is what makes a large library tractable, and its failure mode is total and silent:
+anything the spec does not model does not survive, and nothing inside the build can tell.
+Run Group 0 on **every** module, not a sample.
+
 **Group 1: shape and tags.**
 - Root is a COMPONENT tagged `mj-wrapper`, layer name = module name, `nodeType` empty on the
   root and on every node below it (a module carrying `mainFrame` uploads as a whole email).
@@ -1501,6 +1553,15 @@ of the checklist reporting anything.
 
 **Group 3: geometry against foundations.** These compare numbers against foundations and the
 audit, never against how the module looks:
+- **Type: the WEIGHT as well as the size.** Every text node's family and style, checked against
+  the audit's Brand foundations census, not merely against the ramp. A ramp can be internally
+  flawless and uniformly wrong. The Ultimate EDS build shipped five text styles NAMED
+  `P1/Regular`, `P2/Regular`, `P2/Italic`, `P3` and `P4` that were every one of them built in
+  Inter **Light**, putting 271 text nodes, essentially every paragraph in the library, at 300
+  weight against a source whose dominant body weight is Regular. Every structural check passed:
+  the style existed, was applied, and was named correctly. The whole library read thin and washed
+  out and no predicate said a word. **Assert that each style's name matches its own value**, and
+  that the ramp's dominant body weight equals the dominant body weight in the source census.
 - Module root at the audit's target email width; every type size, padding, and image
   dimension at email scale (0.6). On REFERENCE ONLY the check is that NO source measurement
   reached the module: ramp sizes, scale paddings, library content width, and a mismatch with
@@ -1525,7 +1586,22 @@ audit, never against how the module looks:
 
 **Group 4: fills and bindings.**
 - Every non-placeholder solid fill resolves to a variable binding from the audit's Palette;
-  list unbound fills by node id with raw hex and intended role. Placeholder grays for
+  list unbound fills by node id with raw hex and intended role. **Test the binding, not the
+  property.** Figma returns `boundVariables` as an empty object `{}` on an unbound paint, so
+  `!fills[0].boundVariables` is `false` on every node alive and the check cannot fail. The
+  working predicate is `!fills[0].boundVariables?.color`. The broken form reported "zero
+  violations" on **242 solid-black fills across 41 modules**, five verifications running, on the
+  Ultimate EDS migration; the customer found it in a screenshot. The fills were black because a
+  binding helper had been passed already-prefixed token names, resolved them to `undefined`, and
+  Figma returned the scratch placeholder paint unchanged. **A predicate that cannot fail is worse
+  than no predicate, because it manufactures confidence.** Whenever you write a check, name the
+  value that would make it fail and confirm that value is reachable.
+- **Text-on-background contrast** for every text node against its nearest filled ancestor. One
+  ratio catches black-on-black, white-on-white and inherited low contrast in a single pass; the
+  242 black fills above and a white-on-white column both fell out of it immediately once it
+  existed. Report anything under 3.0 with both hex values. **Never silently change a brand colour
+  to fix one**: flag it with the measured ratio and the options, and let the designer decide. A
+  button red quietly darkened for AA reads to the customer as a defect, not a courtesy. Placeholder grays for
   editable-image regions are the only exception, each named as intentional (batch 2: 43
   unbound fills, every downstream color change touched 31 nodes by hand).
 - Component properties re-read and confirmed via `componentPropertyReferences`. **Every
@@ -1556,8 +1632,36 @@ audit, never against how the module looks:
 - Range hygiene: every text node returns ONE segment from
   `getStyledTextSegments(['lineHeight'])`; a second segment is a detached frozen line height.
 
-**Then one screenshot: the desktop visual check.** Screenshot the rebuild next to the source
-screenshot from step 1; flag divergences rather than silently accepting them. On REFERENCE
+**Group 6: asset identity.** An image fill, on a correctly tagged node, at exactly the right
+dimensions, passes every group above and can still be the wrong picture.
+- **Same dimensions never means same asset.** Libraries ship a light-band and a dark-band
+  colourway of one logo at identical pixel sizes. For every image node, compare the asset's own
+  luminance against its nearest filled ancestor and FAIL a light mark on a light band or a dark
+  mark on a dark band. The Ultimate EDS migration shipped this **three separate times**: a white
+  wordmark across six light-band headers, then again on a footer logo after the first had been
+  written up as a lesson. Writing the lesson down did not catch the repeat; a predicate would
+  have.
+- **Match the icon SET, not just the icon size.** A source can carry the same five social
+  platforms twice, as bare glyphs at 20px and as circled outlines at 42px. Reusing the circled
+  set at 20px renders as faint rings and reads as unfinished. Check which set the source uses
+  AT THAT NODE rather than placing a plausible icon of the right size.
+- **Sprite sheets.** A source that shows two app-store badges through two cropped rects yields
+  ONE raw image on download. Compare the raw asset's aspect ratio against the node's before
+  placing it; a large mismatch means it is a sheet, and it should be split at its transparent
+  gutter rather than stuffed whole into one node.
+- **`upload_assets` may ignore `nodeId`** and drop the image as a loose frame on a page. Always
+  read `placedOnNodeId` in the POST response; when it is not your node, take the returned
+  `imageHash`, set the fill yourself, and delete the stray frame.
+- **Never hand-transcribe image bytes between files.** Use `download_assets` then
+  `upload_assets`; a hand-copied base64 logo shipped as a 651-byte broken PNG rendering black.
+
+**Then one screenshot per module: the desktop visual check.** Screenshot the rebuild next to the
+source screenshot from step 1; flag divergences rather than silently accepting them. **This is
+per module and it does not become optional as batches speed up.** The single largest quality
+failure on the Ultimate EDS migration was that screenshots stopped after batch 2 in favour of
+read-back checks alone, and read-back verifies what you wrote, not what a person sees: both the
+242 black fills and a white-on-white column were invisible to structure and instant in a picture.
+Batch 9 is when this matters, not batch 1. On REFERENCE
 ONLY, read the comparison for content and structure only (margins, type sizes, and spacing
 are expected to differ; listing them buries real divergences). **On a module 20-40px taller
 than the source, do not eyeball a nudge:** detect the content bands (runs of non-canvas
@@ -1664,7 +1768,12 @@ One report per batch: per module, keyed by its Module inventory row name, what w
 design you converted it from, verdict honored or changed (with reason), any concession and
 whether it was accepted and by whom (and for a bleed concession, the two column widths you landed
 on, so a reviewer can check the sum), mobile decisions, divergences flagged, component properties
-added and the evidence for each, the category you kept or changed. **Open with the source fidelity
+added and the evidence for each, the category you kept or changed. **Open with the Group 0 parity table: for every module in the batch, the source `T/I` content
+census from its inventory row beside the built counts, and a blank column where they agree.** A
+batch with any unexplained row does not pass the gate, whatever the other five groups say. This
+goes first because it is the only line a reviewer can check against their own file without
+opening yours, and because a report that opens with "zero violations" from internal checks alone
+is how a library reaches 180 modules with 26 of them silently wrong. Then **the source fidelity
 tier, the target email width, and the content width the batch was built at, plus the scale factor
 where one applies**, so a reviewer can check three or four numbers instead of measuring modules. On a
 REFERENCE ONLY source, open instead with the tier and the standards, and repeat the one sentence that
@@ -1753,7 +1862,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.42.0 of this skill. If you have web access, check once per conversation
+This is version 1.43.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
