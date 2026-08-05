@@ -25,6 +25,9 @@ errors = []
 def fail(msg): errors.append(msg)
 
 EM_DASH = "—"
+PUBLIC_CODEX_PLUGIN_URL = (
+    "https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409"
+)
 
 # Shim entry name -> skill directory name. The shims carry the legacy names every shipped
 # copy looks up; the directories carry the short names the bundle namespaces by.
@@ -184,7 +187,31 @@ def check_readme_codex():
     # obsolete Codex guidance: telling users to curl or install a flat AGENTS.md
     if re.search(r"curl[^\n]*AGENTS\.md", t) or "project-scoped `AGENTS.md`" in t:
         fail("README.md still contains obsolete Codex AGENTS.md install guidance; "
-             "Codex uses the v3.0.0 plugin")
+             "Codex uses the public plugin or the tagged Git marketplace")
+    if "--ref v3.0.0" in t:
+        fail("README.md still points Codex users at the obsolete v3.0.0 release")
+    if PUBLIC_CODEX_PLUGIN_URL not in t:
+        fail("README.md must link to the public Email Love plugin")
+
+    sources_path = ROOT / "sources.json"
+    try:
+        sources = json.loads(sources_path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        fail(f"sources.json cannot be read: {error}")
+        return
+    codex = sources.get("codexPlugin", {})
+    if codex.get("publicPluginUrl") != PUBLIC_CODEX_PLUGIN_URL:
+        fail("sources.json codexPlugin.publicPluginUrl is missing or incorrect")
+    if codex.get("currentPublicRelease") != codex.get("currentRelease"):
+        fail("sources.json public and source Codex releases are not aligned")
+    if "GitHub push does not update directory users" not in codex.get("distributionModel", ""):
+        fail("sources.json must record that the public plugin is a reviewed snapshot")
+    checklist = codex.get("releaseChecklist", [])
+    required_steps = ("validate", "GitHub release", "submission portal", "review", "public listing")
+    combined = " ".join(checklist)
+    for required_step in required_steps:
+        if required_step not in combined:
+            fail(f"sources.json Codex release checklist is missing {required_step!r}")
 
 def check_build_completeness():
     # the converter delegates to references at runtime; those files must exist so a built

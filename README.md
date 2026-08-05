@@ -46,14 +46,18 @@ One install carries all three skills: `/email-love:migration-audit`, `/email-lov
 
 On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
 
-Using **Codex**? Migration ships as one of two skills in the Email Love Codex plugin. Install it once:
+Using **Codex**? Migration ships as one of two skills in the Email Love Codex plugin.
+[Install the public Email Love plugin](https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409),
+then start a new Codex task.
+
+For development or testing an exact GitHub release, use the separate Git-backed install:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v3.0.0
+codex plugin marketplace add email-love/codex-agents --ref v4.5.0
 codex plugin add email-love@email-love
 ```
 
-Then start a new Codex session. See [email-love/codex-agents](https://github.com/email-love/codex-agents).
+See [email-love/codex-agents](https://github.com/email-love/codex-agents).
 
 ### emaillove-eds-converter
 
@@ -135,16 +139,22 @@ Then ask Claude Code to build an email in your Figma file.
 
 ## Using Codex or ChatGPT instead?
 
-**OpenAI Codex** can run the same workflow. It ships as the Email Love Codex plugin, with a builder skill and a migration skill Codex loads on demand:
+**OpenAI Codex** can run the same workflow. It ships as the Email Love Codex plugin, with a builder skill and a migration skill Codex loads on demand. The public plugin is the recommended customer install:
+
+[Install Email Love from the Plugins Directory](https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409)
+
+For development or an exact tagged version, use the Git-backed marketplace instead:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v3.0.0
+codex plugin marketplace add email-love/codex-agents --ref v4.5.0
 codex plugin add email-love@email-love
 ```
 
 See [email-love/codex-agents](https://github.com/email-love/codex-agents).
 
-**ChatGPT chat** cannot build emails in Figma. Its Figma app only creates FigJam diagrams, Slides, and Buzz assets, and cannot edit Figma Design files. See [`distribution/chatgpt-gpt-instructions.md`](distribution/chatgpt-gpt-instructions.md) for a companion GPT that plans emails and hands the build off to Claude or the plugin.
+The public plugin is a reviewed snapshot. Pushing a Codex change to GitHub does not update directory users. A maintainer must upload the new skill bundle through the OpenAI submission portal, submit it for review, and publish the approved version. Test the published update from a new chat or Codex task.
+
+A Figma canvas build still requires a supported Codex surface where the official Figma MCP exposes `use_figma`, `get_metadata`, and `get_screenshot`. Without `use_figma`, the plugin offers its documented plan or AI Import handoff. See [`distribution/chatgpt-gpt-instructions.md`](distribution/chatgpt-gpt-instructions.md) for the planning-only companion GPT.
 
 ## Documentation
 
