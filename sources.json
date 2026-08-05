@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-04",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "ca9c41f",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.41.0",
@@ -18,7 +18,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "ca9c41f",
       "summary": "Batch 10 (live migration batches 2 and 3 reports). Audit 1.21.0 to 1.22.0: palette census samples text fills at segment level via getStyledTextSegments(['fills']) (mixed-run colours invisible at node level, measured #727272 miss); search other designs in the file for clean vector instances before writing a fused-asset rebuild remedy (measured: low-res capture had clean 4x vectors in another email); dark-mode mechanism corrected. Converter 1.40.0 to 1.41.0: dark CSS mechanism corrected from an export read: contentColor is painted on the WRAPPER and section/column fills are forced transparent, module fills ERASED not recolored, same flattening different mechanism, all rules stand (never-fill-a-group, neutral contentColor, per-node override); new hand-off statement that dark mode flattens module fills (cards do not read as cards, plugin limitation) and image backgrounds are not a workaround; inter-module gap single owner library-wide (wrapper paddingBottom from the spacing ladder, last module 0, zero double-duty section padding); mj-column has no background-image mapping, overlap art becomes in-flow mj-image with a BOOLEAN when source ships variants without it; mj-column-inner second genuine case (filled card + gutter, fill-less outer column carries the gutter padding).",
       "codexStatus": "Not yet ported. First entry of the next port cycle (post-v4.3.0). The mechanism correction supersedes wording v4.3.0 just ported, but every rule is unchanged and the visual outcome identical, so no urgency; batch with the next cycle's spec."
     },
