@@ -947,14 +947,20 @@ the next two you run:**
 
 ## Phase 3: Module conversion (run per batch)
 
-**Before the first module, establish who runs the batch checks.** Step 6's mobile render and
-export sniff both need the plugin's Upload and Export buttons, which are human clicks on a
-paid seat. If you cannot drive them, say so now, in the batch-1 opening message, and say what
-it means: mobile behaviour will be built and computed but never verified against exporter
-output until a human runs it. Do not discover this at step 6 of batch 3. (Measured on a
-three-batch run: sixteen modules delivered with zero renders and zero sniffs, every mobile
-decision verified as intent only, and three clean batch reports silent on the one axis that
-matters most.)
+**Before the first module, establish how the batch checks will run.** Check the Email Love
+MCP (mcp.emaillove.com) for `emaillove_export_figma`: when it is present, step 6's export
+sniff is fully agent-run with `operationType: "preview"` (no plugin click, no export quota),
+and the mobile render already runs through `emaillove_preview_email`, so the whole batch
+check loop needs zero human sessions. Its v1 coverage is the core tag set (mj-wrapper,
+mj-section, mj-group, mj-column, mj-column-inner, mj-text, mj-image, mj-button, mj-divider,
+mj-spacer); it rejects mj-hero, mj-social, mj-navbar, and mj-table with a CoverageError
+naming the node, and only those modules still need the plugin's human-click Export. When the
+tool is NOT on the MCP, the export sniff needs the plugin's Export button, a human click on a
+paid seat: say so now, in the batch-1 opening message, and say what it means: mobile
+behaviour will be built and computed but never verified against exporter output until a
+human runs it. Do not discover this at step 6 of batch 3. (Measured on a three-batch run:
+sixteen modules delivered with zero renders and zero sniffs, every mobile decision verified
+as intent only, and three clean batch reports silent on the one axis that matters most.)
 
 **Phase 3 builds MODULES, not emails.** A module is one reusable block that gets dropped into
 many emails, so its shape is a **`mj-wrapper` COMPONENT**: the wrapper IS the component, it
@@ -1602,11 +1608,17 @@ matches the step 3 Part A decision.
   lives in the columns; if the batch has both a header lockup and a card row, pick the card
   row. On a batch with only single-column modules, pick the one carrying the button, since
   the full-width mobile button is the other common exporter surprise.
-- **Export it to HTML.** The plugin's Export produces the HTML the ESP will actually receive:
-  drop an instance of the module wrapper into a temporary email frame on Campaigns (foundations
-  built one in Phase 2 step 7), select the frame, and click Export in the plugin. Ask the user to
-  drive the click if you cannot; the export runs in the plugin sandbox and there is no agent-side
-  shortcut for a bare module. Save the HTML alongside the batch report.
+- **Export it to HTML, headless first.** Call `emaillove_export_figma` with the target
+  file's key and the module wrapper's node id, `operationType: "preview"`: it compiles
+  through the production /getHtml pipeline without charging export quota, and its output is
+  golden-diffed against real plugin exports on every worker deploy, so the HTML you read IS
+  the exporter's HTML. It takes a bare mj-wrapper directly (no temporary email frame), and
+  returns the HTML plus a token `emaillove_preview_email` accepts for a per-module mobile
+  render. On a CoverageError (mj-hero, mj-social, mj-navbar, mj-table), or when the tool is
+  not on the MCP, fall back to the plugin click: drop an instance of the module wrapper into
+  a temporary email frame on Campaigns (foundations built one in Phase 2 step 7), select the
+  frame, and click Export in the plugin, asking the user to drive the click if you cannot.
+  Save the HTML alongside the batch report either way.
 - **Read the HTML and confirm four things**, none of them expensive:
   - **Body width** matches the target email width from foundations. A 600 build that exports
     at 640 (or vice versa) is a Figma-side wrapper-width mistake that step 5's wrapper check
@@ -1635,7 +1647,9 @@ matches the step 3 Part A decision.
   both is much less likely to surface a mobile defect at design review. A batch that passes
   step 5 alone is batch 2.
 
-**When the checks cannot run in-session, do not mark them skipped and move on.** Accumulate
+**When a check cannot run in-session (no `emaillove_export_figma` on the MCP and no human to
+click, or a CoverageError module with no human available), do not mark it skipped and move
+on.** Accumulate
 a **Deferred verification list** across every batch, one line per module naming the specific
 thing that needs confirming (this group must not stack, this button must go full width, this
 image must stay fluid), and hand it over as a single checklist at step 7. One human session
@@ -1739,7 +1753,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.41.0 of this skill. If you have web access, check once per conversation
+This is version 1.42.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

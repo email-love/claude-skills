@@ -64,6 +64,26 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.42.0
+Batch 11: the step 6 export sniff is agent-run by default via the new headless export tool
+on the Email Love MCP.
+
+- **`emaillove_export_figma` is the default export path for the batch checks**
+  (mcp.emaillove.com): it compiles a bare mj-wrapper straight from the Figma file through
+  the production /getHtml pipeline, `operationType: "preview"` charges no export quota, and
+  its output is golden-diffed against real plugin exports on every worker deploy, verified
+  HTML-equivalent (dark-mode CSS block identical) on two live migration QA proofs. The
+  export sniff no longer needs a temporary email frame or a human Export click, and the
+  returned token feeds `emaillove_preview_email` for a per-module mobile render.
+- **Phase 3's opening gate reframed** from "establish who runs the batch checks" to
+  "establish how they will run": probe the MCP for the tool first; the human-click framing
+  and its batch-1 warning now apply only when the tool is absent.
+- **Coverage boundary stated where it bites**: the tool covers the core tag set and rejects
+  mj-hero, mj-social, mj-navbar, and mj-table with a CoverageError naming the node; those
+  modules keep the plugin-click path, and the Deferred verification list narrows to exactly
+  the cases where neither the tool nor a human is available.
+- Bumps to 1.42.0 (minor: workflow guidance; no report structure change).
+
 ### 1.41.0
 Batch 10, converter side: the corrected dark-mode mechanism plus three construction rules
 from a live migration's batches 2 and 3.
