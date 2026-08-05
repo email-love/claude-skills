@@ -1530,9 +1530,9 @@ audit, never against how the module looks:
   text-bearing nodes are boilerplate legitimately has none. If the module contains any
   button, the label property is named `Button label` / `Card N button label`; a label living
   only on the foundation component fails.
-- **No `mj-group` carries a fill of its own.** The exporter's dark CSS never recolors a
-  group, so a filled group ships forced-white text on its original fill the moment a client
-  flips to dark (render-spec 3.3). Band fills live on the group's columns; list any filled
+- **No `mj-group` carries a fill of its own.** The exporter's dark CSS erases section and
+  column fills to transparent but never touches a group's own fill, so a filled group ships
+  forced-white text on its original fill the moment a client flips to dark (render-spec 3.3). Band fills live on the group's columns; list any filled
   group by node id as a FAIL.
 - Module root is a direct child of its category page, not inside a component set or Figma
   section, no stray instances loose on the page.
@@ -1739,7 +1739,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.40.0 of this skill. If you have web access, check once per conversation
+This is version 1.41.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

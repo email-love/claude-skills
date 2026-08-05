@@ -64,6 +64,31 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.41.0
+Batch 10, converter side: the corrected dark-mode mechanism plus three construction rules
+from a live migration's batches 2 and 3.
+
+- **Dark CSS mechanism corrected** (amends 1.38.0/1.40.0 wording; every rule stands): a
+  read of the exported dark CSS shows contentColor painted on the WRAPPER and section and
+  column backgrounds forced to transparent. Module fills are ERASED in dark mode, not
+  recolored; the same flattening by a different mechanism. New hand-off statement: dark
+  mode flattens module fills, cards do not read as cards, unreachable from Figma; and an
+  image background is NOT a workaround because images are not erased, so a baked card
+  keeps its light colors under forced-white text.
+- **The inter-module gap has one owner library-wide** (0.7 extension): every module
+  wrapper carries paddingBottom from the audit's spacing ladder, the last module 0, so a
+  module switched off takes its spacing with it. Zero section-level vertical padding that
+  was doing inter-module duty (three modules got SHORTER when their 24/24 stopped
+  double-serving). Two modules touching on the canvas is the tell.
+- **mj-column has no background-image mapping either**: art behind live text in a card has
+  no supported construction. Remedy: in-flow mj-image above the content (the loss is the
+  overhang only) with visibility bound to a BOOLEAN when the source ships variants
+  without it. Never bake the card to keep the overlap (dark mode).
+- **mj-column-inner's second genuine case documented** (3.5): a filled card needing a
+  gutter. A column's fill covers its own padding, so the gutter lives on a fill-less
+  outer column (271 with 22 paddingRight) holding the filled inner column at FILL (249).
+- Bumps to 1.41.0 (minor: mechanism correction plus construction guidance).
+
 ### 1.40.0
 Batch 9, converter side of the contentColor guardrail (see audit 1.21.0).
 
@@ -657,6 +682,26 @@ that every arithmetic check passed).
   corrected a wrong ground-truth claim about where the exporter reads button alignment.
 
 ## emaillove-migration-audit
+
+### 1.22.0
+Batch 10, audit side: two census gaps found by a live migration, plus the corrected
+dark-mode mechanism.
+
+- **Palette census samples text at SEGMENT level**: getStyledTextSegments(['fills']),
+  never node.fills alone; a mixed-run node reports figma.mixed or its first run and every
+  other colour stays invisible. Measured: secondary-grey body copy (#727272) across two
+  modules never appeared in the census; the converter added the primitive mid-batch.
+- **Search other designs for clean vectors before writing the fused remedy.** Teams paste
+  one screenshot strip into six designs while a seventh carries the real artwork.
+  Measured: a rating block classified as a low-res capture to rebuild had clean vectors
+  for every element in a different email in the same file. New remedy form: rebuild from
+  the vectors at <node id>.
+- **Dark-mode mechanism corrected** (amends 1.21.0's wording, rules unchanged): the
+  exporter paints contentColor on each module WRAPPER and forces section and column fills
+  to transparent; module fills are ERASED, not recolored. New consequence stated in the
+  proposal: cards do not read as cards in dark mode whatever the value, a plugin
+  limitation to surface, not a build choice.
+- Bumps to 1.22.0 (minor: census additions and a mechanism correction).
 
 ### 1.21.0
 Batch 9: the dark-mode proposal's contentColor guardrail, from a live migration where the

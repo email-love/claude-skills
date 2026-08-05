@@ -201,7 +201,14 @@ survived a full survey without a single transport failure.
      nothing to ask anyone for: whoever converts the module renders that strip and slices it
      into the individual images the email needs. Two tells, either one being enough: one image
      node spans a region the design reads as several separate things, and its dimensions are a
-     wide, short strip rather than the size of any single item in it.
+     wide, short strip rather than the size of any single item in it. Before writing the
+     remedy, search the OTHER designs in the file for the same artwork as separate nodes:
+     teams paste one screenshot strip into six designs while a seventh carries the real
+     vectors. Measured: an audit classified a rating block as a low-resolution capture to
+     rebuild, and the converter found clean vector artwork for every element of it (the
+     wordmark, the star row, the second badge) in a different email in the same file,
+     shipping crisp 4x assets instead of an upscale. The remedy line then reads `rebuild
+     from the vectors at <node id>`, which beats both slicing and rebuilding.
 
    Reporting a fused asset as absent is an observed failure and it cost a whole conversion pass:
    the audit concluded that a footer's six social icons "are not in the file", the converter
@@ -772,7 +779,12 @@ comes from Step 3's email standards, with no factor involved anywhere.
   darkens the band should not also darken the caption. A palette built from `fills` alone
   finds bands and buttons and misses type; that is how a nav link `#888888` and a body
   color `#222222` used only on text disappear from a theme roles list. Batch 4 shipped
-  both cases and the converter added both mid-batch.
+  both cases and the converter added both mid-batch. And sample text at SEGMENT level:
+  `getStyledTextSegments(['fills'])`, never `node.fills` alone, because a mixed-run node
+  reports `figma.mixed` or its first run and every other colour in it stays invisible.
+  Measured: body copy carrying a secondary grey (`#727272`) across two modules never
+  appeared in the census because every sampled node led with the primary text colour; the
+  converter had to add the primitive and its semantic mid-batch.
   On a file with named paint styles this is the styles page plus any local overrides plus
   the text-node walk; on a file without styles it is a walk over every fillable node AND
   every text node. Then propose a set of the six Email Love
@@ -945,19 +957,21 @@ links, `#FFFFFF` button with `#000000` label) and adjusting only where the brand
 dark treatment, with the WCAG contrast ratio shown per pairing so the designer approves
 legible values, not hex strings.
 **contentColor is a GLOBAL knob; never promote a single surface's brand color into it.**
-The exporter recolors EVERY filled content cell to the one contentColor in dark mode, so
-"the brand's only dark surface is green" does not make green the content proposal: it makes
-every card, strip, and band green on the black page. Measured: an audit proposed the source
-footer's hex as contentColor because it was an exact source value; every filled card in the
-library recolored to that brand color in dark mode, the customer read it as a defect, and
-brand-colored image ink (star rows, a quote glyph) landed on same-color recolored cards at
-near 1:1. Keep contentColor at the neutral house default and record a single-surface brand
+In dark mode the exporter paints the one contentColor on each module WRAPPER and forces
+section and column fills to transparent (read from the exported dark CSS: module fills are
+ERASED, not recolored), so every card, strip, and band flattens into that single surface,
+and "the brand's only dark surface is green" makes the whole email one green field.
+Measured: an audit proposed the source footer's hex as contentColor because it was an exact
+source value; every filled card in the library flattened into that brand green on the black
+page, the customer read it as a defect, and brand-colored image ink (star rows, a quote
+glyph) landed on that same green at near 1:1. Keep contentColor at the neutral house default and record a single-surface brand
 treatment (a footer band that keeps its color in both modes, say) as a PER-NODE override
 recommendation naming the module; the conversion writes it once on that module's main
 component. Promote a brand color to the global contentColor only when the brand's own dark
-treatment demonstrably covers most content surfaces. Either way, show the pairing table's
-contrast for image ink against whatever each surface recolors to, because images cannot
-recolor.
+treatment demonstrably covers most content surfaces. Two consequences to state in the proposal so the
+designer expects them: cards do not read as cards in dark mode whatever the value (a plugin
+limitation, not a build choice), and image ink must clear contrast against the flattened
+surface, because images are not erased.
 Close with "designer decision" the same as Scale factor and Spacing system: the
 census is measurement, the theme mapping is a recommendation. On REFERENCE ONLY: the census
 runs, the theme roles map onto census clusters as normal, no theme value invented from
@@ -1884,7 +1898,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.21.0 of this skill. If you have web access, check once per conversation
+This is version 1.22.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

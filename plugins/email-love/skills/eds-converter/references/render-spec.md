@@ -453,6 +453,17 @@ are authoritative and already complete for vertical rhythm (section 0.5; the
 horizontal section padding is the one value foundations overrides, section 0.3.1),
 so a vertical padding you add on top of them is almost always this bug.
 
+**At library level the inter-module gap has a fixed owner: the module
+wrapper's `paddingBottom`.** Give every module's wrapper a `paddingBottom`
+from the audit's spacing ladder (32 in the measured library) and the LAST
+module (the footer) 0, so a module switched off takes its spacing with it
+instead of leaving a hole paid for by a neighbour that is now gone. Then zero
+any section-level vertical padding that was doing inter-module duty: three
+modules in the measured library got SHORTER when their 24/24 section padding
+stopped double-serving as the gap, while the space between modules grew. Two
+modules touching with zero gap on the canvas is the tell that the owner is
+missing.
+
 ### 0.8 A geometry write inside an INSTANCE can silently NO-OP, so read it back
 
 `resize()` on a node nested three or more levels deep inside a component instance
@@ -663,14 +674,24 @@ Create a top-level FRAME on the target page. It may be a COMPONENT instead
   2. Where no audit proposal exists, use the house defaults above, which are
      the exporter's own dark CSS values, and flag for design review. Never
      substitute the light palette as a stand-in.
-  3. Sanity-check the proposal's `contentColor` before writing it: it recolors
-     EVERY filled content cell, so a brand hex that belongs to one surface (a
-     footer band that stays its color in both modes) is a per-node override on
-     that module (section 2.2), not the global value. Measured: a proposal that
-     promoted one surface's green to contentColor turned every card in the
-     library green in dark mode and put brand-green image ink on same-green
-     recolored cards at near 1:1. The global key takes the neutral default;
-     the surface keeps its color through the override.
+  3. Sanity-check the proposal's `contentColor` before writing it: in dark
+     mode it is painted on the WRAPPER while section and column fills are
+     forced to transparent, so every filled cell flattens into that ONE
+     surface. A brand hex that belongs to one surface (a footer band that
+     stays its color in both modes) is a per-node override on that module
+     (section 2.2), not the global value. Measured: a proposal that promoted
+     one surface's green to contentColor turned every card in the library
+     green in dark mode and put brand-green image ink on that same green at
+     near 1:1. The global key takes the neutral default; the surface keeps its
+     color through the override.
+
+  **And say in the hand-off that dark mode flattens module fills.** Whatever
+  contentColor is, a mint card, a peach band, and a white plate all collapse
+  into the one wrapper surface in dark mode; cards do not read as cards. That
+  is exporter behaviour, unreachable from Figma; surface it as a product
+  limitation instead of building around it. In particular an image background
+  is NOT a workaround: images are not erased, so a baked card keeps its light
+  colors under forced-white text.
 - Optional: `emailSubject`, `emailPreHeader` (plain strings).
 - Also give the root frame a visible SOLID fill of the body background so the
   canvas looks right.
@@ -868,16 +889,19 @@ and the node type change.
 - `background-color` to fill, `padding-*` to paddings, `border-radius` to
   radius, borders to strokes.
 - **Never fill the group itself: a filled `mj-group` goes white-on-white in
-  dark mode.** The exporter's dark CSS forces every text span to `#FFFFFF` and
-  recolors filled section and column cells to `contentColor`, but it has no
-  group selector, so a group's own fill survives dark mode untouched while the
-  text on it turns white. Measured: a white policy card whose fill sat on the
-  group shipped `#FFFFFF` text on a `#FFFFFF` card, invisible in both batch
-  renders because they were light mode. The mechanism, worth carrying: group
-  children WITHOUT a fill are explicitly reset to `background-color: initial`;
-  group children WITH a fill pick up the dark `contentColor` override. So put
-  the band fill on the group's columns instead: light mode is pixel-identical,
-  dark mode recolors the card like every other filled surface. A filled
+  dark mode.** The exporter's dark CSS forces every text span to `#FFFFFF`,
+  paints `contentColor` on the WRAPPER, and forces section and column
+  backgrounds to `transparent`; it has no group selector, so a group's own
+  fill survives dark mode untouched while the text on it turns white.
+  Measured: a white policy card whose fill sat on the group shipped `#FFFFFF`
+  text on a `#FFFFFF` card, invisible in both batch renders because they were
+  light mode. (An earlier reading said filled cells are RECOLORED to
+  contentColor; a later read of the exported dark CSS corrected it: module
+  fills are ERASED to transparent over the contentColor wrapper, visually the
+  same flattening by a different mechanism.) So put the band fill on the
+  group's columns instead: light mode is pixel-identical, and in dark mode the
+  erased fill lets the card flatten into the wrapper surface with white text
+  like every other filled cell. A filled
   `mj-group` is a verification FAIL (skill Phase 3 step 5, Group 4).
 - Children: two or more `mj-column` frames with FIXED pixel widths.
 - Width math: the exporter emits the group width as
@@ -1256,7 +1280,13 @@ pattern and it is an A. If you cannot, it is a C.
 Use ONLY when a column needs a second, inner background/border box distinct
 from its own (card inside a colored column). Most card-in-column designs are
 expressible without it: put the card fill, radius, and paddings directly on
-the `mj-column` and the outer color on the section. Prefer that.
+the `mj-column` and the outer color on the section. Prefer that. The second
+genuine case, measured: a FILLED card that needs a gutter beside it. A
+column's fill covers its own padding, so the gutter cannot come from the
+filled column's padding without the neighbouring cards touching. Build the
+outer column fill-less with the gutter as its padding (271 wide with 22
+`paddingRight`) and the inner column at FILL carrying the card's fill, radius,
+and inner paddings (resolving to 249).
 
 If you must use it:
 
@@ -1941,6 +1971,15 @@ decoration column (one of 0.3.1's sanctioned full-bleed exceptions; the copy
 inside still starts at the content margin) rendered exactly as designed on
 desktop and cleanly absent on mobile with no gap, using only mapped
 primitives.
+
+`mj-column` has no background-image mapping either, so art BEHIND live text
+inside a card has no supported construction. When the art is an overlapping
+glyph or ornament, place it as an in-flow `mj-image` inside the card above the
+content (the loss is the overhang only, the shape of the bleed concession) and
+bind its visibility to a BOOLEAN when the source itself ships variants without
+it. Do not bake the card into an image to keep the overlap: images are not
+erased by dark mode, so a baked card keeps its light colors under forced-white
+text.
 
 **Specifically for `mj-navbar`, do not invent a mapping. Rebuild as one
 `mj-text` with per-label hyperlinks.** The worker returns `mj-navbar` for any
