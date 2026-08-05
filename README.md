@@ -53,7 +53,7 @@ then start a new Codex task.
 For development or testing an exact GitHub release, use the separate Git-backed install:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.5.0
+codex plugin marketplace add email-love/codex-agents --ref v4.6.1
 codex plugin add email-love@email-love
 ```
 
@@ -146,7 +146,7 @@ Then ask Claude Code to build an email in your Figma file.
 For development or an exact tagged version, use the Git-backed marketplace instead:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.5.0
+codex plugin marketplace add email-love/codex-agents --ref v4.6.1
 codex plugin add email-love@email-love
 ```
 
