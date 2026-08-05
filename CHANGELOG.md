@@ -64,6 +64,16 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.43.1
+The Email Love MCP is a separate connection, and the Phase 3 gate now says so. Measured on a
+live migration: a fresh plugin install exposed the skills but not the exporter tools, the
+agent assumed they should have arrived with the plugin, and the user was sent into an OAuth
+flow that looked like a Figma-plugin sign-in and cancelled it. The gate now states that
+installing the plugin does not connect the MCP, gives the one-time connect step per client,
+explains that the sign-in screen is Email Love's normal account flow shared with the Figma
+plugin, and warns not to confuse this server with the Email Inspiration MCP. Bumps to 1.43.1
+(patch: wording only, no check or workflow change).
+
 ### 1.43.0
 Check the build against the SOURCE, not against itself. Every verification group asked "is this
 build internally consistent?" and none asked "is this the module the customer gave me?" A live

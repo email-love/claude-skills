@@ -959,7 +959,17 @@ the next two you run:**
 MCP (mcp.emaillove.com) for `emaillove_export_figma`: when it is present, step 6's export
 sniff is fully agent-run with `operationType: "preview"` (no plugin click, no export quota),
 and the mobile render already runs through `emaillove_preview_email`, so the whole batch
-check loop needs zero human sessions. Its v1 coverage is the core tag set (mj-wrapper,
+check loop needs zero human sessions. **The Email Love MCP is a SEPARATE connection from
+this skill's install; installing the plugin does not connect it.** When the tools are
+absent, do not conclude they do not exist and do not silently fall back: give the user the
+one-time connect step (`claude mcp add --transport http emaillove
+https://mcp.emaillove.com/mcp`, or add `https://mcp.emaillove.com/mcp` as a custom connector
+in claude.ai Settings → Connectors; other clients are covered at
+help.emaillove.com/plugin/ai/agents-in-figma), and tell them the sign-in it opens is Email
+Love's normal account flow, the same sign-in the Figma plugin uses, so it is the right
+screen even though it does not mention the exporter. A fresh session after connecting
+exposes the tools. Also do not confuse this server with the Email Inspiration MCP
+(email search and inspiration); the two are not interchangeable. Its v1 coverage is the core tag set (mj-wrapper,
 mj-section, mj-group, mj-column, mj-column-inner, mj-text, mj-image, mj-button, mj-divider,
 mj-spacer); it rejects mj-hero, mj-social, mj-navbar, and mj-table with a CoverageError
 naming the node, and only those modules still need the plugin's human-click Export. When the
@@ -1862,7 +1872,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.43.0 of this skill. If you have web access, check once per conversation
+This is version 1.43.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
