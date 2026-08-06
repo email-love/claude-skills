@@ -33,7 +33,7 @@
     {
       "claudeCommit": "000502d",
       "summary": "Converter 1.43.0 to 1.43.1 (patch, wording only): the Phase 3 gate states that the Email Love MCP is a separate connection from the plugin install, gives the one-time connect step per client, explains the OAuth screen is Email Love's normal account sign-in shared with the Figma plugin, and warns not to confuse the exporter MCP with the Email Inspiration MCP. Companion fixes shipped outside this repo: the mcp.emaillove.com authorize page copy now names the MCP connection and its capabilities (worker 0.46.1), and the help page gained a three-surfaces disambiguation section with connect commands (docs commit bd5ea9e).",
-      "codexStatus": "Ported in v4.6.0 (codex-agents commit a22684c, 2026-08-05), then package-corrected in v4.6.1 (commit 7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f): the plugin bundles the Email Love MCP using the required mcpServers wrapper and HTTP transport. Public directory users receive it after the v4.6.1 With MCP submission is approved and published; until then the public snapshot is v4.5.0."
+      "codexStatus": "Ported in v4.6.0/v4.6.1 (codex-agents commits a22684c and 7e0b371, 2026-08-05), then package-corrected in v4.6.1 (commit 7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f): the plugin bundles the Email Love MCP using the required mcpServers wrapper and HTTP transport. Public directory users receive it after the v4.6.1 With MCP submission is approved and published; until then the public snapshot is v4.5.0."
     },
     {
       "claudeCommit": "ddf95db",
