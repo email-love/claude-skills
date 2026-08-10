@@ -3,7 +3,7 @@
   "lastAlignmentReview": "2026-08-05",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "PENDING_COMMIT",
+    "currentCommit": "2aa105f",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.44.0",
@@ -31,7 +31,7 @@
   },
   "drift": [
     {
-      "claudeCommit": "PENDING_COMMIT",
+      "claudeCommit": "2aa105f",
       "summary": "Batch 13 (2026-08-10, postmortem from a Codex-run design system build; canvas fidelity mistaken for export fidelity). Converter 1.43.1 to 1.44.0: tri-state module status in batch reports (canvas/structure/exporter reported separately, deferred is a state never a pass); repair discipline block (measure before restructuring, never retry a render-disproven change, reconstruct after two patches, property-count comparison across repairs, resumable record); supplied source HTML authoritative for both breakpoints (DOM + media-query inventory before building, screenshots never override); Part A stacking decision three-way with RECOMPOSED option via observed visibility keys, explicit desktop-vs-mobile comparison for headers and footers, no invented mobile-alignment key; render-spec 4.2.2 inverse rule never CREATE a combined raster; stackColumns read-back-clean-but-render-wrong measured example.",
       "codexStatus": "Not yet ported. HIGH RELEVANCE to Codex: the postmortem originated from a Codex-run build, so these fixes address failures observed on their surface directly. Batch with the next port spec."
     },
