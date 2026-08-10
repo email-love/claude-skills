@@ -64,6 +64,38 @@ claude plugin install email-love@email-love
 
 ## emaillove-eds-converter
 
+### 1.44.0
+Batch 13: six deltas from a design-system build postmortem (a Codex-run migration whose
+central failure was treating canvas fidelity as proof of exported-email fidelity). Most of
+the postmortem's asks were already landed by batches 6 through 12 and are not repeated;
+these are the parts that were genuinely missing.
+
+- **Three verification states per module, reported separately**: canvas, structure,
+  exporter. Complete means three for three; "exporter: deferred" is a state, never a pass,
+  and "fixed" for a change no render has seen is named as completion inflation.
+- **Repair discipline** (new block before the batch report): measure the failure before
+  changing structure; never retry a change the render disproved; after two local patches,
+  reconstruct from the source inventory instead of patching a third time; re-read property
+  references after any repair and compare counts (a rebuild that drops bindings passes
+  every geometry check); keep a resumable record of node ids, outstanding checks, and last
+  verified state.
+- **Supplied source HTML is authoritative for BOTH breakpoints**: inventory the desktop
+  structure from the DOM and the mobile structure from its media queries before building;
+  screenshots never override it. Measured: a footer patched repeatedly from its screenshot
+  while the supplied HTML held the real grid, recomposition, and individual assets.
+- **Part A's stacking decision becomes three-way**: group, stack, or RECOMPOSED, the third
+  built as paired sections with the observed visibility keys (HideInMobileDevice /
+  HideInDesktopDevice). No mobile-alignment key has been observed and none is invented;
+  recomposition is the sanctioned route when mobile arrangement differs. Headers and
+  footers get an explicit desktop-versus-mobile comparison before their decision.
+- **Never CREATE a combined raster** (render-spec 4.2.2 inverse rule): independently
+  linked or positioned assets get one mj-image each at intended dimensions; a strip costs
+  hrefs, sharpness (double resample), and mobile recomposition.
+- **stackColumns measured example** added to read-back-is-not-sufficient: the key present
+  and reading back cleanly while the export rendered alternating full-width rows; whether
+  private plugin state is involved is unconfirmed, the render is the arbiter either way.
+- Bumps to 1.44.0 (minor: report convention, workflow discipline, reference rule).
+
 ### 1.43.1
 The Email Love MCP is a separate connection, and the Phase 3 gate now says so. Measured on a
 live migration: a fresh plugin install exposed the skills but not the exporter tools, the

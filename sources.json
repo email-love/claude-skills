@@ -3,10 +3,10 @@
   "lastAlignmentReview": "2026-08-05",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "000502d",
+    "currentCommit": "PENDING_COMMIT",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.43.1",
+      "emaillove-eds-converter": "1.44.0",
       "emaillove-migration-audit": "1.23.0"
     }
   },
@@ -30,6 +30,11 @@
     "note": "GitHub is at v4.6.1 (2026-08-05, codex-agents commit 7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f). v4.6.0 ported converter 1.43.1 and bundled the Email Love exporter MCP; v4.6.1 is the submission-preflight patch that adds the required mcpServers wrapper and HTTP transport in .mcp.json, corrects the skills-and-MCP submission wording, and keeps the portal suite at exactly five positive and three negative cases. The public directory remains v4.5.0 until v4.6.1 is uploaded through the With MCP submission path, reviewed, and published. Earlier alignment history remains recorded in the drift entries below."
   },
   "drift": [
+    {
+      "claudeCommit": "PENDING_COMMIT",
+      "summary": "Batch 13 (2026-08-10, postmortem from a Codex-run design system build; canvas fidelity mistaken for export fidelity). Converter 1.43.1 to 1.44.0: tri-state module status in batch reports (canvas/structure/exporter reported separately, deferred is a state never a pass); repair discipline block (measure before restructuring, never retry a render-disproven change, reconstruct after two patches, property-count comparison across repairs, resumable record); supplied source HTML authoritative for both breakpoints (DOM + media-query inventory before building, screenshots never override); Part A stacking decision three-way with RECOMPOSED option via observed visibility keys, explicit desktop-vs-mobile comparison for headers and footers, no invented mobile-alignment key; render-spec 4.2.2 inverse rule never CREATE a combined raster; stackColumns read-back-clean-but-render-wrong measured example.",
+      "codexStatus": "Not yet ported. HIGH RELEVANCE to Codex: the postmortem originated from a Codex-run build, so these fixes address failures observed on their surface directly. Batch with the next port spec."
+    },
     {
       "claudeCommit": "000502d",
       "summary": "Converter 1.43.0 to 1.43.1 (patch, wording only): the Phase 3 gate states that the Email Love MCP is a separate connection from the plugin install, gives the one-time connect step per client, explains the OAuth screen is Email Love's normal account sign-in shared with the Figma plugin, and warns not to confuse the exporter MCP with the Email Inspiration MCP. Companion fixes shipped outside this repo: the mcp.emaillove.com authorize page copy now names the MCP connection and its capabilities (worker 0.46.1), and the help page gained a three-surfaces disambiguation section with connect commands (docs commit bd5ea9e).",

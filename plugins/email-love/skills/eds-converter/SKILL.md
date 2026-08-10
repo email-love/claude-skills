@@ -384,7 +384,11 @@ different node than the panel is opened from. Do not rationalise them into one s
 not trust this table over a fresh observation if the plugin has shipped since it was written.
 
 **Read-back is necessary but NOT sufficient.** Your own write always reads back. The only
-end-to-end verification is a render: export or preview, and measure the mobile output.
+end-to-end verification is a render: export or preview, and measure the mobile output. Measured again on a
+later build: a two-column nav carried `stackColumns` and read it back cleanly, and the
+export still rendered alternating full-width rows; only the exporter render showed it.
+Whether the plugin consults private state the shared key does not reflect is unconfirmed;
+either way the render is the arbiter, never the key.
 
 ### Build the foundations
 
@@ -1056,7 +1060,19 @@ holds exact fills, sizes, paddings and nesting, and it exposes facts a render ca
 Measured on an email-native source: direct reads gave exact values with no reconciliation
 pass, and caught an image 994px wide clipped to 640 by its container that any screenshot
 would have shipped 55 percent too wide. Use the worker path for unstructured sources,
-flattened mockups, and every non-Figma adapter. Say in the batch report which path you took
+flattened mockups, and every non-Figma adapter.
+
+**When the supplied source includes HTML (any ESP adapter, or a customer-supplied file),
+that HTML is the authoritative structure for BOTH breakpoints.** Before building, inventory
+the desktop structure from the DOM and the mobile structure from its media queries as two
+separate lists (text runs, images with their own hrefs and dimensions, per-breakpoint
+composition), and build to that inventory. A screenshot never overrides the HTML, and a
+canvas that disagrees with the supplied HTML is the thing to fix, not the evidence.
+Measured: a footer was patched repeatedly from its screenshot while the supplied HTML held
+the real desktop grid, the real mobile recomposition, and the individual logo assets the
+whole time.
+
+Say in the batch report which path you took
 and why.
 
 On the worker path: do not rebuild by eye and do not run the plugin's Convert button for migration batches. The
@@ -1349,8 +1365,10 @@ the ONE mobile checkpoint every module gets, twin or no twin.
 
 **Part A: for every multi-column section, record the stacking decision.**
 
-Read each section in the module you just built. If it has more than one column, ask: does this
-stay side by side on mobile, or does it stack? Apply the lockup tells from step 2 (unequal
+Read each section in the module you just built. If it has more than one column, ask which
+of THREE mobile behaviors the source calls for: it stays side by side (`mj-group`), it
+stacks (loose columns), or the source uses a genuinely different mobile COMPOSITION that no
+stacking of the desktop structure can produce. Apply the lockup tells from step 2 (unequal
 columns with one small and fixed, columns sharing a continuous background, header or footer
 strips are lockups by default). Then write the decision and the reason in the module's report
 line, per section, in this format:
@@ -1358,6 +1376,17 @@ line, per section, in this format:
 - `header row: mj-group (lockup: logo + headline sharing the dark bar)`
 - `product cards row: loose columns (two equal content blocks, stack expected)`
 - `footer top row: mj-group (lockup: logo + H6 headline in one strip)`
+- `brand logo row: recomposed (mobile shows the primary mark on its own row, siblings beneath)`
+
+**The third option builds paired sections**: a desktop-only section carrying
+`mobileStylesHideInMobileDevice` and a mobile-only sibling carrying
+`mobileStylesHideInDesktopDevice`, each composed for its breakpoint (the same observed
+visibility keys the band-decoration pattern uses). There is no observed mobile-alignment
+key and the never-write-unobserved-keys rule stands, so when mobile alignment or
+arrangement differs from desktop, recomposition IS the sanctioned route. Headers and
+footers get an explicit desktop-versus-mobile comparison before their decision is
+recorded: they are where sources most often recompose rather than stack, and a stacked
+desktop footer that should have been recomposed reads as broken, not as adapted.
 
 A section with more than one column and no recorded decision is not done. Step 5's mobile
 verification fails a module where any multi-column section lacks a decision.
@@ -1770,7 +1799,22 @@ image must stay fluid), and hand it over as a single checklist at step 7. One hu
 against a concrete list is recoverable; a hand-off that merely says "checks not run" is not.
 The two defects a human-run batch check caught on a real library (a bordered group whose
 columns summed past 100 percent, and a nav label wrapping from font drift) were both
-invisible to every arithmetic check in step 5, which is why the deferral must stay loud.
+invisible to every arithmetic check in step 5, which is why the deferral must stay loud,
+and why every report writes a deferred exporter check as a STATE (`exporter: deferred`),
+never folded into a pass.
+
+**Repair discipline, when any check or render fails.** Measure the failure first (which
+node, which breakpoint, which mechanism) before changing structure; a fix applied to an
+unmeasured symptom is a guess. A change the rendered output has disproven is not tried
+again somewhere else. After two local patches on the same module, stop patching and
+reconstruct the module from its source inventory: patch accumulation is how a module
+drifts from the source and the spec at once, and a full reconstruction from a good
+inventory is usually cheaper than the third patch. Repairs preserve what already works:
+re-read `componentPropertyReferences` after any structural repair and compare the property
+count against the pre-repair count, because a rebuild that silently drops bindings passes
+every geometry check. Keep the batch's resumable record current throughout (node ids,
+outstanding checks, last verified state per module), so an interrupted session resumes
+instead of re-verifying or, worse, re-trusting.
 
 ### 7. Batch report and gate
 
@@ -1783,7 +1827,12 @@ census from its inventory row beside the built counts, and a blank column where 
 batch with any unexplained row does not pass the gate, whatever the other five groups say. This
 goes first because it is the only line a reviewer can check against their own file without
 opening yours, and because a report that opens with "zero violations" from internal checks alone
-is how a library reaches 180 modules with 26 of them silently wrong. Then **the source fidelity
+is how a library reaches 180 modules with 26 of them silently wrong. **Every module row then
+carries three verification states, reported separately: canvas (screenshot matches intent),
+structure (read-back groups pass), and exporter (desktop and mobile renders pass).** A
+module is complete only at three for three; `exporter: deferred` is a state, never a pass,
+and "fixed" for a change no render has seen is the completion-inflation failure this line
+exists to stop. Then **the source fidelity
 tier, the target email width, and the content width the batch was built at, plus the scale factor
 where one applies**, so a reviewer can check three or four numbers instead of measuring modules. On a
 REFERENCE ONLY source, open instead with the tier and the standards, and repeat the one sentence that
@@ -1872,7 +1921,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.43.1 of this skill. If you have web access, check once per conversation
+This is version 1.44.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

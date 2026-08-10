@@ -1595,6 +1595,14 @@ outcome that is not available, and neither is deciding this quietly: the report
 says either "sliced at N px per icon for a 24px placement" or "the strip is too
 low-resolution to slice, individual assets needed".
 
+**The inverse rule: never CREATE a combined raster.** When assets are independently linked
+or independently positioned in the source (brand logos, social icons, nav items), build one
+`mj-image` per asset at its intended display dimensions and natural aspect ratio. Combining
+them into one strip costs the per-item hrefs, softens every mark (an enlarged composite
+shrunk responsively is resampled twice), and forecloses mobile recomposition, which is
+exactly where logo rows change arrangement. This subsection exists for slicing strips a
+SOURCE already fused; a build that fuses clean source assets manufactures that problem.
+
 ### 4.3 mj-button: `mj-button-Frame` wrapping FRAME `mj-button` whose DIRECT child is a TEXT node
 
 Three levels. The TEXT node MUST be a direct child of the `mj-button` frame:
