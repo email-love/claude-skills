@@ -1,6 +1,6 @@
 {
   "description": "Source-alignment record between the Claude skills in this repo and the Codex plugin port in email-love/codex-agents. Its job is to stop a fix from landing in one surface and silently never reaching the other. Update it whenever either surface ships a change that the other should mirror, and stamp lastAlignmentReview when you have checked the two are in sync.",
-  "lastAlignmentReview": "2026-08-05",
+  "lastAlignmentReview": "2026-08-10",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
     "currentCommit": "2aa105f",
@@ -12,7 +12,7 @@
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
-    "currentRelease": "v4.5.0",
+    "currentRelease": "v4.7.0",
     "currentPublicRelease": "v4.5.0",
     "currentGitRelease": "v4.6.1",
     "currentGitCommit": "7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f",
@@ -26,14 +26,14 @@
       "Submit for review, then publish after approval.",
       "Verify the public listing and test from a new chat or Codex task."
     ],
-    "portsClaudeCommit": "eb2cc3ad59d8f0551f652d753a1e647a9f9af975",
-    "note": "Next port: batch 13 spec ready in Notion (page id 3b8eabcb-09b7-81a5-8212-f20910f184f0, pinned to Claude commit fb96b26aa346394ae83f63c1d6ebe6b734029c5b), one commit (2aa105f), converter 1.43.1 to 1.44.0, target codex v4.7.0. High relevance: the batch distills a postmortem of a Codex-run build. GitHub is at v4.6.1 (2026-08-05, codex-agents commit 7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f). v4.6.0 ported converter 1.43.1 and bundled the Email Love exporter MCP; v4.6.1 is the submission-preflight patch that adds the required mcpServers wrapper and HTTP transport in .mcp.json, corrects the skills-and-MCP submission wording, and keeps the portal suite at exactly five positive and three negative cases. The public directory remains v4.5.0 until v4.6.1 is uploaded through the With MCP submission path, reviewed, and published. Earlier alignment history remains recorded in the drift entries below."
+    "portsClaudeCommit": "fb96b26aa346394ae83f63c1d6ebe6b734029c5b",
+    "note": "In sync at v4.7.0 (2026-08-10): codex-agents commit d5102b9 ported batch 13 (exporter-first discipline), pinned to Claude fb96b26 with converter 1.44.0; all six changes verified in the ported files. The PUBLIC directory listing remains v4.5.0 until the v4.6.1 portal review publishes; v4.7.0 stacks on GitHub independently of that pipeline. GitHub is at v4.6.1 (2026-08-05, codex-agents commit 7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f). v4.6.0 ported converter 1.43.1 and bundled the Email Love exporter MCP; v4.6.1 is the submission-preflight patch that adds the required mcpServers wrapper and HTTP transport in .mcp.json, corrects the skills-and-MCP submission wording, and keeps the portal suite at exactly five positive and three negative cases. The public directory remains v4.5.0 until v4.6.1 is uploaded through the With MCP submission path, reviewed, and published. Earlier alignment history remains recorded in the drift entries below."
   },
   "drift": [
     {
       "claudeCommit": "2aa105f",
       "summary": "Batch 13 (2026-08-10, postmortem from a Codex-run design system build; canvas fidelity mistaken for export fidelity). Converter 1.43.1 to 1.44.0: tri-state module status in batch reports (canvas/structure/exporter reported separately, deferred is a state never a pass); repair discipline block (measure before restructuring, never retry a render-disproven change, reconstruct after two patches, property-count comparison across repairs, resumable record); supplied source HTML authoritative for both breakpoints (DOM + media-query inventory before building, screenshots never override); Part A stacking decision three-way with RECOMPOSED option via observed visibility keys, explicit desktop-vs-mobile comparison for headers and footers, no invented mobile-alignment key; render-spec 4.2.2 inverse rule never CREATE a combined raster; stackColumns read-back-clean-but-render-wrong measured example.",
-      "codexStatus": "Not yet ported. Spec ready: Notion page id 3b8eabcb-09b7-81a5-8212-f20910f184f0, pinned fb96b26, target v4.7.0. HIGH RELEVANCE to Codex: the postmortem originated from a Codex-run build, so these fixes address failures observed on their surface directly."
+      "codexStatus": "Ported in v4.7.0 (codex-agents commit d5102b9, 2026-08-10)."
     },
     {
       "claudeCommit": "000502d",
