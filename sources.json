@@ -12,10 +12,10 @@
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
-    "currentRelease": "v4.7.0",
+    "currentRelease": "v4.5.0",
     "currentPublicRelease": "v4.5.0",
-    "currentGitRelease": "v4.6.1",
-    "currentGitCommit": "7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f",
+    "currentGitRelease": "v4.7.0",
+    "currentGitCommit": "d5102b98092a91133a7b4639c11c846384eac6fd",
     "publicPluginUrl": "https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409",
     "lastPublicPublication": "2026-08-05",
     "distributionModel": "The public ChatGPT and Codex plugin is a reviewed snapshot. A GitHub push does not update directory users.",

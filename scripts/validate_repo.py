@@ -206,10 +206,10 @@ def check_readme_codex():
         fail("sources.json codexPlugin.publicPluginUrl is missing or incorrect")
     if codex.get("currentPublicRelease") != codex.get("currentRelease"):
         fail("sources.json public and source Codex releases are not aligned")
-    if codex.get("currentGitRelease") != "v4.6.1":
-        fail("sources.json codexPlugin.currentGitRelease must be v4.6.1")
-    if codex.get("currentGitCommit") != "7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f":
-        fail("sources.json codexPlugin.currentGitCommit must record the v4.6.1 commit")
+    if codex.get("currentGitRelease") != "v4.7.0":
+        fail("sources.json codexPlugin.currentGitRelease must be v4.7.0")
+    if codex.get("currentGitCommit") != "d5102b98092a91133a7b4639c11c846384eac6fd":
+        fail("sources.json codexPlugin.currentGitCommit must record the v4.7.0 commit")
     if "GitHub push does not update directory users" not in codex.get("distributionModel", ""):
         fail("sources.json must record that the public plugin is a reviewed snapshot")
     checklist = codex.get("releaseChecklist", [])
