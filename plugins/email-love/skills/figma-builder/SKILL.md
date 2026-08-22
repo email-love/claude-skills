@@ -853,5 +853,5 @@ version, so the check stays correct no matter which skill released most recently
 repository-wide latest-release check reported whichever skill shipped last, which could be a
 different skill entirely. If a newer version exists, mention it once at hand-off with the right
 update path for the user's surface: claude.ai users re-upload the .skill file from the newest
-release, which attaches all three bundles, and Claude Code plugin users run the marketplace
+release, which attaches all four bundles, and Claude Code plugin users run the marketplace
 update. If you have no web access, skip this silently.

@@ -1,6 +1,6 @@
 # Email Love Claude Skills
 
-Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.com). Install them to make Claude an expert at building emails with your Email Love design system.
+Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.com). Install them to make Claude an expert at building, repairing, and migrating emails with your Email Love design system.
 
 ## Read the skills
 
@@ -9,6 +9,7 @@ You do not have to install anything to read what these skills actually tell Clau
 | Skill | What it does | Read it |
 | --- | --- | --- |
 | **emaillove-figma-builder** | Builds emails in Figma from your design system | [SKILL.md](plugins/email-love/skills/figma-builder/SKILL.md) |
+| **emaillove-template-repair** | Diagnoses and repairs existing Email Love templates and modules | [SKILL.md](plugins/email-love/skills/template-repair/SKILL.md) |
 | **emaillove-migration-audit** | Read-only audit of an existing library | [SKILL.md](plugins/email-love/skills/migration-audit/SKILL.md) |
 | **emaillove-eds-converter** | Converts that library into an Email Love design system | [SKILL.md](plugins/email-love/skills/eds-converter/SKILL.md) |
 
@@ -31,6 +32,19 @@ Claude builds real, export-ready emails inside your Figma file, assembled from y
 - The Email Love Figma plugin (latest version). A synced design system in that file for the design-system path; without one it takes the AI Import path
 - Optional but recommended: the free [Email Inspiration MCP](https://help.emaillove.com/plugin/ai/email-inspiration-mcp) for brand inspiration
 
+### emaillove-template-repair
+
+Claude diagnoses and repairs an Email Love email, reusable module, or component instance that
+already exists. It reproduces the failure first, preserves campaign originals by default, and asks
+before changing a shared source component that may update many instances. It changes one measured
+cause at a time and verifies the canvas, structure, desktop export, and mobile export separately.
+It uses the word `fixed` only when all three verification states pass.
+
+The repair skill handles invalid template roots, exporter flattening, Outlook clipping, doubled or
+missing spacing, mobile stacking and recomposition, broken buttons or images, dark-mode regressions,
+private link values, and lost component-property bindings. Ordinary Figma comps route to Builder;
+legacy libraries route to Migration Audit and EDS Converter.
+
 ### emaillove-migration-audit
 
 Already have a Figma design system or template library that was not built with Email Love? This skill scopes the migration before anyone commits. It is strictly read-only: it splits your designs into a deduplicated module inventory and classifies every module (live-text convertible, editable-image candidate, hybrid, or not emailable, with any design concession named), works out whether your file is drawn at email scale, extracts your brand foundations (type ramp with email-safe fallbacks, palette, proposed theme colors, spacing, buttons), flags risks like unlicensed fonts or components living in unshared library files, and produces a shareable migration report with an effort estimate and a hand-off into conversion.
@@ -42,18 +56,18 @@ claude plugin marketplace add email-love/claude-skills
 claude plugin install email-love@email-love
 ```
 
-One install carries all three skills: `/email-love:migration-audit`, `/email-love:eds-converter`, and `/email-love:figma-builder`.
+One install carries all four skills: `/email-love:migration-audit`, `/email-love:eds-converter`, `/email-love:figma-builder`, and `/email-love:template-repair`.
 
 On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
 
-Using **Codex**? Migration ships as one of two skills in the Email Love Codex plugin.
+Using **Codex**? Build, Repair, and Migration ship as three skills in the Email Love Codex plugin.
 [Install the public Email Love plugin](https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409),
 then start a new Codex task.
 
 For development or testing an exact GitHub release, use the separate Git-backed install:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.6.1
+codex plugin marketplace add email-love/codex-agents --ref v4.8.0
 codex plugin add email-love@email-love
 ```
 
@@ -84,7 +98,7 @@ The reason this matters: faithfully preserving the proportions of a file that wa
 Works on every plan, including Free (web and desktop, not mobile).
 
 1. Enable **code execution** under **Settings → Capabilities** (Team/Enterprise: an org owner must enable code execution and skills in Organization Settings first).
-2. Download `emaillove-figma-builder.skill` from the [latest release](https://github.com/email-love/claude-skills/releases/latest). Every release attaches all three skill bundles, so grab the one named for the skill you want.
+2. Download the `.skill` file you need from the [latest release](https://github.com/email-love/claude-skills/releases/latest). Every release attaches all four skill bundles.
 3. Go to **Settings → Capabilities → Customize → Skills** and upload the file.
 4. Ask Claude to build an email in your Figma file.
 
@@ -99,13 +113,14 @@ claude plugin marketplace add email-love/claude-skills
 claude plugin install email-love@email-love
 ```
 
-One install, three skills, namespaced `email-love:`:
+One install, four skills, namespaced `email-love:`:
 
 | Skill | What it does |
 | --- | --- |
 | `/email-love:migration-audit` | Read-only audit of an existing Figma design system: module inventory, verdicts, scale factor, brand foundations |
 | `/email-love:eds-converter` | Converts an audited system into a working Email Love design system, in batches with design review |
 | `/email-love:figma-builder` | Builds export-ready campaigns from your design system |
+| `/email-love:template-repair` | Diagnoses and repairs existing Email Love templates and modules without damaging the original |
 
 Update with `/plugin marketplace update email-love`. (The old per-skill installs, `emaillove-figma-builder@email-love` and friends, still resolve as deprecated single-skill plugins and keep updating; new installs should use the bundle.)
 
@@ -139,14 +154,14 @@ Then ask Claude Code to build an email in your Figma file.
 
 ## Using Codex or ChatGPT instead?
 
-**OpenAI Codex** can run the same workflow. It ships as the Email Love Codex plugin, with a builder skill and a migration skill Codex loads on demand. The public plugin is the recommended customer install:
+**OpenAI Codex** can run the same workflows. The Email Love Codex plugin contains Builder, Template Repair, and Design System Migration skills that Codex loads on demand. The public plugin is the recommended customer install:
 
 [Install Email Love from the Plugins Directory](https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409)
 
 For development or an exact tagged version, use the Git-backed marketplace instead:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.6.1
+codex plugin marketplace add email-love/codex-agents --ref v4.8.0
 codex plugin add email-love@email-love
 ```
 

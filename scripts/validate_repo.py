@@ -6,9 +6,9 @@ manifests, em dashes (a house rule), customer identifiers leaking into public fi
 references, and obsolete Codex install guidance. Runs in CI and locally. Standard library only.
 
 Layout since the plugin restructure: one 'email-love' bundle plugin at plugins/email-love/
-holding three skills (eds-converter, migration-audit, figma-builder), plus three DEPRECATED
-single-skill shim entries in marketplace.json under the legacy names, pointing at the same
-skill directories. Shims exist so old installs and every shipped "Staying current" check keep
+holding four skills (eds-converter, migration-audit, figma-builder, template-repair), plus four
+DEPRECATED single-skill compatibility entries in marketplace.json, pointing at the same skill
+directories. Entries exist so standalone installs and every shipped "Staying current" check keep
 resolving; their versions must stay synced with each SKILL.md's own version line.
 
 Usage:  python3 scripts/validate_repo.py
@@ -35,6 +35,7 @@ SHIM_TO_DIR = {
     "emaillove-eds-converter": "eds-converter",
     "emaillove-migration-audit": "migration-audit",
     "emaillove-figma-builder": "figma-builder",
+    "emaillove-template-repair": "template-repair",
 }
 
 # Files that ship to users and must stay clean.
@@ -53,7 +54,7 @@ FORBIDDEN = [
 ]
 
 def check_marketplace():
-    """Returns {shim_name: version} for the three legacy shim entries."""
+    """Returns {shim_name: version} for the four compatibility entries."""
     mk = ROOT / ".claude-plugin" / "marketplace.json"
     if not mk.exists():
         fail("marketplace.json missing"); return {}
@@ -82,7 +83,7 @@ def check_marketplace():
             except json.JSONDecodeError as e:
                 fail(f"bundle plugin.json does not parse: {e}")
 
-    # The three legacy shims. All must exist (deleting one silently kills the shipped
+    # The four compatibility entries. All must exist (deleting one silently kills the shipped
     # "Staying current" check for every old copy in the wild).
     shim_versions = {}
     for shim, dirname in SHIM_TO_DIR.items():
@@ -190,8 +191,8 @@ def check_readme_codex():
              "Codex uses the public plugin or the tagged Git marketplace")
     if "--ref v3.0.0" in t:
         fail("README.md still points Codex users at the obsolete v3.0.0 release")
-    if "codex plugin marketplace add email-love/codex-agents --ref v4.6.1" not in t:
-        fail("README.md must point Git-backed Codex installs at v4.6.1")
+    if "codex plugin marketplace add email-love/codex-agents --ref v4.8.0" not in t:
+        fail("README.md must point Git-backed Codex installs at v4.8.0")
     if PUBLIC_CODEX_PLUGIN_URL not in t:
         fail("README.md must link to the public Email Love plugin")
 
@@ -206,10 +207,10 @@ def check_readme_codex():
         fail("sources.json codexPlugin.publicPluginUrl is missing or incorrect")
     if codex.get("currentPublicRelease") != codex.get("currentRelease"):
         fail("sources.json public and source Codex releases are not aligned")
-    if codex.get("currentGitRelease") != "v4.7.0":
-        fail("sources.json codexPlugin.currentGitRelease must be v4.7.0")
-    if codex.get("currentGitCommit") != "d5102b98092a91133a7b4639c11c846384eac6fd":
-        fail("sources.json codexPlugin.currentGitCommit must record the v4.7.0 commit")
+    if codex.get("currentGitRelease") != "v4.8.0":
+        fail("sources.json codexPlugin.currentGitRelease must be v4.8.0")
+    if codex.get("currentGitCommit") != "aa0243166fc0aa37f566b3fda96edaded1381ff4":
+        fail("sources.json codexPlugin.currentGitCommit must record the v4.8.0 commit")
     if "GitHub push does not update directory users" not in codex.get("distributionModel", ""):
         fail("sources.json must record that the public plugin is a reviewed snapshot")
     checklist = codex.get("releaseChecklist", [])
@@ -227,6 +228,27 @@ def check_build_completeness():
         p = conv / needed
         if not p.exists() or p.stat().st_size == 0:
             fail(f"eds-converter references/{needed} missing or empty; the bundle would ship broken")
+
+    repair = SKILLS / "template-repair"
+    for needed in (
+        "diagnostic-workflow.md",
+        "symptom-cause-matrix.md",
+        "repair-verification.md",
+    ):
+        p = repair / "references" / needed
+        if not p.exists() or p.stat().st_size == 0:
+            fail(f"template-repair references/{needed} missing or empty; the bundle would ship broken")
+
+    evals_path = repair / "evals" / "evals.json"
+    try:
+        evals = json.loads(evals_path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        fail(f"template-repair evals cannot be read: {error}")
+    else:
+        if evals.get("skill_name") != "emaillove-template-repair":
+            fail("template-repair evals skill_name must be emaillove-template-repair")
+        if len(evals.get("evals", [])) != 6:
+            fail("template-repair must contain six routing and regression evals")
 
 def main():
     shim_versions = check_marketplace()

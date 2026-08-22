@@ -30,4 +30,10 @@ jobs:
               exit 1
             fi
           done
+          for ref in references/diagnostic-workflow.md references/symptom-cause-matrix.md references/repair-verification.md; do
+            if ! unzip -l dist/emaillove-template-repair.skill | grep -q "emaillove-template-repair/$ref"; then
+              echo "FAIL: template-repair bundle is missing $ref"
+              exit 1
+            fi
+          done
           echo "OK: bundles built and references present"

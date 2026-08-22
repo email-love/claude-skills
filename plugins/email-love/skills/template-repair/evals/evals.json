@@ -1,0 +1,75 @@
+{
+  "skill_name": "emaillove-template-repair",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Email Love says this finished campaign is not a valid template. Diagnose it and repair it without damaging the original.",
+      "expected_output": "A copy-first root-shape diagnosis that proves email versus module intent, repairs only the duplicate, and verifies canvas, structure, desktop export, and mobile export.",
+      "files": [],
+      "assertions": [
+        "Confirms the target is an existing Email Love structure before writing",
+        "Duplicates the campaign root and reports both node ids",
+        "Does not add mainFrame to a reusable module",
+        "Reports canvas, structure, and exporter states separately"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "This Email Love section contains live text in Figma but exports as one image. Please fix it.",
+      "expected_output": "A measured ancestor-chain repair on a preserved working copy, followed by production desktop and mobile export proof that the text remains live.",
+      "files": [],
+      "assertions": [
+        "Identifies the first surface where flattening appears",
+        "Inspects the complete ancestor chain and exact shared tags",
+        "Makes one measured repair rather than freehand rebuilding",
+        "Proves the live content survives production export"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The desktop Email Love header is right, but its logo and links wrap and reorder incorrectly on mobile Preview.",
+      "expected_output": "A desktop and mobile comparison that chooses grouping, stacking, or recomposition from evidence and treats the production mobile render as the arbiter.",
+      "files": [],
+      "assertions": [
+        "Captures desktop and mobile baselines",
+        "Does not trust stackColumns read-back over a bad render",
+        "Does not flatten the header into one image",
+        "Verifies the production mobile result"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our reusable Email Love footer is broken across several campaigns. Repair the footer component.",
+      "expected_output": "An impact gate that asks whether to change the source in place or create a replacement before writing, preserves properties, and verifies an exported instance.",
+      "files": [],
+      "assertions": [
+        "Identifies the source module and affected instances",
+        "Asks in-place versus replacement before writing",
+        "Records property counts and bindings",
+        "Does not detach the component"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Diagnose why this Email Love button is not clickable. Figma write tools are connected, but the Email Love exporter is not authorized.",
+      "expected_output": "A narrow diagnosis or repair with the Claude Email Love MCP connection step and exporter reported as deferred, never passed or fixed.",
+      "files": [],
+      "assertions": [
+        "Probes for Email Love exporter tools",
+        "Gives Claude connector guidance rather than a Codex login command",
+        "Reports exporter as deferred",
+        "Does not call the repair fixed"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Turn this ordinary Figma email comp into an Email Love email and then fix any export issues.",
+      "expected_output": "Routes the request to figma-builder because the target is not yet an Email Love structure.",
+      "files": [],
+      "assertions": [
+        "Does not activate repair on a random Figma frame",
+        "Routes creation or conversion to figma-builder"
+      ]
+    }
+  ]
+}

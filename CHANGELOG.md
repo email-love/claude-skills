@@ -1,7 +1,31 @@
 # Changelog
 
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
-independent per skill. Every release attaches all three `.skill` bundles.
+independent per skill. Every release attaches all four `.skill` bundles.
+
+## Repo: Email Love plugin 1.4.0 (2026-08-22)
+
+Adds the fourth bundled skill, `/email-love:template-repair`, and the standalone
+`emaillove-template-repair.skill` release asset.
+
+- Repairs existing Email Love campaign roots, reusable modules, and component instances. It routes
+  ordinary Figma comps to Builder and legacy libraries to the migration workflow.
+- Reproduces the failure before writing, preserves campaign originals by default, and requires an
+  explicit in-place versus replacement choice before changing a shared source component.
+- Applies one measured repair at a time. A render-disproven change is reverted, and two failed
+  local patches trigger reconstruction from an intact component or the authoritative converter
+  and render sources.
+- Reports `canvas`, `structure`, and `exporter` independently as pass, fail, or deferred. A repair
+  is called fixed only when canvas, structure, desktop export, and mobile export pass.
+- Adds six routing and regression cases, Claude-native MCP connection guidance, marketplace
+  discovery metadata, validation, documentation, and release packaging.
+
+## emaillove-template-repair
+
+### 1.0.0
+
+Initial release. Behavior matches Email Love Codex Template Repair 4.8.0, adapted for Claude's
+plugin namespace, Figma tool catalog, connector setup, and standalone `.skill` packaging.
 
 ## Repo: plugin restructure (2026-08-03)
 
