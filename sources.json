@@ -1,21 +1,22 @@
 {
   "description": "Source-alignment record between the Claude skills in this repo and the Codex plugin port in email-love/codex-agents. Its job is to stop a fix from landing in one surface and silently never reaching the other. Update it whenever either surface ships a change that the other should mirror, and stamp lastAlignmentReview when you have checked the two are in sync.",
-  "lastAlignmentReview": "2026-08-10",
+  "lastAlignmentReview": "2026-08-22",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "2aa105f",
+    "currentCommit": "ec421cb1aca1e9723451550d560b91cb723807c7",
     "skillVersions": {
       "emaillove-figma-builder": "2.9.2",
       "emaillove-eds-converter": "1.44.0",
-      "emaillove-migration-audit": "1.23.0"
+      "emaillove-migration-audit": "1.23.0",
+      "emaillove-template-repair": "1.0.0"
     }
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
     "currentRelease": "v4.5.0",
     "currentPublicRelease": "v4.5.0",
-    "currentGitRelease": "v4.7.0",
-    "currentGitCommit": "d5102b98092a91133a7b4639c11c846384eac6fd",
+    "currentGitRelease": "v4.8.0",
+    "currentGitCommit": "aa0243166fc0aa37f566b3fda96edaded1381ff4",
     "publicPluginUrl": "https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409",
     "lastPublicPublication": "2026-08-05",
     "distributionModel": "The public ChatGPT and Codex plugin is a reviewed snapshot. A GitHub push does not update directory users.",
@@ -27,9 +28,14 @@
       "Verify the public listing and test from a new chat or Codex task."
     ],
     "portsClaudeCommit": "fb96b26aa346394ae83f63c1d6ebe6b734029c5b",
-    "note": "In sync at v4.7.0 (2026-08-10): codex-agents commit d5102b9 ported batch 13 (exporter-first discipline), pinned to Claude fb96b26 with converter 1.44.0; all six changes verified in the ported files. The PUBLIC directory listing remains v4.5.0 until the v4.6.1 portal review publishes; v4.7.0 stacks on GitHub independently of that pipeline. GitHub is at v4.6.1 (2026-08-05, codex-agents commit 7e0b371a4fd847b2cd4f21b8f4707da2dfafc75f). v4.6.0 ported converter 1.43.1 and bundled the Email Love exporter MCP; v4.6.1 is the submission-preflight patch that adds the required mcpServers wrapper and HTTP transport in .mcp.json, corrects the skills-and-MCP submission wording, and keeps the portal suite at exactly five positive and three negative cases. The public directory remains v4.5.0 until v4.6.1 is uploaded through the With MCP submission path, reviewed, and published. Earlier alignment history remains recorded in the drift entries below."
+    "note": "In sync at v4.8.0 (2026-08-22): codex-agents commit aa02431 adds the Template Repair skill and Claude plugin 1.4.0 carries the matching repair workflow as emaillove-template-repair 1.0.0. Both surfaces use convert.emaillove.com for the design converter. The public OpenAI directory listing remains the last published snapshot until v4.8.0 is uploaded, reviewed, and published through the OpenAI submission portal. Earlier alignment history remains recorded in the drift entries below."
   },
   "drift": [
+    {
+      "claudeCommit": "ec421cb1aca1e9723451550d560b91cb723807c7",
+      "summary": "Claude plugin 1.4.0 adds emaillove-template-repair 1.0.0, ported from codex-agents v4.8.0 commit aa02431. The skill preserves campaign originals, gates shared-component impact, applies one measured repair at a time, reconstructs after two failed patches, and reports canvas, structure, and exporter states separately. Claude-specific changes are limited to plugin namespace, connector authorization, cross-skill source URLs, marketplace metadata, and standalone .skill packaging.",
+      "codexStatus": "Source implementation released locally as codex-agents v4.8.0 at aa0243166fc0aa37f566b3fda96edaded1381ff4; GitHub push and public OpenAI portal publication are separate release steps."
+    },
     {
       "claudeCommit": "2aa105f",
       "summary": "Batch 13 (2026-08-10, postmortem from a Codex-run design system build; canvas fidelity mistaken for export fidelity). Converter 1.43.1 to 1.44.0: tri-state module status in batch reports (canvas/structure/exporter reported separately, deferred is a state never a pass); repair discipline block (measure before restructuring, never retry a render-disproven change, reconstruct after two patches, property-count comparison across repairs, resumable record); supplied source HTML authoritative for both breakpoints (DOM + media-query inventory before building, screenshots never override); Part A stacking decision three-way with RECOMPOSED option via observed visibility keys, explicit desktop-vs-mobile comparison for headers and footers, no invented mobile-alignment key; render-spec 4.2.2 inverse rule never CREATE a combined raster; stackColumns read-back-clean-but-render-wrong measured example.",
