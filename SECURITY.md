@@ -17,7 +17,7 @@ When it fires, the skill:
    from the frame) and optionally a layer tree, to the Email Love design-converter:
 
    ```
-   https://design-converter.andy-30d.workers.dev
+   https://convert.emaillove.com
    ```
 
 3. Receives back a structured MJML document describing email structure, and rebuilds it in Figma.

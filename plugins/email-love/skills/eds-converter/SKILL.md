@@ -1115,7 +1115,7 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    instead, the root `mj-body` width against the width you are building to, and only if that
    disagrees is the payload at another scale and every number in it in need of dividing. The
    factor's real job in this phase is reading the SOURCE and sizing images taken out of it.
-2. **POST to the worker** at `https://design-converter.andy-30d.workers.dev`:
+2. **POST to the worker** at `https://convert.emaillove.com`:
    - Headers: `Content-Type: application/json`, `Authorization: Bearer` with an EMPTY
      token, and `X-Auth-Provider: gumroad`. The worker treats empty Bearer + gumroad as
      an anonymous Free user, which is allowed; no license key is needed for this path.
