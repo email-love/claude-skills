@@ -15,6 +15,22 @@ Capture each available surface independently:
 Write which surface first shows the failure. A canvas-only problem is not automatically an export
 problem, and a clean canvas does not clear the exporter.
 
+## Source-fidelity gate
+
+Set two authorities before inspecting toward a repair:
+
+- **Structural authority:** supplied or production HTML for the structure it contains; otherwise
+  the source component and the packaged render contract.
+- **Visual authority:** the user-approved original comp, migration audit, or desktop and mobile
+  source references. A screenshot submitted to report a defect is symptom evidence unless the user
+  says it is the target design.
+
+Record conflicts between authorities instead of resolving them from the current broken canvas. Do
+not write until the intended width, inset, radius, responsive composition, and affected node
+mapping are settled or explicitly unknown - and if an unknown can change the proposed mutation,
+resolve it first. A user-visible region name may not match the library component name: map visible
+copy to the proof instance and then to the source component before editing anything.
+
 ## 2. Classify the target before inspecting details
 
 - **Email template:** root has `nodeType = mainFrame`; direct children are `mj-wrapper` nodes or
@@ -59,17 +75,32 @@ data, and an existing private value can override the shared value you write.
 Use this compact record:
 
 ```text
+Observed facts:
+- <source or node id>: <direct observation>
+Structural authority:
+Visual authority:
+Derived values:
+- <result> = <inputs and calculation>
+Inferences:
+Unknown or pending:
 Symptom:
 First failing surface:
 Failing node and ancestor:
 Measured mismatch:
-Hypothesized mechanism:
 One proposed change:
 Expected desktop result:
 Expected mobile result:
 ```
 
-If the proposed change has no measurable expected result, it is not ready to apply.
+Keep observations, derivations, and inferences separate. An observed value names its source and
+node id; a derived value shows its inputs and calculation; an inference stays labeled until a
+render proves it. Do not promote a plausible recommendation, a peer pattern, or a measurement of
+the current broken state to a fact. Do not write while `Unknown or pending` contains anything that
+can change the proposed node, geometry, or responsive behavior. If the proposed change has no
+measurable expected result, it is not ready to apply.
+
+Include only the fields that can affect this repair: a link or marker fix carries no geometry
+lines, and geometry lines appear only when geometry is what changes.
 
 ## 6. Preserve repair integrity
 

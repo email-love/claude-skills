@@ -12,7 +12,7 @@
       "source": "./plugins/email-love",
       "displayName": "Email Love",
       "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": {
         "name": "Email Love",
         "email": "hello@emaillove.com",
@@ -36,7 +36,7 @@
       "name": "emaillove-eds-converter",
       "source": "./plugins/email-love/skills/eds-converter",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, figma-builder, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.44.0",
+      "version": "1.45.0",
       "author": {
         "name": "Email Love"
       }
@@ -45,7 +45,7 @@
       "name": "emaillove-migration-audit",
       "source": "./plugins/email-love/skills/migration-audit",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with eds-converter, figma-builder, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.23.0",
+      "version": "1.24.0",
       "author": {
         "name": "Email Love"
       }
@@ -63,7 +63,7 @@
       "name": "emaillove-template-repair",
       "source": "./plugins/email-love/skills/template-repair",
       "description": "DEPRECATED as a standalone install: install the 'email-love' plugin instead; it bundles template-repair with figma-builder, migration-audit, and eds-converter. This compatibility entry supports standalone skill version checks.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Email Love"
       }

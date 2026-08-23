@@ -897,7 +897,11 @@ needing design judgment. Name the source fidelity tier here, since it reframes e
 it. If the source is authoritative or partial and not at email scale, say that here too; it is the
 finding that changes the most work.]
 ## Source fidelity
-[REQUIRED, and it changes how every section below it should be read. State the tier, in these
+[REQUIRED. Open with the evidence-authority order this audit used, so conversion inherits it
+instead of re-deriving it: **Structural authority:** <the source node tree, or supplied/ESP HTML
+where one exists - HTML is authoritative for the structure it contains>. **Visual authority:**
+<the approved comps or source renders>. A screenshot supplied to show a defect is symptom
+evidence, not the intended design. Then state the tier, in these
 words: AUTHORITATIVE, PARTIAL, or REFERENCE ONLY. Then the signals you classified from, each as
 present or absent, so a reader can check the call rather than take it: standard email width, local
 text styles, local paint styles, variables, components, auto layout, mobile variants, and margin
@@ -1107,7 +1111,8 @@ both:
    foundations once, then modules in batches with a designer review between batches. It builds
    in a NEW target file and keeps this source file read-only. What it reads out of this report,
    by section name: **Source fidelity** (which tells it whether to preserve the source's geometry,
-   standardise part of it, or build to email standards and take only the brand), the **Module
+   standardise part of it, or build to email standards and take only the brand, and whose
+   evidence-authority lines name the structural and visual authority every batch inherits), the **Module
    inventory** (one module per row, one batch per group of rows,
    with the source refs, verdicts, concessions, build constraints, categories, and effort, and
    its category ORDER, which becomes the order of the component pages in the converted file), the
@@ -1921,7 +1926,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.23.0 of this skill. If you have web access, check once per conversation
+This is version 1.24.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

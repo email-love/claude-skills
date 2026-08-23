@@ -12,6 +12,10 @@ already works, and verify the result through the production exporter before call
 
 - Diagnose before writing. Reproduce the reported failure and identify the node, breakpoint,
   and mechanism.
+- Establish source fidelity before writing. Treat a failure screenshot as symptom evidence unless
+  the user explicitly identifies it as the intended design. Name the visual authority and the
+  structural authority separately. Never derive intended geometry from the broken canvas when an
+  original comp, migration audit, supplied HTML, or approved source render exists.
 - Preserve the original. For a campaign template, repair a duplicate unless the user explicitly
   authorizes editing the original. For a library module, ask whether to repair the source component
   in place, which updates its instances, or create a replacement.
@@ -103,6 +107,34 @@ Never make that choice silently.
 Record node ids, component-property counts, property bindings, and the last verified state. This is
 the resumable record if the task is interrupted.
 
+Complete every pending read-only investigation that could change the target node, source authority,
+breakpoint intent, or repair dimensions before the first write. Parallel discovery does not permit
+early mutation: wait for those checks, or record why an unavailable check cannot change the repair.
+Then freeze a compact Repair Contract before writing:
+
+```text
+Repair Contract
+- target: <node id> (<email root | module | instance | leaf>)
+- class: property_patch | instance_replacement | section_reconstruction
+- evidence: <the observed facts this repair rests on>
+- allowed nodes: <exactly the ids this class may touch>
+- change: <node id>: <before> -> <after>   (one line per intended change)
+- preserved invariants: <the ones this class can affect - root shape, node census, content
+  counts, tags, property bindings, tokens, assets>
+- rollback: <how the working copy reverts>
+- required checks: structure read-back; exporter desktop; exporter mobile
+  (+ canvas mobile when a mobile source exists)
+```
+
+Keep the record proportional to the repair: a link fix or root-marker fix needs no geometry
+fields; geometry and proof-instance mapping belong in the contract only when they can affect the
+mutation. One contract covers one scoped repair, and a user request that already clearly
+authorizes that exact repair is its authorization - do not ask again for what was asked for.
+New contradictory evidence invalidates the contract and stops further mutation until it is
+re-frozen. `property_patch` is the default class; `instance_replacement` and
+`section_reconstruction` are the two escalation classes and each requires its own contract naming
+what it may rebuild.
+
 ### 3. Form one measured hypothesis
 
 Use the symptom matrix to identify the narrowest plausible mechanism. Inspect the complete ancestor
@@ -119,17 +151,25 @@ the exact Email Love plugin control instead of repeating a write that cannot lan
 If a rendered result disproves a change, revert that change on the working copy and do not repeat
 the same idea elsewhere. After two failed local patches on the same section, stop patching.
 
-Reconstruct only that section from an intact Email Love component or, when it was converter-built,
-from the user's own source plus the converter and authoritative render rules. Never flatten a
-section or rebuild it from memory to make the symptom disappear.
+Escalate by re-freezing the contract under the next class: `instance_replacement` swaps the broken
+component for an intact library instance; `section_reconstruction` rebuilds only that section from
+the user's own source plus the converter and authoritative render rules. Both name exactly what
+they may rebuild and what they must preserve. Never flatten a section or rebuild it from memory to
+make the symptom disappear.
 
 ### 5. Verify all three states
 
-Run the verification reference. A repair is complete only when all three are `pass`:
+Run the verification reference. Report five states, each on its own evidence:
 
-- `canvas`: the Figma screenshot matches the intended design;
+- `canvas desktop`: the Figma screenshot matches the authoritative desktop intent;
+- `canvas mobile`: compared only when a mobile source exists - otherwise `deferred`, never
+  inferred from desktop;
 - `structure`: the root, tags, geometry, bindings, and content checks pass;
-- `exporter`: both desktop and mobile production renders pass.
+- `exporter desktop` and `exporter mobile`: the production renders pass, each verified
+  independently. An untested viewport is `deferred`, not `pass`, and success at one viewport
+  cannot compensate for failure at the other.
+
+A repair is `fixed` only when every required state is `pass`.
 
 If the issue was reported in a named inbox client or ESP, exporter Preview is necessary but may not
 be sufficient. State when a real inbox or ESP test still belongs to the user.
@@ -153,7 +193,7 @@ states, any private-data or inbox-test handoff, and whether the original remaine
 
 ## Staying current
 
-This is version 1.0.0 of this skill. If you have web access, check once per conversation quietly
+This is version 1.1.0 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-template-repair`. If a newer version

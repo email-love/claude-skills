@@ -1,39 +1,39 @@
 name: validate
 
+# Validation and packaging for pull requests and the default branch.
+# This workflow can never publish: its token is read-only and checkout
+# credentials are not persisted.
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Validate repo
         run: python3 scripts/validate_repo.py
 
-      - name: Build bundles and confirm references ship
-        run: |
-          bash build.sh
-          # The converter delegates to its references at runtime. A bundle without them
-          # installs broken, which is a failure class we have hit. Assert they are inside.
-          for ref in references/render-spec.md references/structure.md; do
-            if ! unzip -l dist/emaillove-eds-converter.skill | grep -q "emaillove-eds-converter/$ref"; then
-              echo "FAIL: eds-converter bundle is missing $ref"
-              exit 1
-            fi
-          done
-          for ref in references/diagnostic-workflow.md references/symptom-cause-matrix.md references/repair-verification.md; do
-            if ! unzip -l dist/emaillove-template-repair.skill | grep -q "emaillove-template-repair/$ref"; then
-              echo "FAIL: template-repair bundle is missing $ref"
-              exit 1
-            fi
-          done
-          echo "OK: bundles built and references present"
+      - name: Quality-gate validator self-test
+        run: python3 tests/quality-gates/validate_quality_pack.py --self-test
+
+      - name: Build bundles
+        run: bash build.sh
+
+      - name: Verify bundles (inventory, containment, parity, checksums, determinism)
+        run: bash scripts/verify_dist.sh

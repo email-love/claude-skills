@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/email-love/claude-skills/tests/quality-gates/schemas/repair-contract.schema.json",
+  "title": "Email Love Repair Contract (three classes, v1.1)",
+  "description": "One contract per scoped repair. class selects the operation set: property_patch carries narrow property edits; instance_replacement swaps a broken node for an intact library instance; section_reconstruction rebuilds one named section from its authoritative source. The two escalation classes are explicitly authorized escalations after a local repair is disproved - a contract cannot silently widen its own class.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "targetNodeId",
+    "class",
+    "evidence",
+    "allowedNodeIds",
+    "preservedInvariants",
+    "rollback",
+    "requiredChecks"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.1" },
+    "targetNodeId": { "type": "string", "minLength": 1 },
+    "class": { "enum": ["property_patch", "instance_replacement", "section_reconstruction"] },
+    "evidence": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "authorization": {
+      "type": "string",
+      "description": "How this repair was authorized. A user request that already clearly authorizes this exact scoped repair is its authorization; no second confirmation is stacked on top."
+    },
+    "allowedNodeIds": {
+      "type": "array", "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nodeId", "property", "before", "after"],
+        "properties": {
+          "nodeId": { "type": "string", "minLength": 1 },
+          "property": { "type": "string", "minLength": 1 },
+          "before": {},
+          "after": {}
+        }
+      }
+    },
+    "replacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brokenNodeId", "intactComponent"],
+      "properties": {
+        "brokenNodeId": { "type": "string", "minLength": 1 },
+        "intactComponent": { "type": "string", "minLength": 1 }
+      }
+    },
+    "reconstruction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sectionNodeId", "authoritativeSource", "disprovedPatches"],
+      "properties": {
+        "sectionNodeId": { "type": "string", "minLength": 1 },
+        "authoritativeSource": { "type": "string", "minLength": 1 },
+        "disprovedPatches": {
+          "type": "integer", "minimum": 2,
+          "description": "Reconstruction is permitted only after at least two disproved local patches on the same section (or explicit user instruction, recorded in authorization)."
+        }
+      }
+    },
+    "preservedInvariants": {
+      "type": "array", "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "The invariants this class can affect, named: root shape, node census, content counts, tags, property bindings, tokens, assets."
+    },
+    "rollback": { "type": "string", "minLength": 1 },
+    "requiredChecks": {
+      "type": "array",
+      "items": { "enum": ["structure", "exporter_desktop", "exporter_mobile", "canvas_desktop", "canvas_mobile"] },
+      "description": "Must contain structure, exporter_desktop, and exporter_mobile; canvas_mobile only when a mobile source exists."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "class": { "const": "property_patch" } } },
+      "then": { "required": ["changes"] }
+    },
+    {
+      "if": { "properties": { "class": { "const": "instance_replacement" } } },
+      "then": { "required": ["replacement"] }
+    },
+    {
+      "if": { "properties": { "class": { "const": "section_reconstruction" } } },
+      "then": { "required": ["reconstruction"] }
+    }
+  ]
+}

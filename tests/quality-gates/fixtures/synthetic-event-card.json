@@ -1,0 +1,71 @@
+{
+  "_note": "Synthetic fixture. Every id, name, and measurement is invented for testing; no customer file key, node id, or local path appears here (the original worked example was deliberately excluded for that reason).",
+  "factPack": {
+    "schemaVersion": "1.1",
+    "target": { "targetNodeId": "10:200", "targetKind": "module" },
+    "symptom": "Card surface shows a stepped seam between the image row and the text row on mobile.",
+    "sourceAuthority": {
+      "structural": "source component 10:100 plus the packaged render contract",
+      "visual": "approved desktop and mobile comps supplied by the user (frames 2:10 and 2:11)",
+      "conflicts": []
+    },
+    "facts": [
+      { "source": "node 10:201", "observation": "image row resolved outer bounds 0..600 at desktop, 0..375 at mobile" },
+      { "source": "node 10:202", "observation": "text row resolved outer bounds 8..592 at desktop, 8..367 at mobile (8px inset both sides)" },
+      { "source": "comp 2:11", "observation": "mobile comp shows one continuous surface, outer radius 16, no internal radii" }
+    ],
+    "derived": [
+      { "result": "seam width mismatch = 8px per side", "from": "10:201 bounds minus 10:202 bounds" }
+    ],
+    "inferences": [
+      "The 8px inset on the text row is the seam mechanism (proven only when the mobile render confirms)"
+    ],
+    "unresolved": [
+      { "question": "Does the ESP strip negative margins?", "canChangeMutation": false }
+    ],
+    "readiness": "ready",
+    "geometryRelevant": true,
+    "mappingRelevant": true,
+    "currentGeometry": { "10:202": { "insetLeftPx": 8, "insetRightPx": 8 } },
+    "sourceGeometry": { "surface": { "outerRadiusPx": 16, "internalRadiiPx": 0 } },
+    "mapping": {
+      "visibleRegion": "Event highlights card",
+      "proofInstanceId": "20:300",
+      "sourceComponentId": "10:100"
+    }
+  },
+  "repairContract": {
+    "schemaVersion": "1.1",
+    "targetNodeId": "10:200",
+    "class": "property_patch",
+    "evidence": [
+      "10:202 carries an 8px inset both sides while 10:201 does not; the mobile comp shows one continuous surface"
+    ],
+    "authorization": "User asked to fix the mobile seam on this card in this conversation.",
+    "allowedNodeIds": ["10:202"],
+    "changes": [
+      { "nodeId": "10:202", "property": "paddingLeft", "before": 8, "after": 0 },
+      { "nodeId": "10:202", "property": "paddingRight", "before": 8, "after": 0 }
+    ],
+    "preservedInvariants": [
+      "root shape (mj-wrapper component, no mainFrame marker)",
+      "node census and content counts",
+      "tags on every frame in the export chain",
+      "component property bindings (2 properties, re-read after the change)"
+    ],
+    "rollback": "Working copy 10:900 retains the pre-change values; revert paddings to 8/8.",
+    "requiredChecks": ["structure", "exporter_desktop", "exporter_mobile", "canvas_desktop", "canvas_mobile"]
+  },
+  "acceptanceMatrix": {
+    "schemaVersion": "1.1",
+    "checks": [
+      { "component": "event-card", "breakpoint": "desktop", "check": "canvas", "status": "pass", "evidence": "screenshot matches comp 2:10" },
+      { "component": "event-card", "breakpoint": "mobile", "check": "canvas", "status": "pass", "evidence": "screenshot matches comp 2:11" },
+      { "component": "event-card", "breakpoint": "desktop", "check": "structure", "status": "pass", "evidence": "read-back clean" },
+      { "component": "event-card", "breakpoint": "mobile", "check": "structure", "status": "pass", "evidence": "mobile keys read back" },
+      { "component": "event-card", "breakpoint": "desktop", "check": "exporter", "status": "pass", "evidence": "production desktop render seam-free" },
+      { "component": "event-card", "breakpoint": "mobile", "check": "exporter", "status": "pass", "evidence": "production mobile render seam-free" }
+    ],
+    "aggregate": "verified"
+  }
+}

@@ -99,7 +99,7 @@ Works on every plan, including Free (web and desktop, not mobile).
 
 1. Enable **code execution** under **Settings → Capabilities** (Team/Enterprise: an org owner must enable code execution and skills in Organization Settings first).
 2. Download the `.skill` file you need from the [latest release](https://github.com/email-love/claude-skills/releases/latest). Every release attaches all four skill bundles.
-3. Go to **Settings → Capabilities → Customize → Skills** and upload the file.
+3. Go to **Customize → Skills → + → Create skill → Upload a skill** and upload the file.
 4. Ask Claude to build an email in your Figma file.
 
 ### Claude Code (recommended: plugin marketplace)

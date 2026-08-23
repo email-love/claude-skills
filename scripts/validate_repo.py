@@ -247,8 +247,11 @@ def check_build_completeness():
     else:
         if evals.get("skill_name") != "emaillove-template-repair":
             fail("template-repair evals skill_name must be emaillove-template-repair")
-        if len(evals.get("evals", [])) != 6:
-            fail("template-repair must contain six routing and regression evals")
+        if len(evals.get("evals", [])) < 11:
+            fail("template-repair must contain at least eleven evals (the six routing/"
+                 "regression cases plus wrong-target mapping, late-arriving source evidence, "
+                 "binding preservation, missing mobile exporter proof, and permitted "
+                 "reconstruction)")
 
 def main():
     shim_versions = check_marketplace()

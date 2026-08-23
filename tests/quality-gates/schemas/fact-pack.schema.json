@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/email-love/claude-skills/tests/quality-gates/schemas/fact-pack.schema.json",
+  "title": "Email Love pre-write Fact Pack (conditional core, v1.1)",
+  "description": "Compact common core plus conditional sections by repair class. Geometry and proof-instance mapping are required only when they can affect the mutation (geometryRelevant / mappingRelevant). A link fix, root-marker fix, or whole-email repair with no authoritative source comp is fully representable without them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "target",
+    "symptom",
+    "sourceAuthority",
+    "facts",
+    "unresolved",
+    "readiness",
+    "geometryRelevant",
+    "mappingRelevant"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.1" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetNodeId", "targetKind"],
+      "properties": {
+        "targetNodeId": { "type": "string", "minLength": 1 },
+        "targetKind": { "enum": ["email-root", "module", "instance", "leaf"] },
+        "figmaFileKey": { "type": "string" }
+      }
+    },
+    "symptom": { "type": "string", "minLength": 1 },
+    "sourceAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["structural", "visual"],
+      "properties": {
+        "structural": { "type": "string", "minLength": 1 },
+        "visual": { "type": "string", "minLength": 1 },
+        "conflicts": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "observation"],
+        "properties": {
+          "source": { "type": "string", "minLength": 1 },
+          "observation": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "derived": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["result", "from"],
+        "properties": {
+          "result": { "type": "string", "minLength": 1 },
+          "from": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "inferences": { "type": "array", "items": { "type": "string" } },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "canChangeMutation"],
+        "properties": {
+          "question": { "type": "string", "minLength": 1 },
+          "canChangeMutation": { "type": "boolean" }
+        }
+      }
+    },
+    "readiness": { "enum": ["ready", "blocked"] },
+    "geometryRelevant": { "type": "boolean" },
+    "mappingRelevant": { "type": "boolean" },
+    "currentGeometry": { "type": "object" },
+    "sourceGeometry": { "type": "object" },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["visibleRegion", "proofInstanceId", "sourceComponentId"],
+      "properties": {
+        "visibleRegion": { "type": "string", "minLength": 1 },
+        "proofInstanceId": { "type": "string", "minLength": 1 },
+        "sourceComponentId": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "geometryRelevant": { "const": true } } },
+      "then": { "required": ["currentGeometry"] }
+    },
+    {
+      "if": { "properties": { "mappingRelevant": { "const": true } } },
+      "then": { "required": ["mapping"] }
+    }
+  ]
+}

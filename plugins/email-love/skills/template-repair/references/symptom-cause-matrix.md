@@ -20,6 +20,7 @@ Use this as a starting hypothesis list, never as permission to skip measurement.
 | Component controls disappeared | Main component property definitions and bindings | Structural repair dropped `componentPropertyReferences` | Restore bindings from the pre-repair record and confirm property counts |
 | Link change appears to succeed but export keeps the old URL | Plugin panel and shared/private data precedence | Existing private plugin data overrides shared data | Tell the user to change the value in the Email Love plugin control |
 | Figma looks right but Preview is wrong | Pinned widths, exported font, and mobile render | Canvas and exported font metrics differ, or shared mobile key is ignored | Measure the production render, add documented width slack, or choose authoritative recomposition |
+| A card has a notch, crescent, or stepped seam between rows | Bounds, insets, fills, strokes, and all four radii on both adjoining rows | Rows intended as one continuous surface have different resolved outer bounds or independent corner radii | Align the rows' resolved outer bounds and keep radii on the outer perimeter only; verify the seam in BOTH production desktop and mobile renders before promising it is gone (the full continuous-surface contract is forward-test-gated, not yet an exporter-proven rule) |
 
 When more than one row fits, inspect the earliest shared ancestor. Several leaf symptoms often come
 from one unrecognized or incorrectly sized container.

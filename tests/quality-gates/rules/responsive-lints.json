@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.1",
+  "note": "Report-only lints. Every SURFACE-* and RESPONSIVE-* rule is forward_test_required: it stays a reported observation with autofix false until the candidate rule passes production desktop AND mobile Preview forward tests. Surface comparisons use RESOLVED outer bounds (x position + width after padding and nested columns), never raw width equality - two parts can share a raw width and still misalign when their insets differ.",
+  "rules": [
+    {
+      "id": "EVIDENCE-001",
+      "version": "1.1.0",
+      "severity": "error",
+      "scope": "component",
+      "appliesWhen": "before_mutation",
+      "inputs": ["factPack.readiness", "factPack.unresolved"],
+      "assertion": "readiness == ready && no unresolved item has canChangeMutation == true",
+      "failureMessage": "Mutation started before the evidence gate closed.",
+      "autofix": false,
+      "confidence": "proven"
+    },
+    {
+      "id": "SURFACE-001",
+      "version": "1.1.0",
+      "severity": "report",
+      "scope": "adjacent_siblings",
+      "appliesWhen": "same_fill && visually_contiguous",
+      "inputs": ["resolvedOuterBoundsPx.perBreakpoint"],
+      "assertion": "at each breakpoint, every part's resolved outer bounds (left edge and right edge) equal the surface's outer bounds",
+      "tolerancePx": 0,
+      "failureMessage": "A continuous surface changes resolved outer bounds at its seam.",
+      "evidenceToEmit": ["partNodeIds", "resolvedOuterBoundsPx"],
+      "autofix": false,
+      "confidence": "forward_test_required"
+    },
+    {
+      "id": "SURFACE-002",
+      "version": "1.1.0",
+      "severity": "report",
+      "scope": "adjacent_siblings",
+      "appliesWhen": "same_fill && visually_contiguous",
+      "inputs": ["cornerRadiiPx"],
+      "assertion": "internal corners between parts have zero radius; only the outer perimeter carries radii",
+      "tolerancePx": 0,
+      "failureMessage": "A continuous surface has an internal corner radius (notch/crescent seam).",
+      "evidenceToEmit": ["partNodeIds", "cornerRadiiPx"],
+      "autofix": false,
+      "confidence": "forward_test_required"
+    },
+    {
+      "id": "RESPONSIVE-001",
+      "version": "1.1.0",
+      "severity": "report",
+      "scope": "component",
+      "appliesWhen": "both_breakpoints_expressible_by_supported_controls",
+      "inputs": ["treeCount"],
+      "assertion": "one responsive content tree expresses both breakpoints (paired-section escape hatch remains valid where recomposition genuinely differs)",
+      "failureMessage": "Duplicate per-breakpoint trees where supported controls could express one.",
+      "evidenceToEmit": ["treeNodeIds"],
+      "autofix": false,
+      "confidence": "forward_test_required"
+    }
+  ]
+}

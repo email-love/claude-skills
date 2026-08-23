@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/email-love/claude-skills/tests/quality-gates/schemas/acceptance-matrix.schema.json",
+  "title": "Email Love component-by-breakpoint Acceptance Matrix (v1.1)",
+  "description": "One keyed row per component x breakpoint x check. Duplicate keys are a report defect. deferred means consciously postponed and carries a reason; missing means never covered - the two are distinct, and a verified aggregate tolerates neither a fail nor a missing row. Every component must carry exporter rows for BOTH desktop and mobile.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "checks", "aggregate"],
+  "properties": {
+    "schemaVersion": { "const": "1.1" },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component", "breakpoint", "check", "status"],
+        "properties": {
+          "component": { "type": "string", "minLength": 1 },
+          "breakpoint": { "enum": ["desktop", "mobile"] },
+          "check": { "enum": ["canvas", "structure", "exporter"] },
+          "status": { "enum": ["pass", "fail", "deferred", "missing"] },
+          "evidence": { "type": "string" },
+          "deferredReason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "aggregate": { "enum": ["verified", "repaired_unverified", "failed"] }
+  }
+}

@@ -1009,6 +1009,30 @@ other appearances are the same component placed again, not more work. When a row
 ref, pick the cleanest appearance yourself and record which one in the batch report, so a
 reviewer can tell your boundary from the audit's.
 
+**Freeze a compact batch Fact Pack before the batch's first write.** It carries only what this
+batch can be wrong about, and nothing else:
+
+```text
+Batch Fact Pack - batch <n>
+- Structural authority: <source node tree, or the supplied/ESP HTML, per the audit>
+- Visual authority: <approved comps / source renders; defect screenshots are symptoms>
+- Tier / email width / content width / scale factor: <from the audit>
+- Modules: <inventory row name> -> <source ref actually converted from> (one line each)
+- Unknown or pending: <anything unresolved that could change a module's geometry or
+  responsive behavior>
+```
+
+Do not start writing while `Unknown or pending` holds anything that can change what you build;
+resolve it or record why it cannot change this batch. Evidence that arrives mid-batch and
+contradicts the Fact Pack stops the batch until the pack is re-frozen - it does not get patched
+around silently. Include geometry lines only for modules where geometry is the thing being
+preserved; a REFERENCE ONLY batch carries the standards instead.
+
+**Approvals stay conversational and scoped to the batch.** The design-review gate after each
+batch is one approval for one batch. When the user's request already clearly authorizes exactly
+this batch ("convert batch 2 as planned"), that is the approval - do not stack a second
+confirmation on top of it. Tool-execution permissions are separate and stay as they are.
+
 **Where this phase's numbers come from is the fidelity tier's answer, and foundations already
 settled it.** On an AUTHORITATIVE or PARTIAL source, build every type size, line height, and spacing
 value at the audit's scale factor, dividing source pixels by it as you go, while every width comes
@@ -1427,6 +1451,22 @@ derived ramp for that module, noting which. Ignore differences that are only the
 capture deliberate ones. Inexpressible differences (different copy, different crop) go to the
 designer via the report.
 
+**Provisional rules, forward-test-gated.** Three patterns are strong recommendations but are
+NOT yet exporter-proven hard rules; treat them as preferences with the escape hatch intact
+until a production desktop AND mobile Preview forward-test confirms each:
+
+- Prefer ONE responsive content tree when supported controls (stacking, mobile keys, visibility)
+  can express both breakpoints - but the documented paired-section escape hatch stays available
+  where recomposition genuinely differs.
+- Treat adjacent filled rows that visually form one card as one continuous perimeter (one
+  resolved outer bound, radii on the outer perimeter only) - verify the seam in both production
+  renders before promising it is gone.
+- Reject silent desktop simplification as the price of a mobile repair - a mobile fix that
+  regresses desktop fails, it does not ship quietly.
+
+When one of these is forward-tested and holds, record the evidence in the batch report; until
+then do not present them as guaranteed exporter behavior.
+
 ### 4. Confirm the component shape, add properties, and pick its category
 
 The module was built as a COMPONENT in step 2, because the `mj-wrapper` IS the component. Do
@@ -1828,11 +1868,15 @@ batch with any unexplained row does not pass the gate, whatever the other five g
 goes first because it is the only line a reviewer can check against their own file without
 opening yours, and because a report that opens with "zero violations" from internal checks alone
 is how a library reaches 180 modules with 26 of them silently wrong. **Every module row then
-carries three verification states, reported separately: canvas (screenshot matches intent),
-structure (read-back groups pass), and exporter (desktop and mobile renders pass).** A
-module is complete only at three for three; `exporter: deferred` is a state, never a pass,
-and "fixed" for a change no render has seen is the completion-inflation failure this line
-exists to stop. Then **the source fidelity
+carries its verification as a component-by-breakpoint acceptance matrix**: one keyed row per
+module x breakpoint (desktop, mobile) x check (canvas, structure, exporter), each `pass`,
+`fail`, `deferred`, or `missing` - `deferred` means the check was consciously postponed and
+names what postpones it; `missing` means the batch never covered it, and a matrix with a
+`missing` row does not pass the gate. Duplicate rows for the same module+breakpoint+check are a
+report defect. A module is complete only when every required row is `pass`; `exporter:
+deferred` is a state, never a pass, and "fixed" for a change no render has seen is the
+completion-inflation failure this matrix exists to stop. A component or breakpoint absent from
+the supplied renders is NOT tested - write `deferred` or `missing`, never infer a pass. Then **the source fidelity
 tier, the target email width, and the content width the batch was built at, plus the scale factor
 where one applies**, so a reviewer can check three or four numbers instead of measuring modules. On a
 REFERENCE ONLY source, open instead with the tier and the standards, and repeat the one sentence that
@@ -1921,7 +1965,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.44.0 of this skill. If you have web access, check once per conversation
+This is version 1.45.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
