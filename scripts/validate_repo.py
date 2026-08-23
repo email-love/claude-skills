@@ -165,7 +165,17 @@ def check_skill(shim_name, shim_version):
     # one (the builder) reaches another skill's references by the URLs checked above, so its bare
     # 'references/x.md' mentions are pointers, not local files.
     if (d / "references").is_dir():
+        # Bundle-only runtime dependencies: packaged into the standalone .skill
+        # by build.sh from their canonical source skills (byte-equality checked
+        # by scripts/verify_dist.sh), so they intentionally do not exist under
+        # this skill's source references/.
+        bundle_deps = {
+            "template-repair": {"render-spec.md", "structure.md", "figma-builder-skill.md"},
+            "figma-builder": {"render-spec.md", "structure.md"},
+        }.get(dirname, set())
         for ref in re.findall(r"(?<![./\w])references/([A-Za-z0-9_\-]+\.md)", text):
+            if ref in bundle_deps:
+                continue
             if not (d / "references" / ref).exists():
                 fail(f"{dirname}: SKILL.md references references/{ref} which does not exist")
 

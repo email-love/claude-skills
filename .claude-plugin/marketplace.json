@@ -54,7 +54,7 @@
       "name": "emaillove-figma-builder",
       "source": "./plugins/email-love/skills/figma-builder",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, eds-converter, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "2.9.2",
+      "version": "2.10.0",
       "author": {
         "name": "Email Love"
       }

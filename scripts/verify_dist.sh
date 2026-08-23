@@ -63,8 +63,39 @@ for a in "${archives[@]}"; do
   done < <(grep -oE '\(references/[A-Za-z0-9._/-]+\.md\)' "$src/SKILL.md" \
              | tr -d '()' | LC_ALL=C sort -u)
 
+  # Cross-skill runtime dependencies each bundle must carry, as
+  # bundle-path=canonical-source pairs. Kept in lockstep with build.sh.
+  deps=""
+  case "$short" in
+    template-repair)
+      deps="references/render-spec.md=$SKILLS_ROOT/eds-converter/references/render-spec.md
+references/structure.md=$SKILLS_ROOT/eds-converter/references/structure.md
+references/figma-builder-skill.md=$SKILLS_ROOT/figma-builder/SKILL.md" ;;
+    figma-builder)
+      deps="references/render-spec.md=$SKILLS_ROOT/eds-converter/references/render-spec.md
+references/structure.md=$SKILLS_ROOT/eds-converter/references/structure.md" ;;
+  esac
+
+  # Every mapped dependency is present AND byte-identical to its canonical
+  # source (a stale packaged copy is drift, not resilience).
+  if [ -n "$deps" ]; then
+    tmpx="$(mktemp -d)"
+    while IFS='=' read -r bundle_rel canon; do
+      [ -n "$bundle_rel" ] || continue
+      grep -qxF "$name/$bundle_rel" <<<"$listing" || {
+        echo "$a is missing packaged runtime dependency $bundle_rel" >&2; exit 1; }
+      ( cd "$tmpx" && unzip -qo "$a" "$name/$bundle_rel" )
+      cmp -s "$tmpx/$name/$bundle_rel" "$canon" || {
+        echo "$a: packaged $bundle_rel differs from canonical $canon" >&2; exit 1; }
+    done <<<"$deps"
+    rm -rf "$tmpx"
+  fi
+
+  dep_paths="$(printf '%s\n' "$deps" | cut -d= -f1)"
+
   # Source parity: every allowlisted source file is in the archive, path for
-  # path, and no archive file lacks a source counterpart.
+  # path, and no archive file lacks a source counterpart (mapped dependencies
+  # excepted — their counterpart is the canonical file checked above).
   while IFS= read -r -d '' f; do
     rel="${f#"$src/"}"
     grep -qxF "$name/$rel" <<<"$listing" || {
@@ -75,7 +106,10 @@ for a in "${archives[@]}"; do
     case "$entry" in
       */|"$name/LICENSE") continue ;;
       "$name/SKILL.md") [ -f "$src/SKILL.md" ] || { echo "$a: no source for $entry" >&2; exit 1; } ;;
-      "$name/references/"*) [ -f "$src/${entry#"$name/"}" ] || {
+      "$name/references/"*)
+        rel="${entry#"$name/"}"
+        if grep -qxF "$rel" <<<"$dep_paths"; then continue; fi
+        [ -f "$src/$rel" ] || {
         echo "$a contains $entry with no source counterpart" >&2; exit 1; } ;;
       *) echo "$a contains unexpected entry $entry" >&2; exit 1 ;;
     esac

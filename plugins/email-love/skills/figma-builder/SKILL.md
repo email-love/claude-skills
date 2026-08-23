@@ -823,14 +823,13 @@ Two reference files carry the ground truth this skill deliberately does not rest
 - **`structure.md`**, the plugin's own conventions read out of its source: how a node is
   identified, the full node type list, the leaf pair rules, and every writable plugin data key.
 
-Both ship in the **Email Love EDS Converter skill's `references/` directory**, in this same public
-repository and marketplace. **Path B does not work without them.** If they are not already in your
-environment, read them from the repo before you transcribe anything:
+**Path B does not work without them.** Look for them in this order and use the first that exists:
 
-```
-https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/eds-converter/references/render-spec.md
-https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/eds-converter/references/structure.md
-```
+1. `references/render-spec.md` and `references/structure.md`, packaged in this skill's standalone bundle;
+2. `../eds-converter/references/render-spec.md` and `../eds-converter/references/structure.md`,
+   the installed email-love plugin, where the EDS Converter skill carries the originals;
+3. the copies in this repository's `eds-converter` skill on GitHub, pinned to this skill's release
+   tag, never `main`, whose rules may be newer than the skill you are running.
 
 If you cannot reach them and cannot install that skill, say so and stop rather than transcribing
 from memory: reconstructing those rules is hand-authoring by another name.
@@ -845,7 +844,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.9.2 of this skill. If you have web access, check once per conversation
+This is version 2.10.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

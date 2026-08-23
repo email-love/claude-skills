@@ -66,18 +66,19 @@ Read these three local references for every task:
 - [Symptom and cause matrix](references/symptom-cause-matrix.md)
 - [Repair verification and report](references/repair-verification.md)
 
-Before any structural repair, read the authoritative Email Love render sources:
+Before any structural repair, read the authoritative Email Love render sources. Look for them in
+this order and use the first that exists: the standalone bundle packages them locally, the
+installed plugin carries them in the EDS Converter skill, and the pinned remote is a last resort:
 
-```text
-https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/eds-converter/references/render-spec.md
-https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/eds-converter/references/structure.md
-```
+1. `references/render-spec.md` and `references/structure.md` (packaged in this skill's standalone bundle);
+2. `../eds-converter/references/render-spec.md` and `../eds-converter/references/structure.md`
+   (the installed email-love plugin);
+3. the copies in this repository's `eds-converter` skill on GitHub, pinned to this skill's release
+   tag, never `main`, whose rules may be newer than this skill.
 
-When the target is composed from design-system instances, also read the current Builder skill:
-
-```text
-https://raw.githubusercontent.com/email-love/claude-skills/main/plugins/email-love/skills/figma-builder/SKILL.md
-```
+When the target is composed from design-system instances, also read the current Builder skill, same
+order: `references/figma-builder-skill.md` (standalone bundle),
+`../figma-builder/SKILL.md` (installed plugin), or the repository copy pinned to this release.
 
 Keep its Path A discipline: do not open or restructure instance internals. Replace the instance or
 fix the source component under the user's chosen scope. If the authoritative files cannot be read,

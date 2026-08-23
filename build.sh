@@ -46,6 +46,29 @@ for dir in "$SKILLS_ROOT"/*/; do
   # Explicit allowlist: SKILL.md, references/ (markdown only), and the LICENSE.
   install -m 0644 "$dir/SKILL.md" "$staging/$name/SKILL.md"
   install -m 0644 LICENSE "$staging/$name/LICENSE"
+
+  # Cross-skill runtime dependencies: a standalone bundle must execute its
+  # documented workflow without fetching instruction files from GitHub, so the
+  # render contract (and, for repair, the Builder skill) is packaged into the
+  # bundle. The SKILL.md text instructs a local-first lookup that matches this
+  # layout. verify_dist.sh asserts byte-equality with the canonical source.
+  mkdir -p "$staging/$name/references"
+  case "$short" in
+    template-repair)
+      install -m 0644 "$SKILLS_ROOT/eds-converter/references/render-spec.md" \
+        "$staging/$name/references/render-spec.md"
+      install -m 0644 "$SKILLS_ROOT/eds-converter/references/structure.md" \
+        "$staging/$name/references/structure.md"
+      install -m 0644 "$SKILLS_ROOT/figma-builder/SKILL.md" \
+        "$staging/$name/references/figma-builder-skill.md"
+      ;;
+    figma-builder)
+      install -m 0644 "$SKILLS_ROOT/eds-converter/references/render-spec.md" \
+        "$staging/$name/references/render-spec.md"
+      install -m 0644 "$SKILLS_ROOT/eds-converter/references/structure.md" \
+        "$staging/$name/references/structure.md"
+      ;;
+  esac
   if [ -d "$dir/references" ]; then
     ( cd "$dir" && find references -type f -name '*.md' -print0 ) \
       | while IFS= read -r -d '' f; do

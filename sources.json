@@ -1,24 +1,24 @@
 {
   "description": "Source-alignment record between the Claude skills in this repo and the Codex plugin port in email-love/codex-agents. Its job is to stop a fix from landing in one surface and silently never reaching the other. Update it whenever either surface ships a change that the other should mirror, and stamp lastAlignmentReview when you have checked the two are in sync.",
-  "lastAlignmentReview": "2026-08-22",
+  "lastAlignmentReview": "2026-08-23",
   "claudeSkills": {
     "repo": "email-love/claude-skills",
-    "currentCommit": "ec421cb1aca1e9723451550d560b91cb723807c7",
+    "currentCommit": "e77bcde08f73b7c899a66d62df03914bcc391888",
     "skillVersions": {
-      "emaillove-figma-builder": "2.9.2",
-      "emaillove-eds-converter": "1.44.0",
-      "emaillove-migration-audit": "1.23.0",
-      "emaillove-template-repair": "1.0.0"
+      "emaillove-figma-builder": "2.10.0",
+      "emaillove-eds-converter": "1.45.0",
+      "emaillove-migration-audit": "1.24.0",
+      "emaillove-template-repair": "1.1.0"
     }
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
-    "currentRelease": "v4.5.0",
-    "currentPublicRelease": "v4.5.0",
+    "currentRelease": "v4.8.0",
+    "currentPublicRelease": "v4.8.0",
     "currentGitRelease": "v4.8.0",
     "currentGitCommit": "aa0243166fc0aa37f566b3fda96edaded1381ff4",
     "publicPluginUrl": "https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409",
-    "lastPublicPublication": "2026-08-05",
+    "lastPublicPublication": "2026-08-23",
     "distributionModel": "The public ChatGPT and Codex plugin is a reviewed snapshot. A GitHub push does not update directory users.",
     "releaseChecklist": [
       "Port and validate the Codex plugin.",
@@ -28,9 +28,14 @@
       "Verify the public listing and test from a new chat or Codex task."
     ],
     "portsClaudeCommit": "fb96b26aa346394ae83f63c1d6ebe6b734029c5b",
-    "note": "In sync at v4.8.0 (2026-08-22): codex-agents commit aa02431 adds the Template Repair skill and Claude plugin 1.4.0 carries the matching repair workflow as emaillove-template-repair 1.0.0. Both surfaces use convert.emaillove.com for the design converter. The public OpenAI directory listing remains the last published snapshot until v4.8.0 is uploaded, reviewed, and published through the OpenAI submission portal. Earlier alignment history remains recorded in the drift entries below."
+    "note": "Public listing verified at v4.8.0 with Builder, Migration, and Template Repair visible (fresh Codex environment check, 2026-08-23); the earlier claim that v4.8.0 was still awaiting portal publication was stale. Next candidate: v4.9.0 on the improvement/2026-08-23 branch (quality-gate port; ESP skill family planned per the v2 handoff), which becomes current only after an approved GitHub release AND a separate owner-run OpenAI portal upload, review, and publication. A GitHub push never updates directory users. Earlier alignment history remains recorded in the drift entries below."
   },
   "drift": [
+    {
+      "claudeCommit": "e77bcde08f73b7c899a66d62df03914bcc391888",
+      "summary": "Quality-gate release pair in flight on improvement/2026-08-23 branches: Claude plugin 1.5.0 (template-repair 1.1.0, eds-converter 1.45.0, migration-audit 1.24.0, figma-builder 2.10.0 self-contained standalone bundles) and codex-agents 4.9.0 port at 4f4ccb8. Shared rules enforced two-way by codex-agents scripts/check_shared_drift.py (25 sentences). Neither surface is released or published yet.",
+      "codexStatus": "Ported at codex-agents 4f4ccb8 (branch improvement/2026-08-23); sources.json there records this Claude commit as canonical. Public OpenAI listing remains v4.8.0."
+    },
     {
       "claudeCommit": "ec421cb1aca1e9723451550d560b91cb723807c7",
       "summary": "Claude plugin 1.4.0 adds emaillove-template-repair 1.0.0, ported from codex-agents v4.8.0 commit aa02431. The skill preserves campaign originals, gates shared-component impact, applies one measured repair at a time, reconstructs after two failed patches, and reports canvas, structure, and exporter states separately. Claude-specific changes are limited to plugin namespace, connector authorization, cross-skill source URLs, marketplace metadata, and standalone .skill packaging.",
