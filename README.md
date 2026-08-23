@@ -58,6 +58,14 @@ claude plugin install email-love@email-love
 
 One install carries all four skills: `/email-love:migration-audit`, `/email-love:eds-converter`, `/email-love:figma-builder`, and `/email-love:template-repair`.
 
+Want ESP templating too? The same marketplace carries `emaillove-esp`, which installs all ten Email Love ESP skills (Braze Liquid, Customer.io Liquid, HubSpot HubL, Iterable Handlebars, Klaviyo Django, Marketo Velocity, MoEngage Jinja, Sailthru Zephyr, SFMC AMPscript, Zeta ZML) in one step, sourced at a pinned commit from their canonical home in [email-love/esp-skills](https://github.com/email-love/esp-skills):
+
+```bash
+claude plugin install emaillove-esp@email-love
+```
+
+Prefer one platform at a time? Add the esp-skills marketplace directly and install individually: `claude plugin marketplace add email-love/esp-skills`.
+
 On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
 
 Using **Codex**? Build, Repair, and Migration ship as three skills in the Email Love Codex plugin.

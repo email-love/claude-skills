@@ -33,6 +33,56 @@
       ]
     },
     {
+      "name": "emaillove-esp",
+      "displayName": "Email Love ESP Skills",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/email-love/esp-skills.git",
+        "path": "skills",
+        "ref": "main",
+        "sha": "f1be804f810e9a8629ef29a0af8f4196a32f2afe"
+      },
+      "strict": false,
+      "skills": [
+        "./"
+      ],
+      "version": "1.4.2",
+      "description": "All ten Email Love ESP templating skills in one install: Braze Liquid, Customer.io Liquid, HubSpot HubL, Iterable Handlebars, Klaviyo Django, Marketo Velocity, MoEngage Jinja, Sailthru Zephyr, SFMC AMPscript, and Zeta ZML. Write, review, and debug personalization code in any email HTML, whatever built or exported it. Sourced at a pinned commit from email-love/esp-skills, the canonical home; install skills individually from that marketplace instead if you only want one platform.",
+      "author": {
+        "name": "Email Love",
+        "email": "hello@emaillove.com",
+        "url": "https://emaillove.com"
+      },
+      "homepage": "https://github.com/email-love/esp-skills",
+      "repository": "https://github.com/email-love/esp-skills",
+      "license": "MIT",
+      "category": "productivity",
+      "tags": [
+        "email",
+        "esp",
+        "templating",
+        "liquid",
+        "ampscript",
+        "handlebars",
+        "jinja",
+        "velocity",
+        "hubl",
+        "zephyr"
+      ],
+      "keywords": [
+        "klaviyo",
+        "braze",
+        "customerio",
+        "iterable",
+        "sfmc",
+        "marketo",
+        "moengage",
+        "sailthru",
+        "hubspot",
+        "zeta"
+      ]
+    },
+    {
       "name": "emaillove-eds-converter",
       "source": "./plugins/email-love/skills/eds-converter",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, figma-builder, and template-repair. This entry remains so existing installs keep resolving and updating.",
