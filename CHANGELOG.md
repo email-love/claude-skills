@@ -1,7 +1,27 @@
 # Changelog
 
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
-independent per skill. Every release attaches all four `.skill` bundles.
+independent per skill. Every release attaches all five `.skill` bundles.
+
+## Repo: Email Love plugin 1.6.0 (2026-08-29)
+
+Adds the fifth bundled skill, `/email-love:figma-quality-gates`, and enforcement patches to
+the existing three workflows. Distilled from a real customer design-system migration where
+the documented rules existed but were not enforced as stop gates.
+
+- New independent acceptance skill: proof-batch gate (at most four modules covering the four
+  risk classes before a normal batch), a machine-readable JSON audit snapshot, a structural
+  and geometry validator, an icon alpha-perimeter checker, and four explicit completion
+  states. Bundles ship the two Python validators; CI runs both self-tests.
+- eds-converter 1.46.0: batch 1 is a proof batch; every `mj-group` decision gets a mobile
+  geometry ledger at 320, 375, and 390px computed against the inner content box (section AND
+  column padding subtracted); the batch gate names the quality-gates skill as an independent
+  acceptance pass.
+- figma-builder 2.11.0: explicit scope-escalation reroute when a build expands into library
+  work, and a quality-gates acceptance offer when reusable modules were created or repaired.
+- template-repair 1.2.0: four new symptom rows (mobile-only group icon distortion, clipped
+  social icons, BOOLEAN false-state holes, color-block image fills) and the rule that an
+  unproven earlier fix is a new repair attempt, never an inherited completion claim.
 
 ## Repo: Email Love plugin 1.4.0 (2026-08-22)
 

@@ -32,6 +32,11 @@ jobs:
       - name: Quality-gate validator self-test
         run: python3 tests/quality-gates/validate_quality_pack.py --self-test
 
+      - name: Figma quality-gates script self-tests
+        run: |
+          python3 plugins/email-love/skills/figma-quality-gates/scripts/validate_batch_snapshot.py --self-test
+          python3 plugins/email-love/skills/figma-quality-gates/scripts/check_icon_perimeter.py --self-test
+
       - name: Build bundles
         run: bash build.sh
 

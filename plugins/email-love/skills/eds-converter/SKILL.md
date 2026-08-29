@@ -984,6 +984,14 @@ human runs it. Do not discover this at step 6 of batch 3. (Measured on a three-b
 sixteen modules delivered with zero renders and zero sniffs, every mobile decision verified
 as intent only, and three clean batch reports silent on the one axis that matters most.)
 
+**Batch 1 is a proof batch of at most four modules.** Pick them to cover as many of these risk
+classes as the source contains: a full-width or deliberately cropped photo; a grouped
+icon-and-text row; a multi-column module with component properties; a footer or social-icon
+row. Do not release later modules until every proof module passes production desktop and mobile Preview/export. When no production render route exists in the session (no exporter tool, no
+human click available), stop after the proof batch and report the deferred state; continuing
+into later batches on deferred exports is the exact expansion the proof batch exists to stop.
+Canvas evidence cannot waive this gate.
+
 **Phase 3 builds MODULES, not emails.** A module is one reusable block that gets dropped into
 many emails, so its shape is a **`mj-wrapper` COMPONENT**: the wrapper IS the component, it
 carries shared `name = 'mj-wrapper'`, its layer name is the module name, and it carries **no
@@ -1414,6 +1422,16 @@ desktop footer that should have been recomposed reads as broken, not as adapted.
 
 A section with more than one column and no recorded decision is not done. Step 5's mobile
 verification fails a module where any multi-column section lacks a decision.
+
+**Every `mj-group` decision also gets a mobile geometry ledger.** At 320, 375, and 390px (or
+the customer's named target viewports): mobile content = viewport minus the section's mobile
+left and right padding; resolved column = column width / group width * mobile content;
+resolved inner = resolved column minus that column's own left and right padding. Prove
+`resolved inner >= natural image width` for an icon or image that must not shrink, and
+`resolved inner >=` the longest unbreakable text run measured in the exported font stack, not
+the canvas font. Use the inner content box. Comparing the asset to the total column while ignoring column padding is a false pass. Record the ledger in the module's report line; a
+group that fails the ledger gets wider columns, less padding, or a different structure, not
+a smaller icon quietly stretched or shrunk by the renderer.
 
 **Part B: write the mobile styles. This ALWAYS runs.**
 
@@ -1885,6 +1903,12 @@ beside it, so it is exactly where the difference gets mistaken for a defect. Nam
 to reach the content width (plus the re-derived column sum where the module was multi-column). End with the open questions for the design review. Do not start the next batch
 until the user says the review happened.
 
+When the `figma-quality-gates` skill is installed, run it as an independent acceptance pass
+over the batch before the design review: its machine-readable audit snapshot and validator
+catch deferred-export completion claims, non-IMAGE fills, unsafe group geometry, and
+incomplete BOOLEAN properties mechanically, and its verdict is evidence for the review, not
+a replacement for it.
+
 ## Hand-off after the final batch
 
 ### Send-readiness pass on every campaign
@@ -1965,7 +1989,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.45.0 of this skill. If you have web access, check once per conversation
+This is version 1.46.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

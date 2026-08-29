@@ -12,6 +12,7 @@ You do not have to install anything to read what these skills actually tell Clau
 | **emaillove-template-repair** | Diagnoses and repairs existing Email Love templates and modules | [SKILL.md](plugins/email-love/skills/template-repair/SKILL.md) |
 | **emaillove-migration-audit** | Read-only audit of an existing library | [SKILL.md](plugins/email-love/skills/migration-audit/SKILL.md) |
 | **emaillove-eds-converter** | Converts that library into an Email Love design system | [SKILL.md](plugins/email-love/skills/eds-converter/SKILL.md) |
+| **emaillove-figma-quality-gates** | Independent acceptance audit of migration batches and reusable modules | [SKILL.md](plugins/email-love/skills/figma-quality-gates/SKILL.md) |
 
 The converter also ships two reference documents, which are the most useful things here if you want to understand how Email Love's Figma structure actually works:
 
@@ -75,7 +76,7 @@ then start a new Codex task.
 For development or testing an exact GitHub release, use the separate Git-backed install:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.8.0
+codex plugin marketplace add email-love/codex-agents --ref v4.9.0
 codex plugin add email-love@email-love
 ```
 
@@ -169,7 +170,7 @@ Then ask Claude Code to build an email in your Figma file.
 For development or an exact tagged version, use the Git-backed marketplace instead:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.8.0
+codex plugin marketplace add email-love/codex-agents --ref v4.9.0
 codex plugin add email-love@email-love
 ```
 

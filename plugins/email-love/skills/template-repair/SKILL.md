@@ -194,7 +194,7 @@ states, any private-data or inbox-test handoff, and whether the original remaine
 
 ## Staying current
 
-This is version 1.1.0 of this skill. If you have web access, check once per conversation quietly
+This is version 1.2.0 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-template-repair`. If a newer version

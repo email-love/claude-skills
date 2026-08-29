@@ -51,6 +51,12 @@ file (latest version). If the Figma MCP exposes a `figma-use` skill or a
    A partial library (a few components, nothing for the section you need): Path A for what fits,
    Path B for the gap, and say so.
 
+**Scope escalation is a reroute, not a bigger build.** If the request expands into a whole
+library, foundations, variables, tokens, or multiple component categories, stop the builder
+workflow and route to `migration-audit` and then `eds-converter`. Do not continue one module
+at a time under this skill; a library approached as iterative email building skips the audit,
+the proof batch, and the batch gates that exist precisely for library-scale work.
+
 Tell the user which path you are on and why, in one line, before you build.
 
 ## Which model to run this with
@@ -604,9 +610,12 @@ Then, either way:
   module must not carry.
 - Do not write `saveCategory` or `saveName` plugin data. The plugin reads neither key today.
 
-For a whole legacy library rather than one email, that is a migration, not a build: point the
-user at Email Love's migration flow (hello@emaillove.com) instead of converting template after
-template here.
+For a whole legacy library rather than one email, that is a migration, not a build: route to
+`migration-audit` and then `eds-converter` instead of converting template after template here.
+
+When reusable modules were created or repaired during a build and the `figma-quality-gates`
+skill is installed, offer it as an independent acceptance pass before the user relies on those
+modules.
 
 ---
 
@@ -844,7 +853,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.10.0 of this skill. If you have web access, check once per conversation
+This is version 2.11.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

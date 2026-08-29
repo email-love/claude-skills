@@ -63,6 +63,15 @@ for a in "${archives[@]}"; do
   done < <(grep -oE '\(references/[A-Za-z0-9._/-]+\.md\)' "$src/SKILL.md" \
              | tr -d '()' | LC_ALL=C sort -u)
 
+  # Same containment for runtime scripts the SKILL.md tells the agent to run.
+  while IFS= read -r ref; do
+    grep -qxF "$name/$ref" <<<"$listing" || {
+      echo "$a: SKILL.md names $ref but the bundle does not contain it" >&2
+      exit 1
+    }
+  done < <(grep -oE 'scripts/[A-Za-z0-9._/-]+\.py' "$src/SKILL.md" \
+             | LC_ALL=C sort -u)
+
   # Cross-skill runtime dependencies each bundle must carry, as
   # bundle-path=canonical-source pairs. Kept in lockstep with build.sh.
   deps=""
@@ -101,7 +110,8 @@ references/structure.md=$SKILLS_ROOT/eds-converter/references/structure.md" ;;
     grep -qxF "$name/$rel" <<<"$listing" || {
       echo "$a is missing source file $rel" >&2; exit 1; }
   done < <(find "$src" -maxdepth 1 -name SKILL.md -print0; \
-           [ -d "$src/references" ] && find "$src/references" -type f -name '*.md' -print0)
+           if [ -d "$src/references" ]; then find "$src/references" -type f -name '*.md' -print0; fi; \
+           if [ -d "$src/scripts" ]; then find "$src/scripts" -type f -name '*.py' -print0; fi)
   while IFS= read -r entry; do
     case "$entry" in
       */|"$name/LICENSE") continue ;;
@@ -109,6 +119,10 @@ references/structure.md=$SKILLS_ROOT/eds-converter/references/structure.md" ;;
       "$name/references/"*)
         rel="${entry#"$name/"}"
         if grep -qxF "$rel" <<<"$dep_paths"; then continue; fi
+        [ -f "$src/$rel" ] || {
+        echo "$a contains $entry with no source counterpart" >&2; exit 1; } ;;
+      "$name/scripts/"*)
+        rel="${entry#"$name/"}"
         [ -f "$src/$rel" ] || {
         echo "$a contains $entry with no source counterpart" >&2; exit 1; } ;;
       *) echo "$a contains unexpected entry $entry" >&2; exit 1 ;;

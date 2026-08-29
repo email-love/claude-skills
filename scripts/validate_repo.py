@@ -31,8 +31,11 @@ PUBLIC_CODEX_PLUGIN_URL = (
 
 # Shim entry name -> skill directory name. The shims carry the legacy names every shipped
 # copy looks up; the directories carry the short names the bundle namespaces by.
+STANDALONE_ENTRIES = {"emaillove-figma-quality-gates"}
+
 SHIM_TO_DIR = {
     "emaillove-eds-converter": "eds-converter",
+    "emaillove-figma-quality-gates": "figma-quality-gates",
     "emaillove-migration-audit": "migration-audit",
     "emaillove-figma-builder": "figma-builder",
     "emaillove-template-repair": "template-repair",
@@ -95,7 +98,14 @@ def check_marketplace():
         expected_src = f"./plugins/email-love/skills/{dirname}"
         if entry.get("source") != expected_src:
             fail(f"shim '{shim}' source is {entry.get('source')}, expected {expected_src}")
-        if "DEPRECATED" not in entry.get("description", ""):
+        # Legacy shims (skills that predate the bundled plugin) must say
+        # DEPRECATED so nobody installs them fresh. Skills introduced AFTER the
+        # bundle are legitimate standalone entries; they must instead say the
+        # bundle carries them.
+        if shim in STANDALONE_ENTRIES:
+            if "Bundled in the 'email-love' plugin" not in entry.get("description", ""):
+                fail(f"standalone entry '{shim}' must say it is bundled in the email-love plugin")
+        elif "DEPRECATED" not in entry.get("description", ""):
             fail(f"shim '{shim}' description does not say DEPRECATED")
         if not entry.get("version"):
             fail(f"shim '{shim}' has no version")
@@ -201,8 +211,8 @@ def check_readme_codex():
              "Codex uses the public plugin or the tagged Git marketplace")
     if "--ref v3.0.0" in t:
         fail("README.md still points Codex users at the obsolete v3.0.0 release")
-    if "codex plugin marketplace add email-love/codex-agents --ref v4.8.0" not in t:
-        fail("README.md must point Git-backed Codex installs at v4.8.0")
+    if "codex plugin marketplace add email-love/codex-agents --ref v4.9.0" not in t:
+        fail("README.md must point Git-backed Codex installs at v4.9.0")
     if PUBLIC_CODEX_PLUGIN_URL not in t:
         fail("README.md must link to the public Email Love plugin")
 
@@ -217,10 +227,10 @@ def check_readme_codex():
         fail("sources.json codexPlugin.publicPluginUrl is missing or incorrect")
     if codex.get("currentPublicRelease") != codex.get("currentRelease"):
         fail("sources.json public and source Codex releases are not aligned")
-    if codex.get("currentGitRelease") != "v4.8.0":
-        fail("sources.json codexPlugin.currentGitRelease must be v4.8.0")
-    if codex.get("currentGitCommit") != "aa0243166fc0aa37f566b3fda96edaded1381ff4":
-        fail("sources.json codexPlugin.currentGitCommit must record the v4.8.0 commit")
+    if codex.get("currentGitRelease") != "v4.9.0":
+        fail("sources.json codexPlugin.currentGitRelease must be v4.9.0")
+    if codex.get("currentGitCommit") != "b383c3476c2c6908223c3e8ce483a26f36a06c35":
+        fail("sources.json codexPlugin.currentGitCommit must record the v4.9.0 commit")
     if "GitHub push does not update directory users" not in codex.get("distributionModel", ""):
         fail("sources.json must record that the public plugin is a reviewed snapshot")
     checklist = codex.get("releaseChecklist", [])

@@ -85,6 +85,23 @@ for dir in "$SKILLS_ROOT"/*/; do
     fi
   fi
 
+  # Runtime scripts (Python only): shipped so the standalone bundle can run the
+  # validators its SKILL.md documents. Non-.py files under scripts/ refuse the
+  # build rather than vanish silently.
+  if [ -d "$dir/scripts" ]; then
+    ( cd "$dir" && find scripts -type f -name '*.py' -print0 ) \
+      | while IFS= read -r -d '' f; do
+          mkdir -p "$staging/$name/$(dirname "$f")"
+          install -m 0644 "$dir/$f" "$staging/$name/$f"
+        done
+    unshipped="$(cd "$dir" && find scripts -type f ! -name '*.py' 2>/dev/null || true)"
+    if [ -n "$unshipped" ]; then
+      echo "refusing to build $name: files present that the allowlist would drop:" >&2
+      echo "$unshipped" >&2
+      exit 1
+    fi
+  fi
+
   # Deterministic: fixed mtime, sorted entry order, no extra attributes.
   find "$staging" -exec touch -t "$STAMP" {} +
   ( cd "$staging" && find "$name" \( -type f -o -type d \) | LC_ALL=C sort \

@@ -12,7 +12,7 @@
       "source": "./plugins/email-love",
       "displayName": "Email Love",
       "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "Email Love",
         "email": "hello@emaillove.com",
@@ -86,7 +86,7 @@
       "name": "emaillove-eds-converter",
       "source": "./plugins/email-love/skills/eds-converter",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, figma-builder, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.45.0",
+      "version": "1.46.0",
       "author": {
         "name": "Email Love"
       }
@@ -104,7 +104,7 @@
       "name": "emaillove-figma-builder",
       "source": "./plugins/email-love/skills/figma-builder",
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, eds-converter, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "2.10.0",
+      "version": "2.11.0",
       "author": {
         "name": "Email Love"
       }
@@ -113,7 +113,16 @@
       "name": "emaillove-template-repair",
       "source": "./plugins/email-love/skills/template-repair",
       "description": "DEPRECATED as a standalone install: install the 'email-love' plugin instead; it bundles template-repair with figma-builder, migration-audit, and eds-converter. This compatibility entry supports standalone skill version checks.",
-      "version": "1.1.0",
+      "version": "1.2.0",
+      "author": {
+        "name": "Email Love"
+      }
+    },
+    {
+      "name": "emaillove-figma-quality-gates",
+      "source": "./plugins/email-love/skills/figma-quality-gates",
+      "description": "Independent acceptance audit for Email Love design-system migration batches and reusable modules: proof-batch gate, machine-readable audit snapshot, mobile inner-box geometry validator, and icon alpha-perimeter checks. Bundled in the 'email-love' plugin; this entry allows a standalone install.",
+      "version": "1.0.0",
       "author": {
         "name": "Email Love"
       }
