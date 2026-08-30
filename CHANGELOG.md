@@ -3,6 +3,16 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.6.2 (2026-08-30)
+
+Final cleanup from the second external review pass; documentation-consistency only.
+
+- figma-quality-gates 1.1.1: the snapshot-schema example's census now matches its own
+  property list, and the self-test parses that example straight from the Markdown and
+  validates it unchanged, so the documentation can no longer drift from the validator.
+  Gate 3 prose now bans UNDOCUMENTED unequal auto-layout axes and names the supported
+  `top-aligned-multi-column` exception, matching the validator and schema exactly.
+
 ## Repo: Email Love plugin 1.6.1 (2026-08-30)
 
 Hardens the quality-gates skill against an external review's findings; no new capability.

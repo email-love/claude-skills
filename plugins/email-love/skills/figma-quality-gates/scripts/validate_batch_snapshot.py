@@ -543,6 +543,24 @@ def self_test() -> int:
     gap["modules"][0]["groups"][0]["width"] = 522
     expect("unexplained width gap fails", "GROUP_WIDTH_SUM" in error_codes(gap))
 
+    # The documented example must validate exactly as written, so the schema
+    # reference cannot drift from the validator (2026-08-30 review, F2).
+    schema_doc = Path(__file__).resolve().parent.parent / "references" / "snapshot-schema.md"
+    expect("snapshot-schema.md is packaged beside the scripts", schema_doc.is_file())
+    if schema_doc.is_file():
+        text = schema_doc.read_text()
+        try:
+            fence = text.split("```json", 1)[1].split("```", 1)[0]
+            example = json.loads(fence)
+        except (IndexError, json.JSONDecodeError):
+            failures.append("snapshot-schema.md example is not parseable JSON")
+        else:
+            example_errors = [issue for issue in validate(example) if issue.severity == "error"]
+            if example_errors:
+                for issue in example_errors:
+                    print(f"  doc example: {issue.code} at {issue.location}", file=sys.stderr)
+            expect("documented schema example validates unchanged", not example_errors)
+
     if failures:
         for failure in failures:
             print(f"self-test failed: {failure}", file=sys.stderr)

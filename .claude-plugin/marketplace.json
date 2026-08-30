@@ -12,7 +12,7 @@
       "source": "./plugins/email-love",
       "displayName": "Email Love",
       "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-      "version": "1.6.1",
+      "version": "1.6.2",
       "author": {
         "name": "Email Love",
         "email": "hello@emaillove.com",
@@ -122,7 +122,7 @@
       "name": "emaillove-figma-quality-gates",
       "source": "./plugins/email-love/skills/figma-quality-gates",
       "description": "Independent acceptance audit for Email Love design-system migration batches and reusable modules: proof-batch gate, machine-readable audit snapshot, mobile inner-box geometry validator, and icon alpha-perimeter checks. Bundled in the 'email-love' plugin; this entry allows a standalone install.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Email Love"
       }

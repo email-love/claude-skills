@@ -58,8 +58,11 @@ Missing authority fails the audit. Compare screenshots, not recollection.
 
 - Module root is a direct-page COMPONENT tagged `mj-wrapper` with no `mainFrame` marker.
 - Whole-email root carries `mainFrame`, all theme keys, and no MJML tag.
-- No untagged frames, unknown tags, incomplete leaf pairs, empty wrappers, unequal auto-layout
-  axes, or unintended fixed heights.
+- No untagged frames, unknown tags, incomplete leaf pairs, empty wrappers, undocumented
+  unequal auto-layout axes, or unintended fixed heights. Record each supported top-aligned
+  multi-column exception in `structure.axisExceptions`, using the affected node identifier
+  and the documented reason `top-aligned-multi-column`; an unequal axis pair without its
+  documented exception is a defect.
 - Every `mj-button` owns a direct text child.
 - Root and load-bearing column widths are deliberate and at email scale.
 

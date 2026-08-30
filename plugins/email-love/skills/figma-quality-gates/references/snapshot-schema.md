@@ -54,7 +54,7 @@ and in email pixels.
         "axisExceptions": [],
         "unintendedFixedHeightCount": 0
       },
-      "census": {"images": 1, "groups": 1, "properties": 1},
+      "census": {"images": 1, "groups": 1, "properties": 2},
       "images": [
         {
           "name": "Feature icon / sparkle",

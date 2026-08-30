@@ -126,7 +126,7 @@ python3 scripts/check_icon_perimeter.py --self-test
 
 ## Staying current
 
-This is version 1.1.0 of this skill. If you have web access, check once per conversation quietly
+This is version 1.1.1 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-figma-quality-gates`. If a newer
