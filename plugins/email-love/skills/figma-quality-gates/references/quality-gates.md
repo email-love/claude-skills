@@ -85,8 +85,15 @@ For icons and social marks:
 
 - use one image node per independently linked icon;
 - keep it square unless the authoritative asset is intentionally non-square;
-- export at 2x and verify a transparent perimeter;
-- reject alpha pixels touching the file edge;
+- export at 2x and run the alpha-perimeter check, treating it as a heuristic with four
+  outcomes: `pass` (transparent artwork, safe inset), `needs-review` (alpha touches an edge
+  or the inset is under the threshold: compare the source crop and the production render
+  before approving), `not-applicable` (alpha does not isolate the artwork, such as a fully
+  opaque source: an opaque asset is not evidence of a bad crop, and a visual source
+  comparison is still required), and `error` (unreadable or empty asset);
+- a deliberately edge-reaching design may be dispositioned as a documented visual
+  exception; never add transparent padding or alter approved brand artwork merely to
+  satisfy the heuristic;
 - do not approve a sprite crop without checking the exported pixels;
 - verify each icon's `href` and alt treatment independently.
 
@@ -107,7 +114,8 @@ Then prove:
 
 - image/icon: `resolved inner >= natural image width` when the asset must not shrink;
 - text: `resolved inner >= longest unbreakable text width` in the exported font stack;
-- column percentages sum to 100 percent;
+- column widths account for the full group width, with any deliberate shortfall declared
+  as bordered-group headroom and its reason recorded (an undeclared gap is a defect);
 - all fixed widths include fallback-font slack;
 - an icon is not being enlarged merely to fill the resolved box.
 

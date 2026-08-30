@@ -2,7 +2,7 @@
   "name": "email-love",
   "displayName": "Email Love",
   "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "author": {
     "name": "Email Love",
     "email": "hello@emaillove.com",

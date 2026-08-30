@@ -51,8 +51,10 @@ and in email pixels.
         "unknownTagCount": 0,
         "incompleteLeafPairCount": 0,
         "unequalAxisCount": 0,
+        "axisExceptions": [],
         "unintendedFixedHeightCount": 0
       },
+      "census": {"images": 1, "groups": 1, "properties": 1},
       "images": [
         {
           "name": "Feature icon / sparkle",
@@ -142,8 +144,21 @@ A proof batch has at most four modules. A `complete` claim requires desktop and 
 - `sourceRef` identifies an exact source screenshot, email, or frame region.
 - `sourceParity` contains every comparison dimension shown above.
 - `structure` contains measured counts, not checklist prose.
+- `structure.axisExceptions` lists documented render-contract exceptions for unequal
+  auto-layout axes, one `{"node", "reason"}` object each; the only allowed reason today is
+  `top-aligned-multi-column`. `unequalAxisCount` may not exceed the number of valid
+  exceptions.
+- `census` is the independently measured node census: how many meaningful images, groups,
+  and properties the module's node tree actually contains. Each inventory array must match
+  its census count, so an empty array cannot conceal real content. The `images`, `groups`,
+  and `properties` arrays are REQUIRED even when audited empty; omitting one is absent
+  evidence and fails validation. A measurement recorded as anything other than a finite
+  number (an "unknown" string, null, a negative) also fails; the validator never substitutes
+  zero.
 - `images` contains one record per meaningful image, icon, or social mark.
 - `groups` contains every `mj-group` that must remain side by side on mobile.
+  A fixed bordered group whose columns deliberately sum short of the outer width declares
+  the gap as `borderHeadroom` (px) with a `headroomReason`; an undeclared gap fails.
 - `properties` contains every component property, including fixed TEXT and zero BOOLEAN cases.
 
 `longestUnbreakablePx` must be measured against the exported font stack, not the Figma canvas

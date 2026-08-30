@@ -1007,11 +1007,14 @@ Read it before the first module of a batch.
 **One module per row of the audit's Module inventory.** The batch is a group of those rows, and
 each row already tells you the module's name (use it verbatim as the component name), its
 category, the designs it appears in, its source ref, its verdict, its concession if any, its
-build constraints, and its effort. **A library of 8 or fewer modules may run as ONE batch**,
-with one design review before upload; the batch structure exists to stop defects propagating
-across batches, and a single batch has nothing to propagate into. Above that, stay at roughly
-five modules per batch: batch 1 always surfaces something, and the review after it is the
-highest-value gate in the whole conversion. Where a module appears in several designs, the source ref
+build constraints, and its effort. **Whatever the library size, batch 1 is the proof
+batch: at most four modules covering the source's relevant risk classes.** Do not start later
+batches until every proof module passes production desktop and mobile checks and the user
+accepts the proof batch; if production rendering is unavailable, stop after preparing the
+proof and report deferred verification (a user approval does not substitute for missing
+render evidence). After that gate, use roughly five modules per batch for the remaining
+inventory; a small library may finish in a single further batch. Batch 1 always surfaces
+something, and the review after it is the highest-value gate in the whole conversion. Where a module appears in several designs, the source ref
 names the one appearance to convert from, so convert it ONCE from there and note that design; the
 other appearances are the same component placed again, not more work. When a row has no source
 ref, pick the cleanest appearance yourself and record which one in the batch report, so a
@@ -1989,7 +1992,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.46.0 of this skill. If you have web access, check once per conversation
+This is version 1.46.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

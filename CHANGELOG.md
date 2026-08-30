@@ -3,6 +3,24 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.6.1 (2026-08-30)
+
+Hardens the quality-gates skill against an external review's findings; no new capability.
+
+- figma-quality-gates 1.1.0: the snapshot validator now fails closed. A migration acceptance
+  batch needs a non-empty module list; the images/groups/properties inventories are required
+  even when audited empty and are cross-checked against an independently measured node
+  census; a measurement that is missing, mistyped, negative, or non-finite is an error, never
+  a silent zero; malformed input returns a structured error instead of a traceback. Documented
+  render-contract exceptions are now declarable instead of falsely rejected: top-aligned
+  multi-column axis pairs (axisExceptions) and bordered-group width headroom (borderHeadroom
+  with a stated reason). The icon alpha check is an explicit heuristic with four outcomes
+  (pass, needs-review, not-applicable, error); a fully opaque asset is not-applicable rather
+  than a false fail, and only pass is automatic. Self-tests cover all regression cases.
+- eds-converter 1.46.1: the batch-size rule no longer contradicts the proof batch; whatever
+  the library size, batch 1 is the proof batch of at most four risk-covering modules, and a
+  user approval does not substitute for missing render evidence.
+
 ## Repo: Email Love plugin 1.6.0 (2026-08-29)
 
 Adds the fifth bundled skill, `/email-love:figma-quality-gates`, and enforcement patches to
