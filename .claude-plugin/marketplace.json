@@ -40,13 +40,13 @@
         "url": "https://github.com/email-love/esp-skills.git",
         "path": "skills",
         "ref": "main",
-        "sha": "f1be804f810e9a8629ef29a0af8f4196a32f2afe"
+        "sha": "a068e4868c95a22343d2573c869bcc52f589d9cc"
       },
       "strict": false,
       "skills": [
         "./"
       ],
-      "version": "1.4.2",
+      "version": "1.5.0",
       "description": "All ten Email Love ESP templating skills in one install: Braze Liquid, Customer.io Liquid, HubSpot HubL, Iterable Handlebars, Klaviyo Django, Marketo Velocity, MoEngage Jinja, Sailthru Zephyr, SFMC AMPscript, and Zeta ZML. Write, review, and debug personalization code in any email HTML, whatever built or exported it. Sourced at a pinned commit from email-love/esp-skills, the canonical home; install skills individually from that marketplace instead if you only want one platform.",
       "author": {
         "name": "Email Love",
