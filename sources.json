@@ -13,12 +13,12 @@
   },
   "codexPlugin": {
     "repo": "email-love/codex-agents",
-    "currentRelease": "v4.9.0",
-    "currentPublicRelease": "v4.9.0",
-    "currentGitRelease": "v4.9.0",
-    "currentGitCommit": "b383c3476c2c6908223c3e8ce483a26f36a06c35",
+    "currentRelease": "v4.11.3",
+    "currentPublicRelease": "v4.11.3",
+    "currentGitRelease": "v4.11.3",
+    "currentGitCommit": "6d8c9dc157682d643a8ca8c8e7ac80979e665110",
     "publicPluginUrl": "https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409",
-    "lastPublicPublication": "2026-08-23",
+    "lastPublicPublication": "2026-09-05",
     "distributionModel": "The public ChatGPT and Codex plugin is a reviewed snapshot. A GitHub push does not update directory users.",
     "releaseChecklist": [
       "Port and validate the Codex plugin.",
@@ -28,7 +28,7 @@
       "Verify the public listing and test from a new chat or Codex task."
     ],
     "portsClaudeCommit": "fb96b26aa346394ae83f63c1d6ebe6b734029c5b",
-    "note": "Public listing updated to v4.9.0 on 2026-08-23: thirteen skills - Builder, Template Repair, and Design System Migration plus the ten ESP templating skills staged at build time from email-love/esp-skills f1be804 (see codex-agents sources.json espSkills lane). Uploaded artifact sha256 0ea163db81112aec9bfb6572df1c3874ad5e3483c068ca17c605d61010e8b79d. GitHub releases for the candidate set (esp v1.4.2, claude-skills plugin 1.5.0, codex v4.9.0) are prepared but not yet tagged; currentGitRelease reflects the last tagged GitHub release. A GitHub push never updates directory users. Earlier alignment history remains in the drift entries below."
+    "note": "Public listing updated to v4.11.3 on 2026-09-05: fourteen skills - Builder, Template Repair, Design System Migration, and Figma Quality Gates plus the ten ESP templating skills staged at build time from email-love/esp-skills f1be804 - AND the Email Love MCP connection at https://mcp.emaillove.com/plugin/mcp (server-enforced tool boundary: research, source-led conversion, and export verification only; no free-form generation tools). Uploaded artifact sha256 eee94f70cffb887c781f65853821ec9bf88c25f467475d60edc866da1615e3b3."
   },
   "drift": [
     {

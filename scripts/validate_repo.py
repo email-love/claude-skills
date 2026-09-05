@@ -211,8 +211,8 @@ def check_readme_codex():
              "Codex uses the public plugin or the tagged Git marketplace")
     if "--ref v3.0.0" in t:
         fail("README.md still points Codex users at the obsolete v3.0.0 release")
-    if "codex plugin marketplace add email-love/codex-agents --ref v4.9.0" not in t:
-        fail("README.md must point Git-backed Codex installs at v4.9.0")
+    if "codex plugin marketplace add email-love/codex-agents --ref v4.11.3" not in t:
+        fail("README.md must point Git-backed Codex installs at v4.11.3")
     if PUBLIC_CODEX_PLUGIN_URL not in t:
         fail("README.md must link to the public Email Love plugin")
 
@@ -227,10 +227,10 @@ def check_readme_codex():
         fail("sources.json codexPlugin.publicPluginUrl is missing or incorrect")
     if codex.get("currentPublicRelease") != codex.get("currentRelease"):
         fail("sources.json public and source Codex releases are not aligned")
-    if codex.get("currentGitRelease") != "v4.9.0":
-        fail("sources.json codexPlugin.currentGitRelease must be v4.9.0")
-    if codex.get("currentGitCommit") != "b383c3476c2c6908223c3e8ce483a26f36a06c35":
-        fail("sources.json codexPlugin.currentGitCommit must record the v4.9.0 commit")
+    if codex.get("currentGitRelease") != "v4.11.3":
+        fail("sources.json codexPlugin.currentGitRelease must be v4.11.3")
+    if codex.get("currentGitCommit") != "6d8c9dc157682d643a8ca8c8e7ac80979e665110":
+        fail("sources.json codexPlugin.currentGitCommit must record the v4.11.3 commit")
     if "GitHub push does not update directory users" not in codex.get("distributionModel", ""):
         fail("sources.json must record that the public plugin is a reviewed snapshot")
     checklist = codex.get("releaseChecklist", [])

@@ -177,7 +177,7 @@ Then ask Claude Code to build an email in your Figma file.
 For development or an exact tagged version, use the Git-backed marketplace instead:
 
 ```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.9.0
+codex plugin marketplace add email-love/codex-agents --ref v4.11.3
 codex plugin add email-love@email-love
 ```
 
