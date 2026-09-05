@@ -2,6 +2,32 @@
 
 Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.com). Install them to make Claude an expert at building, repairing, and migrating emails with your Email Love design system.
 
+## Start here
+
+Two things are separate, and you may need both:
+
+1. **The skills** (this repo) teach Claude the Email Love workflows.
+2. **The connections** give Claude tools: the [official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559) to read and write your Figma file (required for canvas work), and optionally the Email Love MCP (`https://mcp.emaillove.com/mcp`) for AI Import conversion, headless export verification, and campaign research. Installing a skill does not create a connection, and connecting a tool does not install a skill.
+
+**Claude Code** (recommended, one-time, from any terminal):
+
+```bash
+claude plugin marketplace add email-love/claude-skills
+claude plugin install email-love@email-love
+```
+
+**Claude.ai** (web and desktop): enable **code execution** under **Settings → Capabilities**, download the `.skill` bundles from the [latest release](https://github.com/email-love/claude-skills/releases/latest), and upload them under **Customize → Skills → + → Create skill → Upload a skill**.
+
+Then try these, in order:
+
+> Check whether Email Love is set up correctly. Don't change my Figma file.
+
+> Build a welcome email in [Figma link]. I don't have an Email Love template yet. Tell me what you need.
+
+> This Email Love template fails to export: [Figma link]. Diagnose it first and preserve the original.
+
+The first is a non-mutating setup check: Claude reports which tools it can see and what is missing before it touches anything. Full installation detail, team setup, ESP add-ons, and Codex/ChatGPT guidance are further down this page.
+
 ## Read the skills
 
 You do not have to install anything to read what these skills actually tell Claude to do. Each one is a single markdown file:
@@ -50,14 +76,7 @@ legacy libraries route to Migration Audit and EDS Converter.
 
 Already have a Figma design system or template library that was not built with Email Love? This skill scopes the migration before anyone commits. It is strictly read-only: it splits your designs into a deduplicated module inventory and classifies every module (live-text convertible, editable-image candidate, hybrid, or not emailable, with any design concession named), works out whether your file is drawn at email scale, extracts your brand foundations (type ramp with email-safe fallbacks, palette, proposed theme colors, spacing, buttons), flags risks like unlicensed fonts or components living in unshared library files, and produces a shareable migration report with an effort estimate and a hand-off into conversion.
 
-Install from any terminal (inside an interactive `claude` session these also work as `/plugin` slash commands):
-
-```bash
-claude plugin marketplace add email-love/claude-skills
-claude plugin install email-love@email-love
-```
-
-One install carries all four skills: `/email-love:migration-audit`, `/email-love:eds-converter`, `/email-love:figma-builder`, and `/email-love:template-repair`.
+One install (see **Start here** above) carries all five skills: `/email-love:migration-audit`, `/email-love:eds-converter`, `/email-love:figma-builder`, `/email-love:template-repair`, and `/email-love:figma-quality-gates`.
 
 Want ESP templating too? The same marketplace carries `emaillove-esp`, which installs all ten Email Love ESP skills (Braze Liquid, Customer.io Liquid, HubSpot HubL, Iterable Handlebars, Klaviyo Django, Marketo Velocity, MoEngage Jinja, Sailthru Zephyr, SFMC AMPscript, Zeta ZML) in one step, sourced at a pinned commit from their canonical home in [email-love/esp-skills](https://github.com/email-love/esp-skills):
 
@@ -67,20 +86,7 @@ claude plugin install emaillove-esp@email-love
 
 Prefer one platform at a time? Add the esp-skills marketplace directly and install individually: `claude plugin marketplace add email-love/esp-skills`.
 
-On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead.
-
-Using **Codex**? Build, Repair, and Migration ship as three skills in the Email Love Codex plugin.
-[Install the public Email Love plugin](https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409),
-then start a new Codex task.
-
-For development or testing an exact GitHub release, use the separate Git-backed install:
-
-```bash
-codex plugin marketplace add email-love/codex-agents --ref v4.9.0
-codex plugin add email-love@email-love
-```
-
-See [email-love/codex-agents](https://github.com/email-love/codex-agents).
+On Claude.ai, upload the `.skill` file from [releases](https://github.com/email-love/claude-skills/releases) instead. Using Codex or ChatGPT? See the section near the end of this page.
 
 ### emaillove-eds-converter
 
@@ -107,7 +113,7 @@ The reason this matters: faithfully preserving the proportions of a file that wa
 Works on every plan, including Free (web and desktop, not mobile).
 
 1. Enable **code execution** under **Settings → Capabilities** (Team/Enterprise: an org owner must enable code execution and skills in Organization Settings first).
-2. Download the `.skill` file you need from the [latest release](https://github.com/email-love/claude-skills/releases/latest). Every release attaches all four skill bundles.
+2. Download the `.skill` file you need from the [latest release](https://github.com/email-love/claude-skills/releases/latest). Every release attaches all five skill bundles.
 3. Go to **Customize → Skills → + → Create skill → Upload a skill** and upload the file.
 4. Ask Claude to build an email in your Figma file.
 
@@ -122,7 +128,7 @@ claude plugin marketplace add email-love/claude-skills
 claude plugin install email-love@email-love
 ```
 
-One install, four skills, namespaced `email-love:`:
+One install, five skills, namespaced `email-love:`:
 
 | Skill | What it does |
 | --- | --- |
@@ -130,6 +136,7 @@ One install, four skills, namespaced `email-love:`:
 | `/email-love:eds-converter` | Converts an audited system into a working Email Love design system, in batches with design review |
 | `/email-love:figma-builder` | Builds export-ready campaigns from your design system |
 | `/email-love:template-repair` | Diagnoses and repairs existing Email Love templates and modules without damaging the original |
+| `/email-love:figma-quality-gates` | Independent acceptance audit of migration batches and reusable modules before approval |
 
 Update with `/plugin marketplace update email-love`. (The old per-skill installs, `emaillove-figma-builder@email-love` and friends, still resolve as deprecated single-skill plugins and keep updating; new installs should use the bundle.)
 
@@ -163,7 +170,7 @@ Then ask Claude Code to build an email in your Figma file.
 
 ## Using Codex or ChatGPT instead?
 
-**OpenAI Codex** can run the same workflows. The Email Love Codex plugin contains Builder, Template Repair, and Design System Migration skills that Codex loads on demand. The public plugin is the recommended customer install:
+**OpenAI Codex** can run the same workflows. The Email Love Codex plugin contains the Builder, Template Repair, Design System Migration, and Figma Quality Gates skills (the public directory version adds the ten ESP templating skills and the Email Love MCP connection). The public plugin is the recommended customer install:
 
 [Install Email Love from the Plugins Directory](https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409)
 
@@ -192,10 +199,10 @@ Related guides:
 
 ## Security and data handling
 
-Most of what these skills do stays inside your own Figma file. One route, used only when there is
-no component to instance, sends a rendered design image to an Email Love service to get email
-structure back. [SECURITY.md](SECURITY.md) covers what is sent, when, and how to avoid it for
-sensitive material.
+Most of what these skills do stays inside your own Figma file. The routes that can send data
+outside it - conversion, the optional Email Love MCP's export and preview tools, and the research
+tools - are enumerated one by one in [SECURITY.md](SECURITY.md): what each sends, when it fires,
+and how to avoid it for sensitive material.
 
 ## Support
 

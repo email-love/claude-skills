@@ -1,64 +1,89 @@
 # Security and data handling
 
-These skills build and convert emails inside your own Figma file. Most of what they do stays
-local to that file. One route sends data to an Email Love service, and this document explains
-exactly what, when, and how to avoid it.
+These skills build, convert, audit, and repair emails inside your own Figma file. This document
+lists every route through which data can leave your environment, what each one sends, when it
+fires, and how to avoid the ones you do not want. Several routes are optional: which ones apply
+to you depends on which connections you have added.
 
-## What leaves your environment, and when
+## The routes, one by one
 
-There is exactly one outbound path: the **conversion route** (the builder's Path B, and the
-converter's module conversion). It is used only when there is no existing component to instance,
-so it never fires for a customer who already has a synced Email Love design system.
+### 1. Your Claude host (always)
 
-When it fires, the skill:
+The skills run inside Claude (claude.ai, Claude Code, or Cowork). Everything Claude reads while
+working - file contents, screenshots it takes, your messages - is processed by Anthropic under
+your own Claude plan's data terms. That is a property of using Claude, not of these skills.
 
-1. Renders the design region as a PNG.
-2. Sends that PNG, plus a small `promptInputs` object (text content and node dimensions it read
-   from the frame) and optionally a layer tree, to the Email Love design-converter:
+### 2. The Figma connection (always, for canvas work)
 
-   ```
-   https://convert.emaillove.com
-   ```
+Reading and writing your Figma file goes through the official remote Figma MCP
+(`mcp.figma.com`), authenticated with your own Figma account. Screenshots and node reads are
+Figma API calls; they travel between Claude and Figma.
 
-3. Receives back a structured MJML document describing email structure, and rebuilds it in Figma.
+### 3. The direct conversion route (Path B fallback, optional)
 
-Nothing else is transmitted. The audit never uses this route at all: it only reads and
-screenshots your file, and writes a local report.
+When the builder or converter has no existing component to instance and the Email Love MCP is
+not connected, it can send a design render to the Email Love design-converter:
+
+```
+https://convert.emaillove.com
+```
+
+What is sent: a PNG or JPEG render of the design region, a small `promptInputs` object (text
+content and node dimensions read from the frame), and optionally a plain-text layer tree. The
+request authenticates as an anonymous free user; no account identity is attached. The service
+caches conversions by a hash of the screenshot; a `nocache=1` query parameter skips the cache
+read and write when a design must not be cached.
+
+### 4. The Email Love MCP (optional, connected and authenticated by you)
+
+If you add `https://mcp.emaillove.com/mcp` as a connection, its tools run under your Email Love
+account (OAuth or license key). Depending on which tools a skill uses:
+
+- `emaillove_convert_design` sends the conversion the same place route 3 does, but authenticated
+  and server-side: you pass a file key and node id, and the SERVER renders the node through the
+  Figma API and forwards it to the converter.
+- `emaillove_export_figma` reads your Figma file over the Figma REST API server-side, compiles
+  it through the production Email Love export pipeline, and HOSTS the images it extracts on
+  Email Love's CDN so the exported HTML can reference them. The compiled HTML is stored briefly
+  under a preview token so a preview URL works.
+- `emaillove_preview_email` renders compiled HTML to desktop and mobile screenshots server-side.
+- The research tools (`search_emails`, `fetch_email`, brand and journey tools) only QUERY the
+  public emaillove.com library; they send your search terms, not your designs.
+
+### 5. The Email Love Figma plugin (your own action)
+
+Exporting or previewing through the plugin itself, including its manual AI Import, sends your
+design to the same Email Love services under your plugin account. Manual AI Import makes the
+external send a deliberate action you take; it is not an offline alternative - it uses the same
+external conversion service as route 3.
 
 ## What is NOT sent
 
-- The skills do not send your Figma file, your account, your credentials, or your API keys.
-- The audit is strictly read-only and transmits nothing off your machine beyond the screenshots
-  the conversion route would send, which it does not use.
-- The converter builds into a separate target file and never modifies your source file.
-
-## Authentication and cache
-
-- The conversion request authenticates as an anonymous free user (an empty bearer token with an
-  `X-Auth-Provider: gumroad` header). No account identity is attached.
-- The service caches a conversion by a hash of the screenshot, so re-sending the same design
-  returns the previous result without a new model call. A skill can bypass this with a
-  `nocache=1` query parameter (skips both the cache read and write) when a design must not be
-  cached at all.
+- The skills never send your Figma credentials, Claude credentials, or API keys anywhere.
+- The audit is strictly read-only on your source file and writes a local report; it uses none of
+  routes 3-5 by itself.
+- No route sends your whole Figma file. Conversion sends a render of the selected region;
+  headless export reads the selected template's nodes.
 
 ## What we cannot assert here
 
-This document describes the request the skills make. It does not speak for the service's own
-retention, logging, or deletion policy, which lives with the operator of the worker. If your
-material is regulated or contractually restricted, treat any external send as external and get
-that policy in writing before using the conversion route on it.
+This document describes the requests the skills make. It does not speak for each service's
+retention, logging, or deletion policy: the converter and MCP are operated by Email Love, Figma
+by Figma, and Claude by Anthropic. Those policies are theirs, and where they are unknown to this
+document they remain unknown - no guarantee is implied. If your material is regulated or
+contractually restricted, treat every route above as an external transfer and get the relevant
+policy in writing first.
 
-## Avoiding the conversion route entirely
+## Avoiding external conversion entirely
 
 If you cannot send design renders outside your environment:
 
 - **Have a design system first.** With synced Email Love components, the builder instances them
   and never converts. This is the recommended path for sensitive work.
-- **Use the plugin's own AI Import by hand** for the one-off case, so the send is a deliberate
-  action you take rather than an automated step. See
-  [AI Import](https://help.emaillove.com/plugin/ai/ai-import).
 - **Strip sensitive content before converting.** Replace real copy and imagery with placeholders,
   convert to get the structure, then restore the real content locally.
+- Note that skipping automation does not avoid the service: the plugin's manual AI Import is the
+  same external conversion, initiated by hand.
 
 ## The source file stays read-only
 
@@ -68,5 +93,5 @@ migration goes wrong, your originals are exactly where they were.
 
 ## Reporting
 
-Found a security issue in these skills or the conversion route? Email
+Found a security issue in these skills or the services they call? Email
 [hello@emaillove.com](mailto:hello@emaillove.com).

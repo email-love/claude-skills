@@ -106,7 +106,12 @@ One worked example, the format to copy:
 
 ## Step 0: Pick your source
 
-Ask the customer where their existing emails live, in one question:
+**Ask only when the source is missing or genuinely ambiguous.** When the request already names
+or links the source - a pasted Figma file link, a folder path, "our Klaviyo templates" - that IS
+the answer: confirm it in one line ("Auditing the Figma file you linked") and go straight to its
+source adapter. Do not present the menu to a customer who has already told you where their
+emails live. When no source is stated, or two plausible ones are (a Figma link AND a folder),
+ask in one question:
 
 > Where are the emails you want to migrate?
 > - (a) A Figma file (design system or template library)
@@ -123,10 +128,11 @@ Ask the customer where their existing emails live, in one question:
 > - (l) Omnisend (via the official Omnisend MCP)
 > - (m) HubSpot (via the official HubSpot MCP)
 
-Their answer decides everything downstream. The rest of the audit uses the source adapter for
-whichever they picked. **You cannot skip this question.** An unstated source is the default
-silent-failure mode that makes a converter walk a folder as if it were a Figma page, or
-inspects a Figma file as if it were a Klaviyo library.
+The source decides everything downstream. The rest of the audit uses the source adapter for
+whichever applies. **You cannot skip this DECISION** - but a source the customer already named
+counts as decided. An unstated source is the default silent-failure mode that makes a converter
+walk a folder as if it were a Figma page, or inspects a Figma file as if it were a Klaviyo
+library.
 
 **Recommend Figma when it is on offer.** If the customer has their design system in a Figma
 file, that is by far the richest source: components, styles, and variables are structured data,
@@ -1926,7 +1932,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.24.0 of this skill. If you have web access, check once per conversation
+This is version 1.25.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

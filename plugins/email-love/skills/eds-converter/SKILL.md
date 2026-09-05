@@ -1992,7 +1992,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.46.1 of this skill. If you have web access, check once per conversation
+This is version 1.47.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

@@ -2231,7 +2231,11 @@ the node.
 4. Every leaf is a complete pair; every `mj-button` has a direct TEXT child;
    no empty wrapper frames.
 5. `primaryAxisAlignItems === counterAxisAlignItems` on every auto-layout
-   frame.
+   frame, WITH the documented multi-column exception: a section whose columns
+   have unequal content heights keeps `primaryAxisAlignItems = 'MIN'`
+   (vertical-align: top) alongside the content's horizontal alignment, per the
+   alignment rules above. Record each such top-align exception as intentional;
+   any OTHER axis mismatch fails this check.
 6. All nodes `visible = true` (except a region you deliberately left off via a
    BOOLEAN default); `itemSpacing = 0` everywhere; no stray fills.
 7. **Every frame in the tree has `layoutSizingVertical === 'HUG'`.** Walk the

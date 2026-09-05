@@ -39,6 +39,15 @@ You need the Figma MCP connected to the user's file and the Email Love plugin in
 file (latest version). If the Figma MCP exposes a `figma-use` skill or a
 `skill://figma/figma-use/SKILL.md` resource, read it before running any plugin-API code.
 
+**Run a non-mutating setup check before promising a build.** Confirm, without writing anything:
+the Figma connection includes `use_figma`, `get_metadata`, and `get_screenshot`; the target file
+opens; and whether the Email Love MCP tools (`emaillove_convert_design`,
+`emaillove_export_figma`, `emaillove_preview_email`) are connected. Tell the user the result in
+one short list. If `use_figma` is absent the connection is read-only: say so up front, offer a
+read-only plan plus an exact manual handoff instead of a build promise, and skip the campaign
+interview until write access exists. If only the Email Love MCP is missing, you can still build;
+conversion and export verification fall back as described in B3 and the hand-off.
+
 **Then decide the path, by checking, not assuming.**
 
 1. If the Email Love MCP is connected, call `list_brands`, then `list_components` for the
@@ -468,9 +477,20 @@ screenshot padded with empty page invites the worker to invent spacers.
 Never convert a competitor's email or an Email Love library preview. Same clone problem, and the
 customer has no design system to restyle it into, so a clone stays a clone.
 
-## B3: Send it to the design-converter worker
+## B3: Convert the source
 
-POST to `https://convert.emaillove.com`:
+**Prefer `emaillove_convert_design` (the Email Love MCP) when it is connected.** Pass the source
+file's `fileKey` and the selected frame's `nodeId`; the server renders the node through Figma
+itself and forwards it to the converter, so no image bytes travel through your context and
+nothing can truncate. Follow the tool schema: use its `outline` and then `section` response
+modes when the full tree would be too large for one tool response, and preserve every returned
+section before transcription. Use its `screenshotUrl` input only when the customer owns the
+image and no Figma source node exists. Conversion is source-led and uses the customer's own
+design or screenshot; an inspiration email from the library is reference material, never the
+conversion source. If the tool is unavailable, unauthorized, or cannot read the source file,
+say so in one line and use the direct worker route below.
+
+**Direct worker route (fallback).** POST to `https://convert.emaillove.com`:
 
 - **Headers:** `Content-Type: application/json`, `Authorization: Bearer` with an **empty** token,
   and `X-Auth-Provider: gumroad`. That combination is an anonymous Free user, which is allowed;
@@ -640,9 +660,13 @@ an instance and correct its internals, which the components already got right.
 - **An image is an `mj-image-Frame` containing a tagged `mj-image` rectangle**, as a pair. Never
   a frame with an image fill on itself: a childless wrapper exports as an empty cell. The same
   pairing applies to text, buttons, and dividers.
-- **Alignment: set both axes to the same value.** The exporter reads `primaryAxisAlignItems` for
-  **horizontal** alignment, so a vertical column that looks centered on canvas exports as left.
-  Every auto-layout frame you create must have `primaryAxisAlignItems === counterAxisAlignItems`.
+- **Alignment: set both axes to the same value, with one documented exception.** The exporter
+  reads `primaryAxisAlignItems` for **horizontal** alignment, so a vertical column that looks
+  centered on canvas exports as left. Every auto-layout frame you create must have
+  `primaryAxisAlignItems === counterAxisAlignItems`, EXCEPT a multi-column row whose columns
+  have unequal content heights: that section keeps `primaryAxisAlignItems = 'MIN'` (exports
+  vertical-align: top) alongside the content's horizontal alignment, per the render spec's
+  multi-column rule. Do not "fix" that documented top-align case to force the axes to match.
 - **Sizing is not cosmetic: heights hug, widths are a decision.** Every frame you create, from
   the root down, is vertical HUG. A fixed height clips content in Outlook and breaks the first
   time the copy runs a line longer. Vertical rhythm is auto layout padding, never a taller
@@ -780,7 +804,8 @@ consistent with the file's real campaigns. Then check structure:
   internals were restructured.
 - **Path B:** the render spec's post-build checklist passes: every node tagged, every leaf a
   complete pair, every `mj-button` with a direct TEXT child, both alignment axes equal on every
-  auto-layout frame, all nodes visible, and column widths summing to the email's one content width
+  auto-layout frame (except the documented top-aligned multi-column rows, which stay MIN plus
+  the content's horizontal alignment), all nodes visible, and column widths summing to the email's one content width
   rather than to the side margin the worker returned per screenshot (render spec 0.3.1). Plus the five B5
   repairs done, and any tag the spec does not map rebuilt from mapped primitives per B4. If the
   source had an overlapping or bleeding photo, that band is a two column row per render spec 3.4.1,
@@ -798,9 +823,25 @@ consistent with the file's real campaigns. Then check structure:
 - Every `mj-raw` frame contains its text child. Dark mode overrides intact. Exactly one visible
   CTA button per email unless the user asked otherwise.
 
-Fix what fails before presenting. Then report: what you built, which path and why, which
-components you chose or what the converter returned and what you repaired, what you assumed,
-which inspiration emails informed the work, and everything left as a placeholder.
+Fix what fails before presenting.
+
+**Then verify through the production exporter when you can, and state completion honestly.**
+Probe for `emaillove_export_figma` before delegating verification to the user: when it is
+connected, run it on the root with operationType `preview` (desktop), run
+`emaillove_preview_email` for the mobile render, fix anything either one disproves, and include
+the preview link in your report. End every build with exactly one completion state:
+
+- `desktop and mobile export verified` - only when both production renders exist and pass;
+  desktop success never substitutes for untested mobile output.
+- `built in Figma, export verification pending` - the canvas and structure checks passed but no
+  production render has been seen (no exporter tools, or the user will export in the plugin).
+- `blocked` - plus the exact action needed to continue.
+
+Reserve "export-ready", "fixed", and "verified" for the evidence those words imply; a
+client-specific inbox test (Outlook, Gmail) is a separate claim from a production Preview pass.
+Then report: what you built, which path and why, which components you chose or what the
+converter returned and what you repaired, what you assumed, which inspiration emails informed
+the work, everything left as a placeholder, and what was verified versus what remains.
 
 ## Hand off
 
@@ -853,7 +894,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.11.0 of this skill. If you have web access, check once per conversation
+This is version 2.12.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

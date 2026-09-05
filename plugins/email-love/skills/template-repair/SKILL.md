@@ -30,15 +30,31 @@ already works, and verify the result through the production exporter before call
 
 ## Route the request
 
-Confirm that the target is already an Email Love structure:
+Classify the target by MEASURED evidence of Email Love provenance, not by intact markers alone.
+Missing or incorrect markers are themselves supported repair defects (see the symptom matrix),
+so a damaged template must not be bounced to Builder just because the damage reached its markers.
+
+Intact provenance, route to repair directly:
 
 - A whole email has a root with `nodeType = mainFrame` and Email Love wrappers below it.
 - A reusable module is a COMPONENT tagged `mj-wrapper` and carries no `mainFrame` marker.
 - An Email Love component instance surfaces its main component's plugin data.
 
-If none of those is true, stop. Use `figma-builder` for one ordinary Figma comp or new campaign,
-`migration-audit` for a legacy library assessment, and `eds-converter` for an approved migration.
-A random frame that merely looks like an email is not a broken Email Love template.
+Damaged provenance, still repair: when the root marker is missing, wrong, or misplaced, look for
+surviving evidence before rerouting: `mj-*` tags or Email Love plugin data anywhere in the
+subtree, an ancestry of wrappers/sections/columns in the Email Love shape, the plugin's display
+names, a sibling or main component that carries the data, or the user stating it exported before.
+Any of those makes it a broken Email Love template with a marker defect; repair the marker per
+the symptom matrix.
+
+No provenance at all, reroute: a frame with zero Email Love tags anywhere, no tagged ancestry,
+and no history of exporting is an ordinary comp, however email-shaped it looks. Use
+`figma-builder` for one ordinary Figma comp or new campaign, `migration-audit` for a legacy
+library assessment, and `eds-converter` for an approved migration.
+
+Ambiguous provenance: ask the user one focused question (did this ever export through the Email
+Love plugin?) or run a focused read-only inspection before any mutation. Do not assume every
+email-shaped frame is an Email Love template, and do not mutate anything to settle the question.
 
 ## Check the tools
 
@@ -194,7 +210,7 @@ states, any private-data or inbox-test handoff, and whether the original remaine
 
 ## Staying current
 
-This is version 1.2.0 of this skill. If you have web access, check once per conversation quietly
+This is version 1.3.0 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-template-repair`. If a newer version

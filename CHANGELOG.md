@@ -3,6 +3,33 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.7.0 (2026-09-05)
+
+Usability and consistency pass from the 2026-09-05 external review; structural safeguards
+unchanged. Deferred deliberately: the large entry-file refactor and live behavioral evals.
+
+- eds-converter 1.47.0: the render spec's final checklist no longer contradicts its own
+  multi-column alignment exception; top-aligned unequal-height rows are recorded as
+  intentional instead of failing item 5.
+- figma-builder 2.12.0: alignment correction carries the same documented exception; a
+  non-mutating setup check runs before any build promise (write tools, exporter tools,
+  honest read-only fallback); Path B prefers emaillove_convert_design (fileKey + nodeId,
+  outline/section retrieval, own-source restriction) with the direct worker route as the
+  documented fallback; completion claims use three explicit evidence-backed states and the
+  builder probes emaillove_export_figma before delegating verification to the user.
+- template-repair 1.3.0: repair candidates are classified by measured provenance, so a
+  template with a missing or wrong root marker stays in Repair (marker damage is a supported
+  defect); only frames with no Email Love provenance reroute to Builder, and ambiguity gets
+  one focused question before any mutation.
+- migration-audit 1.25.0: the source question is asked only when the source is missing or
+  genuinely ambiguous; a pasted Figma link is recognized without the thirteen-option menu.
+- README: a Start here section separates skills from tool connections, gives per-surface
+  installs and three first-use prompts (including the setup check), corrects the four-skill
+  count to five everywhere, and moves Codex guidance below the main path.
+- SECURITY.md: rewritten route by route (Claude host, Figma connection, direct converter,
+  authenticated Email Love MCP export/preview/research, plugin AI Import); manual AI Import
+  is described as a deliberate external send, and unknown retention policies stay unknown.
+
 ## Repo: Email Love plugin 1.6.2 (2026-08-30)
 
 Final cleanup from the second external review pass; documentation-consistency only.
