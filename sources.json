@@ -15,8 +15,8 @@
     "repo": "email-love/codex-agents",
     "currentRelease": "v4.11.3",
     "currentPublicRelease": "v4.11.3",
-    "currentGitRelease": "v4.11.3",
-    "currentGitCommit": "6d8c9dc157682d643a8ca8c8e7ac80979e665110",
+    "currentGitRelease": "v4.11.4",
+    "currentGitCommit": "402d6bab7cee3fc59240006c3bb3a70c5584f8a8",
     "publicPluginUrl": "https://chatgpt.com/plugins/plugins_6a739f43c3b48191b1281a9b2d48b409",
     "lastPublicPublication": "2026-09-05",
     "distributionModel": "The public ChatGPT and Codex plugin is a reviewed snapshot. A GitHub push does not update directory users.",
@@ -28,7 +28,7 @@
       "Verify the public listing and test from a new chat or Codex task."
     ],
     "portsClaudeCommit": "fb96b26aa346394ae83f63c1d6ebe6b734029c5b",
-    "note": "Public listing updated to v4.11.3 on 2026-09-05: fourteen skills - Builder, Template Repair, Design System Migration, and Figma Quality Gates plus the ten ESP templating skills staged at build time from email-love/esp-skills f1be804 - AND the Email Love MCP connection at https://mcp.emaillove.com/plugin/mcp (server-enforced tool boundary: research, source-led conversion, and export verification only; no free-form generation tools). Uploaded artifact sha256 eee94f70cffb887c781f65853821ec9bf88c25f467475d60edc866da1615e3b3."
+    "note": "Public listing updated to v4.11.3 on 2026-09-05: fourteen skills - Builder, Template Repair, Design System Migration, and Figma Quality Gates plus the ten ESP templating skills staged at build time from email-love/esp-skills f1be804 - AND the Email Love MCP connection at https://mcp.emaillove.com/plugin/mcp (server-enforced tool boundary: research, source-led conversion, and export verification only; no free-form generation tools). Uploaded artifact sha256 eee94f70cffb887c781f65853821ec9bf88c25f467475d60edc866da1615e3b3. Git release v4.11.4 (402d6ba, 2026-09-05) repins the ESP skills to esp-skills 1.5.0; codex-agents SUBMISSION.md still cites the v4.11.3 artifact hash above, so the public listing stays v4.11.3 until a v4.11.4 bundle is uploaded, reviewed, and published through the portal."
   },
   "drift": [
     {
