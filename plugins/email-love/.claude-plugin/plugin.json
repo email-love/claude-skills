@@ -12,5 +12,7 @@
   "repository": "https://github.com/email-love/claude-skills",
   "license": "MIT",
   "icon": "./.claude-plugin/icon.png",
-  "documentationUrl": "https://help.emaillove.com/plugin/ai/agents-in-figma"
+  "documentationUrl": "https://help.emaillove.com/plugin/ai/agents-in-figma",
+  "privacyPolicyUrl": "https://emaillove.com/privacy-policy",
+  "supportUrl": "https://help.emaillove.com"
 }
