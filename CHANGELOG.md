@@ -3,6 +3,19 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.7.1 (2026-10-03)
+
+Directory-submission release: packaging only, no workflow changes.
+
+- Plugin folder gains a README, a LICENSE copy, and a 512 px listing icon
+  (`.claude-plugin/icon.png`), which Anthropic's plugin directory requires; `plugin.json`
+  carries `icon` and `documentationUrl`, which Claude Code ignores at load time.
+- migration-audit 1.25.1: the Marketo and Brevo adapters no longer offer to read the
+  customer's credentials from shell environment variables. Marketo values are taken in the
+  session after the customer confirms the adapter should run; the Brevo key lives only in the
+  Brevo MCP the customer connects. The directory holds any plugin that reads a credential
+  from the user's machine for review.
+
 ## Repo: Email Love plugin 1.7.0 (2026-09-05)
 
 Usability and consistency pass from the 2026-09-05 external review; structural safeguards
