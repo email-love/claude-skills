@@ -319,7 +319,7 @@ control should point there), use a real preference-center URL when the customer
 supplies one, or use `manage-preferences.com` deliberately when the target is
 known to be Klaviyo.
 
-Batch 4 shipped a footer with `https://www.example.com/unsubscribe-placeholder`
+Batch 4 shipped a footer with `www.example.com/unsubscribe-placeholder`
 because this convention was not surfaced in the skill; the agent escalated it as the one
 item that was a legal problem, not a polish problem. The answer was one word.
 
