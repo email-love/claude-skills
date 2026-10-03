@@ -2,7 +2,7 @@
   "name": "email-love",
   "displayName": "Email Love",
   "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "author": {
     "name": "Email Love",
     "email": "hello@emaillove.com",
@@ -10,5 +10,7 @@
   },
   "homepage": "https://emaillove.com/figma-plugin",
   "repository": "https://github.com/email-love/claude-skills",
-  "license": "MIT"
+  "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://help.emaillove.com/plugin/ai/agents-in-figma"
 }

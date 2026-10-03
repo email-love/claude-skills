@@ -1353,10 +1353,11 @@ Before Discover, get four things from the customer:
    If the customer has only one workspace, skip. If multiple, ask which one to migrate.
 
 The three required values (Munchkin ID, client ID, client secret) are as sensitive as an API
-key. Confirm the customer wants to paste them into the current session, or offer to run
-against shell environment variables they set locally (`MARKETO_MUNCHKIN_ID`,
-`MARKETO_CLIENT_ID`, `MARKETO_CLIENT_SECRET`) so nothing literal appears in the conversation
-history.
+key. Take them from the customer in the session, only after they confirm they want this
+adapter to run, and never look them up from environment variables, shell profiles, or files
+on their machine. Tell them the values will appear in the conversation transcript, and suggest
+they create the LaunchPoint service for this migration only and delete it when the audit is
+done.
 
 **Base URL.** Every Marketo API call uses the Munchkin ID as a subdomain:
 `https://{munchkinId}.mktorest.com`. Substitute their actual Munchkin ID into every URL
@@ -1729,9 +1730,10 @@ key (Bearer token).
 
 **Security note that matters up front.** A Brevo API key grants FULL account access:
 sending, contact writes, template edits, everything. It is not a scoped read-only key like
-some ESPs offer. Treat the key as a high-privilege secret and offer the customer an
-environment-variable path (`BREVO_API_KEY`) so the literal key does not appear in the
-conversation history.
+some ESPs offer. Treat the key as a high-privilege secret: the customer enters it into the
+Brevo MCP they connect themselves, never into this conversation, and this skill never reads it
+from environment variables or files on their machine. Suggest they create a dedicated key for
+the migration and delete it afterward.
 
 **Discover.**
 
@@ -1932,7 +1934,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.25.0 of this skill. If you have web access, check once per conversation
+This is version 1.25.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
