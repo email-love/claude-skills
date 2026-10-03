@@ -307,7 +307,7 @@ A customer who already knows their tag can link to it directly and the exporter 
 
 **The exporter also INJECTS the preference placeholder on its own.** Any text
 containing the word "preference(s)" that carries no hyperlink gets
-`https://manage-preferences.com` auto-linked at export (the plugin's
+`manage-preferences.com` auto-linked at export (the plugin's
 placeholder, mirroring `unsubscribe.com`). Combined with the row above, that
 means a non-Klaviyo export ships a live link to a third-party domain the
 customer does not control, from text the builder deliberately left unlinked.
@@ -1992,7 +1992,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.47.0 of this skill. If you have web access, check once per conversation
+This is version 1.47.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

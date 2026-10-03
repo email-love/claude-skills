@@ -3,6 +3,12 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.7.2 (2026-10-03)
+
+- eds-converter 1.47.1: the preference-center placeholder is written as the bare host
+  `manage-preferences.com`, matching `unsubscribe.com`, instead of a full URL. Text change
+  only; the directory scanner read the full URL as a remote endpoint the skill sends to.
+
 ## Repo: Email Love plugin 1.7.1 (2026-10-03)
 
 Directory-submission release: packaging only, no workflow changes.
