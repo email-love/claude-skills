@@ -700,19 +700,37 @@ are not neutral: the exporter substitutes dark defaults, which wrecks a light em
 
 ```js
 frame.setSharedPluginData('emaillove', 'nodeType', 'mainFrame')
-frame.setSharedPluginData('emaillove', 'backgroundColor', '#ffffff')        // dark-mode page bg
-frame.setSharedPluginData('emaillove', 'contentColor', '#ffffff')           // dark-mode section bg
-frame.setSharedPluginData('emaillove', 'textColor', '#000000')
-frame.setSharedPluginData('emaillove', 'linkColor', '#000000')
-frame.setSharedPluginData('emaillove', 'buttonTextColor', '#ffffff')
-frame.setSharedPluginData('emaillove', 'buttonContentColor', '#000000')
-frame.setSharedPluginData('emaillove', 'lightThemeBackgroundColor', '#ffffff') // exports as mj-body bg
-frame.setSharedPluginData('emaillove', 'fallBackFontName', 'Arial')
+frame.setSharedPluginData('emaillove', 'backgroundColor', '#000000')        // DARK MODE page bg
+frame.setSharedPluginData('emaillove', 'contentColor', '#000000')           // DARK MODE wrapper bg
+frame.setSharedPluginData('emaillove', 'textColor', '#FFFFFF')              // DARK MODE text
+frame.setSharedPluginData('emaillove', 'linkColor', '#FFFFFF')              // DARK MODE links
+frame.setSharedPluginData('emaillove', 'buttonContentColor', '#EF3E5D')     // DARK MODE button: a MID-TONE brand colour
+frame.setSharedPluginData('emaillove', 'buttonTextColor', '#FFFFFF')        // DARK MODE button label
+frame.setSharedPluginData('emaillove', 'lightThemeBackgroundColor', '#ffffff') // exports as mj-body bg (LIGHT)
+frame.setSharedPluginData('emaillove', 'fallBackFontName', 'Arial')         // one family name, never a stack
 ```
 
-Setting the dark keys equal to the light design colors makes dark mode render like light, which
-is the right default for a first pass. For a genuinely dark email, invert them. All of these stay
-editable in the plugin's settings panel afterward.
+**The six theme keys are DARK MODE values. Never mirror the light palette into them.** An earlier
+revision of this skill said to set them equal to the light design "so dark mode renders like
+light"; that was wrong. They only fire inside the dark-mode media query, so a white
+`contentColor` ships light-on-light the moment Apple Mail flips to dark. The setup above is the
+one Email Love tested across Mac Mail, iPhone Mail, Gmail on Android and Outlook 2019/2021/365
+in both modes (help.emaillove.com, "Dark mode"): black page, black content, white text and links,
+and a button in a MID-TONE brand colour with a white label. Not a white or light button: Mac Mail
+forces any light background to dark grey even when the dark theme asked for it, so a white pill
+becomes a grey pill with unreadable text, while a mid-tone colour is dark enough for Mac Mail to
+keep and bright enough to read on black. Gmail, Outlook and Yahoo ignore all six keys and
+auto-invert; the keys exist for Apple Mail, which is the one family that honours them. Do not add
+head CSS or color-scheme meta of your own: the exporter already writes what the clients need, and
+a custom block was the one thing that made Mac Mail repaint a test email in its own colours.
+
+**Wrappers have their own dark Content Color, and it must be `transparent`.** The plugin writes
+`contentColor = transparent` on every wrapper it creates; in dark mode the exporter then clears
+the wrapper's white and the frame's black shows through, with no seams. A wrapper that stores a
+hex instead (older libraries store the plugin's old default `#1f1f1f`) is painted that hex on
+the black frame: grey panels. On Path A read the masters you are instancing before you build
+(see "Dark mode overrides" below); on Path B write `contentColor = transparent` on every
+wrapper you create, in the shared namespace, exactly as you write the `name` tag.
 
 ## Links, alt text, subject, and preheader
 
@@ -777,11 +795,31 @@ someone made, not defaults to improve on. If a font will not load in your enviro
 substitute one to get the edit through. Report it and leave the layer as you found it; a silent
 swap changes the brand's typography everywhere it lands.
 
-**Dark mode overrides are read-only.** Per-node `contentColor`, `textColor`, `linkColor`,
-`buttonContentColor`, `buttonTextColor` on a child node are a deliberate treatment someone chose.
-Never clear or overwrite them, and do not strip them when you duplicate a donor. Name the
-sections that carry them in your report. If the user explicitly asks you to set dark mode on a
-section, write the keys and tell them to verify in the plugin's dark mode preview.
+**Dark mode overrides: the plugin's own value wins, so read before you write.** Per-wrapper
+`contentColor`, `textColor`, `linkColor`, `buttonContentColor`, `buttonTextColor` live in TWO
+places: the plugin's PRIVATE plugin data (what the Appearance tab shows and what the real export
+reads first) and the shared `emaillove` namespace (what you can write, read only when the
+private value is empty). You cannot read or write the private copy through the Figma MCP, but
+you can read it over the REST API: `GET /v1/files/<key>/nodes?ids=<ids>&plugin_data=1387891288648822744,shared`
+(that number is the Email Love plugin id). Do that for every master you instance, once, and act
+on what comes back:
+
+- Private `contentColor` is `transparent` or empty: correct. Writing shared `transparent` on the
+  master is harmless and matches what the plugin writes on new wrappers.
+- Private `contentColor` is a hex the design did not choose (`#1f1f1f`, `#1e1e1e`, `#000000` on
+  a plain light module): that master predates the plugin's transparent default and will render
+  as a grey panel in Apple Mail dark mode. You cannot fix it from outside; tell the user which
+  masters, so they set Content Color to Transparent once in the Appearance tab (instances follow).
+- A deliberate band colour (a red offer bar, a navy rating strip, a dark footer) is the one
+  sanctioned per-wrapper override: keep it, and if that band carries a button, give the wrapper
+  `buttonContentColor = #000000` and `buttonTextColor = #FFFFFF` so the button does not vanish
+  into the band. Write both on the MAIN component, never per instance.
+
+Never clear or overwrite a value the user set deliberately, and do not strip overrides when you
+duplicate a donor. Name the wrappers that carry overrides in your report. **And do not use the
+Email Love MCP exporter as evidence about private keys: it reads shared data only.** Its render
+is the right check for structure and for the shared keys you wrote; for anything stored
+privately, the REST read above or an export from the plugin itself is the proof.
 
 ## Writing the content
 
@@ -820,6 +858,10 @@ consistent with the file's real campaigns. Then check structure:
   is an `mj-wrapper` COMPONENT with **no `nodeType` key**, named for the module rather than the
   wrapper display string, a direct child of its page, with every property binding re-read and
   confirmed.
+- Dark mode, per "Root frame": the six theme keys are the dark setup (black page and content,
+  white text and links, mid-tone brand button with white label), never the light palette; every
+  wrapper you created carries `contentColor = transparent`; every master you instanced was read
+  over REST and any stored grey default is named for the user to fix in the plugin.
 - Every `mj-raw` frame contains its text child. Dark mode overrides intact. Exactly one visible
   CTA button per email unless the user asked otherwise.
 
@@ -894,7 +936,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.12.0 of this skill. If you have web access, check once per conversation
+This is version 2.13.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

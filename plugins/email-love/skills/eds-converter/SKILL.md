@@ -276,12 +276,14 @@ ship. The render spec keeps the prose, the worked examples, and the rationale.
 | --- | --- | --- | --- |
 | `name` | every tagged node | the MJML tag string (`mj-wrapper`, `mj-section`, `mj-column`, `mj-column-inner`, `mj-text`, `mj-image`, `mj-button`, `mj-divider`, `mj-spacer`, `mj-social`, `mj-social-element`, `mj-group`, `mj-hero`, `mj-navbar`, `mj-navbar-link`, `mj-table`, `mj-raw`; frame variants add `-Frame`) | tells the exporter which MJML element this node emits. REQUIRED on every tagged node; the layer-name fallback is a fallback, not the contract. |
 | `nodeType` | ONLY the root frame of a whole email | `'mainFrame'` | marks the frame as an email template. Absent on every module (an `mj-wrapper` component). Present on a module = the block uploads as a whole email and no component JSON is emitted. |
-| `backgroundColor` | mainFrame root | hex | DARK MODE page background. House default `'#000000'`. These six keys only fire in dark mode; filling them with the light palette ships light-on-light. |
-| `contentColor` | mainFrame root | hex | DARK MODE content/section background. House default `'#1F1F1F'`. |
-| `textColor` | mainFrame root | hex | DARK MODE text color. House default `'#FFFFFF'`. |
-| `linkColor` | mainFrame root | hex | DARK MODE link color. House default `'#FFFFFF'`. |
-| `buttonTextColor` | mainFrame root | hex | DARK MODE button label color. House default `'#000000'`. |
-| `buttonContentColor` | mainFrame root | hex | DARK MODE button background. House default `'#FFFFFF'`. |
+| `backgroundColor` | mainFrame root | hex | DARK MODE page background. Recommended `'#000000'`. These six keys only fire in dark mode (Apple Mail honours them; Gmail and Outlook auto-invert and ignore them); filling them with the light palette ships light-on-light. |
+| `contentColor` | mainFrame root | hex | DARK MODE wrapper background. Recommended `'#000000'` (black on black, no seams). The plugin's older default `'#1F1F1F'` works but shows the content column as a grey block on the black page. |
+| `textColor` | mainFrame root | hex | DARK MODE text color. Recommended `'#FFFFFF'`. |
+| `linkColor` | mainFrame root | hex | DARK MODE link color. Recommended `'#FFFFFF'`. |
+| `buttonContentColor` | mainFrame root | hex | DARK MODE button background. A MID-TONE brand colour (a red, a blue, a lighter purple). Never white or light: Mac Mail forces light backgrounds to dark grey even in the dark theme, so a white pill becomes a grey pill with unreadable text. |
+| `buttonTextColor` | mainFrame root | hex | DARK MODE button label color. `'#FFFFFF'` with the mid-tone button above; set both, not one. |
+| `contentColor` | every `mj-wrapper` module root | `'transparent'` | REQUIRED. The wrapper's own dark Content Color; the plugin writes this on every wrapper it creates, and in dark mode the exporter then clears the wrapper's light fill so the frame's black shows through. A wrapper storing a hex instead (older libraries carry the old default `#1f1f1f`) renders as a grey panel in Apple Mail. The one exception: a surface that must keep its colour in both modes (a brand offer bar, a navy strip, a dark footer) stores that hex here instead, on the MAIN component, once. |
+| `buttonContentColor` + `buttonTextColor` | an `mj-wrapper` whose band is kept (above) and carries a button | `'#000000'` + `'#FFFFFF'` | so the button does not vanish into its own band in dark mode. Only on such wrappers; anywhere else leave both empty and let the email root supply them. |
 | `lightThemeBackgroundColor` | mainFrame root | hex | the LIGHT mj-body `background-color`; defaults to `#FFFFFF` when empty. The one light value in the set. |
 | `fallBackFontName` | mainFrame root | font family, e.g. `'Arial'` | fallback for text nodes whose pinned font is unavailable. |
 | `emailSubject` | mainFrame root | plain string | optional. |
@@ -810,15 +812,19 @@ Build the scaffold every later batch depends on:
    contentColor, textColor, linkColor, buttonTextColor, buttonContentColor,
    lightThemeBackgroundColor, and fallBackFontName (section 2.1 of the render spec has all
    nine keys and what each one is for). **The six theme keys are DARK MODE values: take them
-   from the audit Palette's dark-mode proposal, or the house defaults (`#000000` page,
-   `#1F1F1F` content, `#FFFFFF` text and links, `#FFFFFF` button with `#000000` label), and
-   never the light palette repeated**, which only fires in dark mode and ships light-on-light
-   there. `lightThemeBackgroundColor` is the one light value in the set.
+   from the audit Palette's dark-mode proposal, or the tested defaults (`#000000` page,
+   `#000000` content, `#FFFFFF` text and links, a MID-TONE brand colour for the button with a
+   `#FFFFFF` label), and never the light palette repeated**, which only fires in dark mode and
+   ships light-on-light there. Not a white or light button: Mac Mail forces light backgrounds to
+   dark grey even inside the dark theme. `lightThemeBackgroundColor` is the one light value in
+   the set. Only Apple Mail honours any of this; Gmail, Outlook and Yahoo auto-invert and ignore
+   the keys, so the setup exists to be readable in Apple Mail and to survive inversion elsewhere.
    **This is the only `mainFrame` foundations produces, and it is an email, not a module.**
    It exists so batch 1 has somewhere to drop modules and see them in context. The modules
    themselves are a different shape entirely (Phase 3, and section 2 of the render spec):
-   each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker and no theme keys.
-   Do not copy this frame as a starting point for a module.
+   each one is an `mj-wrapper` COMPONENT with **no** `mainFrame` marker, and the only theme key
+   it carries is its own `contentColor = 'transparent'` (or the band hex for a surface that keeps
+   its colour; the key table above). Do not copy this frame as a starting point for a module.
 
    **A wrapper is FIXED at the target email width, as a component and as every instance of it.**
    When Phase 3 drops wrapper instances into this root frame, size each instance
@@ -1631,7 +1637,16 @@ Run Group 0 on **every** module, not a sample.
 **Group 1: shape and tags.**
 - Root is a COMPONENT tagged `mj-wrapper`, layer name = module name, `nodeType` empty on the
   root and on every node below it (a module carrying `mainFrame` uploads as a whole email).
-  No theme color keys unless a designer asked for a dark-mode block treatment.
+  Shared `contentColor` on the root is `'transparent'`, or the band hex on a module whose
+  surface keeps its colour in dark mode (plus `buttonContentColor` `#000000` and
+  `buttonTextColor` `#FFFFFF` when that band carries a button). No other theme keys.
+  **Where a master already existed before you arrived, read its PRIVATE plugin data over the
+  Figma REST API** (`plugin_data=1387891288648822744,shared`, the Email Love plugin id): the
+  plugin reads its private copy first and falls back to shared only when private is empty, so a
+  stored private `#1f1f1f` on an old master beats anything you write and renders as a grey panel
+  in Apple Mail dark mode. You cannot change it from outside the plugin: list those masters for
+  the designer to set Content Color to Transparent once in the Appearance tab. The Email Love MCP
+  exporter reads shared data only, so its render is not evidence either way about private keys.
 - `name` key resolves to a real tag on every tagged node, including `mj-button-text` on
   every button's TEXT child (an untagged inner text of a foundation-button instance still
   fails). Every leaf is a complete tagged pair. No unrecognized frames except intentional
@@ -1992,7 +2007,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.47.1 of this skill. If you have web access, check once per conversation
+This is version 1.48.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
