@@ -11,8 +11,18 @@
   "homepage": "https://emaillove.com/figma-plugin",
   "repository": "https://github.com/email-love/claude-skills",
   "license": "MIT",
+  "keywords": [
+    "email",
+    "figma",
+    "email-design",
+    "design-system",
+    "html-email",
+    "mjml",
+    "esp"
+  ],
   "icon": "./.claude-plugin/icon.png",
   "documentationUrl": "https://help.emaillove.com/plugin/ai/agents-in-figma",
   "privacyPolicyUrl": "https://emaillove.com/privacy-policy",
+  "termsOfServiceUrl": "https://emaillove.com/terms",
   "supportUrl": "https://help.emaillove.com"
 }
