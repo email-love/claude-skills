@@ -3,6 +3,16 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: marketplace entries (2026-10-05)
+
+- Adding this repository as a marketplace in the Claude apps (**Customize > Plugins > Add
+  marketplace** in Cowork, the desktop app or claude.ai) showed "5 skipped": the five
+  single-skill entries (`emaillove-figma-builder` and the others) point at plain skill
+  folders with no `.claude-plugin/plugin.json`, and the Claude apps skip those. Each entry
+  now declares its skill inline (`"strict": false`, `"skills": ["./"]`), the way
+  `emaillove-esp` already did. No skill content or version changes; Claude Code installs
+  are unaffected.
+
 ## Repo: Email Love plugin 1.7.2 (2026-10-03)
 
 - eds-converter 1.47.1: the preference-center placeholder is written as the bare host

@@ -98,6 +98,13 @@ def check_marketplace():
         expected_src = f"./plugins/email-love/skills/{dirname}"
         if entry.get("source") != expected_src:
             fail(f"shim '{shim}' source is {entry.get('source')}, expected {expected_src}")
+        # The Claude apps (Cowork, claude.ai) sync a marketplace server-side and skip any
+        # entry whose folder has no .claude-plugin/plugin.json, unless the entry is its own
+        # inline manifest. Skill dirs stay plain (see check_skill), so each shim declares
+        # its one skill inline, the way the emaillove-esp entry does.
+        if entry.get("strict") is not False or entry.get("skills") != ["./"]:
+            fail(f"shim '{shim}' must set \"strict\": false and \"skills\": [\"./\"]; without "
+                 f"them the Claude apps skip it when they sync the marketplace")
         # Legacy shims (skills that predate the bundled plugin) must say
         # DEPRECATED so nobody installs them fresh. Skills introduced AFTER the
         # bundle are legitimate standalone entries; they must instead say the
