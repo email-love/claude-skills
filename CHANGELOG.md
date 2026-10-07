@@ -3,6 +3,22 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.9.0 (2026-10-07)
+
+- plugin.json gains `termsOfServiceUrl` and `keywords` for the directory listing (PR #3).
+- eds-converter 1.49.0: the documentation pages now have a fixed design instead of one invented
+  on each run. New `references/documentation.md` is the visual spec (canvas, type scale, color
+  roles, building blocks, a section list for every page, writing rules, build gotchas and an
+  acceptance check), taken from the Prada build and the Email Love covers on the Prada and
+  Ultimate Email Design System files. New `references/doc-kit.js` implements it with four
+  builders (`buildCover`, `buildScaffoldPage`, `buildModulePage`, `buildCampaignsPage`), each run
+  end to end against a seeded test file. Every doc color binds to the library's semantic
+  variables, and each builder reports missing tokens and stray nodes; none of them deletes a node
+  it didn't make. Getting Started gains "When something looks wrong" and a decisions log;
+  Foundations gains a radius section; every batch now rebuilds its category pages with a spec
+  card and a status badge taken from the acceptance matrix; hand-off adds a full-file
+  documentation pass.
+
 ## Repo: marketplace entries (2026-10-05)
 
 - Adding this repository as a marketplace in the Claude apps (**Customize > Plugins > Add
