@@ -266,6 +266,11 @@ user on a reduced scope. This exact absence bit an earlier customer batch four m
 five rounds of design review to work around; a one-line check catches it before the first
 module.
 
+Confirm the two documentation files as well: `references/documentation.md`, which is the visual
+spec for every doc page, and `references/doc-kit.js`, which is the builder that implements it.
+If either one is missing, tell the user that the pages will meet the content contracts below
+but won't match the standard Email Love layout, then carry on.
+
 ### The shared plugin data keys the exporter reads (inline, load-bearing)
 
 The exporter reads shared plugin data in namespace `emaillove`. This table is the irreducible
@@ -539,18 +544,27 @@ Build the scaffold every later batch depends on:
    checklist below. If the target file already had pages before you arrived, move them into
    position rather than appending, and delete nothing you did not create.
 
-   **Each scaffolding page has a CONTRACT.** Layout and polish are yours; the listed content is
-   not. Two runs of this skill on two customers must produce the same page doing the same job.
+   **Each scaffolding page has a CONTRACT, and a fixed design.** The content listed below is
+   the contract. The layout, type scale, colors and building blocks are fixed by
+   `references/documentation.md`. Two runs of this skill on two customers must produce the same
+   page doing the same job **and looking the same**. Build every scaffolding page with the
+   builders in `references/doc-kit.js` (`buildCover`, `buildScaffoldPage` for Getting Started,
+   Foundations, Type and Buttons, and `buildCampaignsPage`), using the section list for that page
+   in documentation.md section 2. Don't come up with a new layout on each run: when the agent
+   chooses the design, the docs come out looking different every time, and a page laid out on
+   the spot is the version that clips, overlaps and loses its bindings. The documentation pages
+   are what the customer sees first, so they get the same care as the modules.
 
    - **Cover.** The first thing anyone opening the file sees, and it answers "what is this and
      what width is it" without anyone having to ask. Required: the customer's brand name set
-     large; "Email Love Design System" beneath it; and a single metadata line carrying three
-     facts, the design system's own version (`v1.0` on a first build, never this skill's version
-     number), the email width the system is built at, and the month and year
+     large; "Email Design System" beneath it, under the Email Love mark; and a single metadata
+     line carrying three facts, the design system's own version (`v1.0` on a first build, never
+     this skill's version number), the email width the system is built at, and the month and year
      (for example `v1.0 · 600px · July 2026`). **The width is required because it is the single
      most useful fact about an email design system:** it decides whether a module dropped in from
-     anywhere else fits. Put the content on a full-bleed frame whose fill is bound to
-     `color/bg/brand`, so the cover is on brand color and moves when the brand color moves. No
+     anywhere else fits. Put the content on a 1280 x 720 frame whose fill is bound to
+     `color/bg/brand`, so the cover is on brand color and moves when the brand color moves.
+     `buildCover` builds it, and after batch 1 it renders the Campaigns root on the right. No
      module lives on this page.
    - **Getting Started.** How to use the library, in prose a designer or marketer new to the file
      can follow.
@@ -887,7 +901,7 @@ Pages, in canonical order:
       inventory's order, with none added, none missing, and none renamed, except Buttons, which
       has its page in the Foundations group instead.
 - [ ] The three divider pages are empty.
-- [ ] **Cover:** brand name set large, "Email Love Design System" beneath it, and one metadata
+- [ ] **Cover:** brand name set large, "Email Design System" beneath it, and one metadata
       line stating version, email width, and month and year. The width printed there matches the
       width the root frame was actually built at. Its frame fill is bound to `color/bg/brand`.
 - [ ] **Getting Started:** the frame is vertical HUG with clipsContent OFF and no fixed height
@@ -921,6 +935,11 @@ Pages, in canonical order:
 - [ ] **Buttons:** one component per audit button style, each labeled, each a styled frame with a
       single text node, the label's TEXT property on the component itself, no loose instances left
       on the page.
+- [ ] **Documentation design:** Getting Started, Foundations, Type and Buttons were built with
+      `doc-kit.js` from the section lists in documentation.md section 2, and every page passes
+      documentation.md section 5. That means a full-height screenshot of each page was looked at,
+      nothing is clipped or overlapping, and `missingTokens` came back empty, which includes a
+      hairline token (`color/border/hairline`) created if the palette lacked one.
 - [ ] **Campaigns:** exactly one root frame, `nodeType = 'mainFrame'`, at the target email width,
       with all eight theme keys set (the nine of step 7 less the `nodeType` marker itself) and not
       one of them empty.
@@ -1894,6 +1913,17 @@ instead of re-verifying or, worse, re-trusting.
 
 ### 7. Batch report and gate
 
+**Document the batch before you report it.** Rebuild every category page this batch touched with
+`buildModulePage` from `references/doc-kit.js`. Do the whole page in one call, with every module
+on the page and not only the new ones, so the page stays in inventory order. Write each spec card
+from what you just built and verified: its purpose, where to use it, the properties it actually
+has, the specs you read back, and the source node. Set each card's badge from the acceptance
+matrix below, never from memory (documentation.md section 2 lists the three badge values). A
+Buttons-category module goes on the Buttons page under the styles instead. Then update the
+Cover's module stat and the Campaigns guide, and run documentation.md section 5 on every page
+you touched. A module that is built but not documented isn't finished: the next person can't
+tell what it's for or how to use it without opening its layers.
+
 One report per batch: per module, keyed by its Module inventory row name, what was rebuilt, the
 design you converted it from, verdict honored or changed (with reason), any concession and
 whether it was accepted and by whom (and for a bleed concession, the two column widths you landed
@@ -1992,6 +2022,14 @@ key, add the alt text, rewrite the footer, rename the root) or record it as a de
 "this campaign is a QA scratch, will not send" decision and rename the root accordingly.
 Do not open the hand-off conversation with the customer until this pass is clean.
 
+### Documentation pass on the whole file
+
+Before the hand-off conversation, take a full-height screenshot of every page in canonical order,
+look at each one, and run documentation.md section 5 across all of them. Check that the Cover's
+module stat matches the inventory, that every module has a spec card with an accurate badge, and
+that the Campaigns guide names every root on the page. This is the file the customer opens first,
+so it has to look finished.
+
 ### Hand-off itself
 
 The design system is on the canvas but not yet in the plugin. Walk the user through the
@@ -2007,7 +2045,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.48.0 of this skill. If you have web access, check once per conversation
+This is version 1.49.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
