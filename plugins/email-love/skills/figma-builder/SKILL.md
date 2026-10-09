@@ -492,9 +492,12 @@ say so in one line and use the direct worker route below.
 
 **Direct worker route (fallback).** POST to `https://convert.emaillove.com`:
 
-- **Headers:** `Content-Type: application/json`, `Authorization: Bearer` with an **empty** token,
-  and `X-Auth-Provider: gumroad`. That combination is an anonymous Free user, which is allowed;
-  no license key is needed.
+- **Headers:** `Content-Type: application/json` and
+  `User-Agent: emaillove-skills/1.9.0 (+https://github.com/email-love/claude-skills)`. Send no
+  `Authorization` header and no credentials: the worker serves anonymous requests on the Free
+  tier, so no license key or token is needed or used. If a request comes back `403` with the body
+  `error code: 1010`, the HTTP client's default User-Agent is on Cloudflare's block list (Python's
+  urllib is); set the User-Agent above and retry.
 - **Body:** `{ "screenshot": "<raw base64, no data: prefix>", "screenshotMime": "image/png" }`.
   **Set the mime correctly.** It defaults to PNG and is passed straight through, so a JPEG
   declared as PNG is a silent quality loss.
@@ -936,7 +939,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.13.0 of this skill. If you have web access, check once per conversation
+This is version 2.13.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

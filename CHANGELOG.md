@@ -6,6 +6,12 @@ independent per skill. Every release attaches all five `.skill` bundles.
 ## Repo: Email Love plugin 1.9.0 (2026-10-07)
 
 - plugin.json gains `termsOfServiceUrl` and `keywords` for the directory listing (PR #3).
+- eds-converter 1.49.1 and figma-builder 2.13.1: the direct route to the conversion worker
+  (`convert.emaillove.com`) no longer sends `Authorization` or `X-Auth-Provider` headers. The
+  worker serves anonymous requests on the Free tier, so the skills now send no credentials at
+  all. They identify themselves with an `emaillove-skills/1.9.0` User-Agent, which also clears
+  the Cloudflare `error code: 1010` that some clients' default User-Agent triggers (Python's
+  urllib does), replacing the old advice to retry with a browser User-Agent.
 - eds-converter 1.49.0: the documentation pages now have a fixed design instead of one invented
   on each run. New `references/documentation.md` is the visual spec (canvas, type scale, color
   roles, building blocks, a section list for every page, writing rules, build gotchas and an
