@@ -1356,7 +1356,12 @@ This mapping covers almost everything you will meet:
   a module the audit priced as mechanical into a flattened picture. Verdict B regions: place the
   design content as a frame with NO recognized tag name inside a column; the exporter flattens it
   to a hosted image at export while it stays editable. Verdict C modules: live-text structure for
-  the copy, one editable-image frame for the rich region. **Verdict D: do not build it.** D means
+  the copy, one editable-image frame for the rich region. **Picture layers the source already
+  has stay pictures, whatever the verdict on the rest of the module:** in a source built with the
+  Email Love plugin, an `mj-image`, the contents of an `mj-image-Frame`, a row or hero set to
+  Render as image, and any layer with no MJML type name inside a column all export as one image,
+  so carry each across as that image and never retype its words as live text.
+  **Verdict D: do not build it.** D means
   the pattern has no email equivalent, so it needs the product decision the audit asked for
   (what replaces it) before anything is worth building; drop it from the batch, say so in the
   batch report, and raise the replacement question at the design review. A D that arrives inside
@@ -2007,7 +2012,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.48.0 of this skill. If you have web access, check once per conversation
+This is version 1.49.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
