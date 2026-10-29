@@ -3,6 +3,23 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.9.0 (2026-10-29)
+
+Picture layers in an Email Love plugin source stay pictures. A sale hero's "UP TO 30% OFF"
+lockup, which the plugin exports as one image, came back from a design-system rebuild as live
+text and looked nothing like the design.
+
+- migration-audit 1.26.0: Step 5 now states that where the source was built with the Email
+  Love plugin, its picture layers (an `mj-image`, the contents of an `mj-image-Frame`, a row
+  or hero set to Render as image, and any layer with no MJML type name inside a wrapper,
+  section, or column) are the export. They are images in the Module inventory (I, not T),
+  their words are never live copy, a concession, or a build constraint, and they are never
+  reported as fused artwork. A module made only of them is a B, unless its columns give each
+  picture its own link, which keeps it an A.
+- eds-converter 1.49.0: when building a module, picture layers the source already has are
+  carried across as the same picture whatever the module's verdict, and their words are never
+  retyped as live text.
+
 ## Repo: marketplace entries (2026-10-05)
 
 - Adding this repository as a marketplace in the Claude apps (**Customize > Plugins > Add

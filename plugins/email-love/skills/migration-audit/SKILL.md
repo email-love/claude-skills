@@ -530,6 +530,19 @@ Three passes:
    **narrower than its wrapper's content box**. A section always spans its wrapper on export,
    so a narrow "section" ships as a full-width band. Where you find one, the row's build
    constraints read `inset belongs on the wrapper padding, not the section`.
+   **Email Love picture layers are the export, so they stay pictures.** Where the source was
+   built with the Email Love plugin, some layers already export as one hosted image, words and
+   all: an `mj-image`, whatever sits inside an `mj-image-Frame`, a row or hero set to Render as
+   image, and any layer with no MJML type name inside a wrapper, section, or column (the
+   mechanism verdict B describes below). Check the structure around them as above, but do not
+   reclassify the pictures themselves. Each one is an image in the Module inventory, counted as
+   I and not T in the census even when its words are TEXT nodes in Figma. Never list its words
+   as live copy, never write a concession or build constraint that makes them live, and never
+   report it as fused artwork to rebuild: the designer already decided it ships as an image. A
+   module made only of such pictures is a B, built as that one image, unless its columns give
+   each picture its own link; then it is an A, so every link survives. This is an observed
+   failure: a sale hero's `UP TO 30% OFF` lockup, exported by the plugin as an image, came back
+   from conversion as live text and looked nothing like the design.
    **Then write the boundary down on the row.** Whoever converts the module has to
    screenshot exactly the region you cut, and a boundary you found but did not record is a
    boundary they have to infer again, differently. So record a source ref per module: the design
@@ -1934,7 +1947,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.25.1 of this skill. If you have web access, check once per conversation
+This is version 1.26.0 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
