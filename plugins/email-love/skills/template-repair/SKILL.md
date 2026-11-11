@@ -62,17 +62,15 @@ Before promising a repair, confirm the Figma tool catalog includes `use_figma`, 
 `get_screenshot`. If `use_figma` is absent, perform read-only diagnosis and give the user an exact
 handoff; do not promise a canvas fix.
 
-Probe for `emaillove_export_figma` and `emaillove_preview_email` before deferring export checks. The
-Email Love MCP is a separate connection from this skill. When those tools are absent, give the
-one-time connection step:
-
-```bash
-claude mcp add --transport http emaillove https://mcp.emaillove.com/mcp
-```
-
-On claude.ai, add `https://mcp.emaillove.com/mcp` under Settings, Connectors. The sign-in is Email
-Love's normal account flow, shared with the Figma plugin. Start a fresh session after connecting.
-An unavailable exporter makes the exporter state `deferred`, not `pass`.
+Probe for `emaillove_export_figma` and `emaillove_preview_email` before deferring export checks.
+Use them when they are already connected. When they are absent, do not ask the user to connect
+anything: the export check runs in the Email Love plugin instead. Ask the user to select the
+email frame in Figma, open the Email Love plugin, and click Preview or Export, then share what
+they see. Do the same when `emaillove_export_figma` is connected but cannot read the file (a
+Figma API 403 or 404, "Token expired", or "File not accessible"): that tool reads Figma with
+Email Love's own access, not the user's, so it cannot open most customer files. Do not
+troubleshoot that error with the user or ask them to reconnect. An unavailable exporter makes
+the exporter state `deferred`, not `pass`.
 
 ## Load the repair references
 
@@ -210,7 +208,7 @@ states, any private-data or inbox-test handoff, and whether the original remaine
 
 ## Staying current
 
-This is version 1.3.0 of this skill. If you have web access, check once per conversation quietly
+This is version 1.3.1 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-template-repair`. If a newer version

@@ -493,7 +493,7 @@ say so in one line and use the direct worker route below.
 **Direct worker route (fallback).** POST to `https://convert.emaillove.com`:
 
 - **Headers:** `Content-Type: application/json` and
-  `User-Agent: emaillove-skills/1.9.0 (+https://github.com/email-love/claude-skills)`. Send no
+  `User-Agent: emaillove-skills/1.9.1 (+https://github.com/email-love/claude-skills)`. Send no
   `Authorization` header and no credentials: the worker serves anonymous requests on the Free
   tier, so no license key or token is needed or used. If a request comes back `403` with the body
   `error code: 1010`, the HTTP client's default User-Agent is on Cloudflare's block list (Python's
@@ -874,12 +874,20 @@ Fix what fails before presenting.
 Probe for `emaillove_export_figma` before delegating verification to the user: when it is
 connected, run it on the root with operationType `preview` (desktop), run
 `emaillove_preview_email` for the mobile render, fix anything either one disproves, and include
-the preview link in your report. End every build with exactly one completion state:
+the preview link in your report. When the tools are absent, do not ask the user to connect
+anything: the hand-off is the user selecting the email frame in Figma and clicking Preview or
+Export in the Email Love plugin. Do the same when `emaillove_export_figma` is connected but
+cannot read the file (a Figma API 403 or 404, "Token expired", or "File not accessible"): that
+tool reads Figma with Email Love's own access, not the user's, so it cannot open most customer
+files. Do not troubleshoot that error or ask the user to reconnect; report `built in Figma,
+export verification pending` and give the plugin steps. End every build with exactly one
+completion state:
 
 - `desktop and mobile export verified` - only when both production renders exist and pass;
   desktop success never substitutes for untested mobile output.
 - `built in Figma, export verification pending` - the canvas and structure checks passed but no
-  production render has been seen (no exporter tools, or the user will export in the plugin).
+  production render has been seen (no exporter tools, the exporter could not read the file, or
+  the user will export in the plugin).
 - `blocked` - plus the exact action needed to continue.
 
 Reserve "export-ready", "fixed", and "verified" for the evidence those words imply; a
@@ -939,7 +947,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.13.1 of this skill. If you have web access, check once per conversation
+This is version 2.13.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

@@ -7,7 +7,7 @@ Official [Claude](https://claude.com) skills for [Email Love](https://emaillove.
 Two things are separate, and you may need both:
 
 1. **The skills** (this repo) teach Claude the Email Love workflows.
-2. **The connections** give Claude tools: the [official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559) to read and write your Figma file (required for canvas work), and optionally the Email Love MCP (`https://mcp.emaillove.com/mcp`) for AI Import conversion, headless export verification, and campaign research. Installing a skill does not create a connection, and connecting a tool does not install a skill.
+2. **The connections** give Claude tools: the [official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559) to read and write your Figma file (required for canvas work), and optionally the Email Love MCP (`https://chat.emaillove.com/mcp`) for campaign research. Export runs in the Email Love Figma plugin. Installing a skill does not create a connection, and connecting a tool does not install a skill.
 
 **Claude Code** (recommended, one-time, from any terminal):
 

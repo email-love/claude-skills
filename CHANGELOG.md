@@ -3,6 +3,17 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.9.1 (2026-11-11)
+
+- eds-converter 1.49.2, figma-builder 2.13.2 and template-repair 1.3.1: the skills no longer ask
+  you to connect `mcp.emaillove.com`. Its Figma export reads files with Email Love's own Figma
+  access, not yours, so it cannot open most customer files and failed with errors such as "Token
+  expired". The export check now runs in the Email Love Figma plugin: select the email frame and
+  click Preview or Export. The skills still use the export tools when they are already
+  connected, and fall back to the plugin, without troubleshooting, when the tool is absent or
+  cannot read the file.
+- READMEs: the optional Email Love MCP is `https://chat.emaillove.com/mcp`, for campaign research.
+
 ## Repo: Email Love plugin 1.9.0 (2026-10-07)
 
 - plugin.json gains `termsOfServiceUrl` and `keywords` for the directory listing (PR #3).
