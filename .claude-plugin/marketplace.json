@@ -142,7 +142,7 @@
         "./"
       ],
       "description": "Independent acceptance audit for Email Love design-system migration batches and reusable modules: proof-batch gate, machine-readable audit snapshot, mobile inner-box geometry validator, and icon alpha-perimeter checks. Bundled in the 'email-love' plugin; this entry allows a standalone install.",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "author": {
         "name": "Email Love"
       }

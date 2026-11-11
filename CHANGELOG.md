@@ -13,6 +13,16 @@ independent per skill. Every release attaches all five `.skill` bundles.
   connected, and fall back to the plugin, without troubleshooting, when the tool is absent or
   cannot read the file.
 - READMEs: the optional Email Love MCP is `https://chat.emaillove.com/mcp`, for campaign research.
+- The plugin no longer ships script files, which the Claude directory refuses from organizations
+  that are not Verified.
+  - figma-quality-gates 1.2.0: the two Python validators are gone from the skill. Their rules are
+    now written out in `references/snapshot-rules.md` and Claude applies them by hand, including
+    the mobile width calculation. The icon perimeter check is now a visual check on a screenshot
+    of each icon, so it is less exact than the old pixel measurement.
+  - eds-converter: the documentation builder moved from `references/doc-kit.js` to
+    `references/doc-kit.md`, with the same code in a fenced block to paste into `use_figma`.
+  - The Python validators still live in `tests/quality-gates/` for this repository's CI. The repo
+    validator now fails if a script file or a shebang appears under `plugins/`.
 
 ## Repo: Email Love plugin 1.9.0 (2026-10-07)
 

@@ -545,8 +545,9 @@ def self_test() -> int:
 
     # The documented example must validate exactly as written, so the schema
     # reference cannot drift from the validator (2026-08-30 review, F2).
-    schema_doc = Path(__file__).resolve().parent.parent / "references" / "snapshot-schema.md"
-    expect("snapshot-schema.md is packaged beside the scripts", schema_doc.is_file())
+    schema_doc = (Path(__file__).resolve().parents[2] / "plugins" / "email-love" / "skills"
+                  / "figma-quality-gates" / "references" / "snapshot-schema.md")
+    expect("snapshot-schema.md exists in the figma-quality-gates skill", schema_doc.is_file())
     if schema_doc.is_file():
         text = schema_doc.read_text()
         try:

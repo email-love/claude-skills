@@ -4,7 +4,7 @@ SKILL.md says what each scaffolding page has to contain. This file says what eve
 like, so two customers' libraries look like the same product. Read it before building
 foundations, and again before documenting a batch.
 
-**Don't design these pages from scratch on each run.** Build them with `references/doc-kit.js`,
+**Don't design these pages from scratch on each run.** Build them with `references/doc-kit.md`,
 which already implements every measurement below. Paste the kit into a `use_figma` call and end
 the call with exactly one builder:
 
@@ -104,7 +104,7 @@ Three things on the doc pages carry fixed colors on purpose, and only these thre
 
 ### Blocks
 
-These are the only building blocks. Each one is a `KIT` function in `doc-kit.js`.
+These are the only building blocks. Each one is a `KIT` function in `doc-kit.md`.
 
 | Block | Looks like | Use for |
 | --- | --- | --- |
