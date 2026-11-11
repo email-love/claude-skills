@@ -3,6 +3,26 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.9.1 (2026-11-11)
+
+The plugin now contains only Markdown, JSON and its icon. The Anthropic plugin directory
+refuses script and program files from organizations it has not marked Verified, and refused
+1.9.0 for three of them.
+
+- eds-converter 1.49.2: `references/doc-kit.js` is now `references/doc-kit.md`, the same code
+  in a fenced block. Paste the block into `use_figma` exactly as before; the builders are
+  unchanged.
+- figma-quality-gates 1.2.0: the two Python validators are no longer part of the skill. The
+  skill applies the same rules itself from the new `references/snapshot-validation.md`, which
+  lists every rule and error code, the mobile inner-box arithmetic with a worked example, and
+  the icon perimeter procedure. The scripts remain in the repository under
+  `tests/quality-gates/scripts/` for maintainers and CI. The standalone
+  `emaillove-figma-quality-gates.skill` bundle no longer contains a `scripts/` folder.
+- eds-converter 1.49.2 and figma-builder 2.13.2: the direct conversion route is described as
+  "send these two headers and nothing else". No behavior change.
+- `scripts/validate_repo.py` now fails if any file under `plugins/email-love` is a type the
+  directory refuses or starts with `#!`.
+
 ## Repo: Email Love plugin 1.9.0 (2026-10-07)
 
 - plugin.json gains `termsOfServiceUrl` and `keywords` for the directory listing (PR #3).

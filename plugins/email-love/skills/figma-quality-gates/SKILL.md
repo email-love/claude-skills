@@ -31,8 +31,10 @@ turn into a library migration.
 ## Load only the relevant references
 
 - Read [quality-gates.md](references/quality-gates.md) for every audit.
-- Read [snapshot-schema.md](references/snapshot-schema.md) when producing or validating the
+- Read [snapshot-schema.md](references/snapshot-schema.md) when producing the
   machine-readable audit snapshot.
+- Read [snapshot-validation.md](references/snapshot-validation.md) when validating the snapshot
+  and when inspecting icon and social assets.
 - Read [run-learnings.md](references/run-learnings.md) when explaining why these gates exist
   or reviewing a similar failure pattern.
 
@@ -63,28 +65,25 @@ Create one JSON snapshot using [snapshot-schema.md](references/snapshot-schema.m
 the actual nodes and component-property bindings; do not copy claims from a report. Include
 the selected mobile viewports and separate desktop and mobile exporter status.
 
-### 4. Run the structural and geometry validator
+### 4. Validate the snapshot's structure and geometry
 
-```bash
-python3 scripts/validate_batch_snapshot.py path/to/audit-snapshot.json
-```
+Apply every rule in [snapshot-validation.md](references/snapshot-validation.md) to the
+snapshot, in order, and list each failure by its code and location. Do the arithmetic for
+every group, column, and viewport and show it; do not estimate.
 
-Treat every reported error as a failed gate. Warnings need a written disposition. The
-validator fails closed: missing inventories, an empty module list, a census mismatch, or a
-measurement that is not a finite number are all errors, never silent defaults. It is
-deliberately conservative about grouped icons: it subtracts both section and column padding
-before comparing the resolved mobile box to the asset's natural width. Documented
-render-contract exceptions (top-aligned multi-column axes, bordered-group headroom) are
-declared in the snapshot, not waived by the checker. A passing snapshot is snapshot
-validation only, never production acceptance.
+Treat every error as a failed gate. Warnings need a written disposition. The rules fail
+closed: missing inventories, an empty module list, a census mismatch, or a measurement that
+is not a finite number are all errors, never silent defaults. They are deliberately
+conservative about grouped icons: both section and column padding are subtracted before the
+resolved mobile box is compared to the asset's natural width. Documented render-contract
+exceptions (top-aligned multi-column axes, bordered-group headroom) are declared in the
+snapshot, not waived during validation. A passing snapshot is snapshot validation only,
+never production acceptance.
 
 ### 5. Inspect icon and social assets
 
-Export each icon node at 2x as a PNG, then run:
-
-```bash
-python3 scripts/check_icon_perimeter.py path/to/icon.png path/to/social-icon.png
-```
+Export each icon node at 2x as a PNG and inspect its transparent perimeter using the
+procedure in [snapshot-validation.md](references/snapshot-validation.md).
 
 The check is a heuristic with four outcomes: `pass`, `needs-review` (alpha touches an edge
 or the inset is thin: compare the source crop and production render before approving),
@@ -116,17 +115,14 @@ Never shorten a deferred state to `complete`, `fixed`, or `verified`.
 
 ## Maintain the package
 
-Run both script self-tests after editing this skill, then the repository's own validator
-from the repository root:
-
-```bash
-python3 scripts/validate_batch_snapshot.py --self-test
-python3 scripts/check_icon_perimeter.py --self-test
-```
+The rules in snapshot-validation.md mirror two maintainer scripts kept in the GitHub
+repository under `tests/quality-gates/scripts/`. They are not part of this skill and the
+skill never runs them. When a rule changes, change the script and the reference together,
+then run the repository's own validator.
 
 ## Staying current
 
-This is version 1.1.1 of this skill. If you have web access, check once per conversation quietly
+This is version 1.2.0 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-figma-quality-gates`. If a newer

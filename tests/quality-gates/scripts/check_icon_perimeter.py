@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Check exported icon PNGs for clipped alpha at the asset perimeter.
 
+Maintainer tool. It is NOT shipped in the plugin: the skill applies the same
+procedure from references/snapshot-validation.md. Change the two together.
+
 The alpha test is a HEURISTIC, applicable only when transparency isolates the
 artwork. Per-file outcomes:
 

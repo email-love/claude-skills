@@ -1,5 +1,16 @@
+# Documentation kit
+
+The builder for the documentation pages specified in [documentation.md](documentation.md). It is
+JavaScript for the Figma Plugin API and runs only inside a `use_figma` call, in the Figma file.
+Nothing here runs on the user's computer.
+
+To use it, paste the whole code block below into one `use_figma` call and append exactly one
+builder call at the bottom, as the comment at the top of the block describes. Paste it unchanged:
+the layout, type scale and components are fixed by documentation.md.
+
+```js
 // Email Love documentation kit, for use_figma.
-// Paste this whole file into a use_figma call, then append ONE call at the bottom:
+// Paste this whole code block into a use_figma call, then append ONE call at the bottom:
 //   return await buildCover({...})          for the Cover
 //   return await buildScaffoldPage({...})   for Getting Started, Foundations, Type, Buttons
 //   return await buildModulePage({...})     for each component category page
@@ -452,3 +463,4 @@ async function buildCampaignsPage(cfg) {
   const ours = new Set([board.id, ...cfg.roots.map(r => r.id)]);
   return { board: board.id, size: [board.width, board.height], placed, strays: strays(page, ours), missingTokens: [...MISSING] };
 }
+```

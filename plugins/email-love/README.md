@@ -14,7 +14,7 @@ Five skills, namespaced `email-love:` in Claude Code:
 | `eds-converter` | Converts an audited library into a working Email Love design system, in batches with design review |
 | `figma-quality-gates` | Independent acceptance audit of migration batches and reusable modules before approval |
 
-Each skill is a single Markdown file you can read before you install anything. The converter and the quality gates also ship reference documents and two small Python scripts that run locally on JSON you give them.
+Each skill is a single Markdown file you can read before you install anything. The converter and the quality gates also ship Markdown reference documents. The plugin contains no scripts or programs: the one piece of code it carries, the documentation page builder, is a code block in a reference document that runs inside Figma.
 
 ## What you need
 

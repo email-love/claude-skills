@@ -267,7 +267,7 @@ five rounds of design review to work around; a one-line check catches it before 
 module.
 
 Confirm the two documentation files as well: `references/documentation.md`, which is the visual
-spec for every doc page, and `references/doc-kit.js`, which is the builder that implements it.
+spec for every doc page, and `references/doc-kit.md`, which is the builder that implements it.
 If either one is missing, tell the user that the pages will meet the content contracts below
 but won't match the standard Email Love layout, then carry on.
 
@@ -548,7 +548,7 @@ Build the scaffold every later batch depends on:
    the contract. The layout, type scale, colors and building blocks are fixed by
    `references/documentation.md`. Two runs of this skill on two customers must produce the same
    page doing the same job **and looking the same**. Build every scaffolding page with the
-   builders in `references/doc-kit.js` (`buildCover`, `buildScaffoldPage` for Getting Started,
+   builders in `references/doc-kit.md` (`buildCover`, `buildScaffoldPage` for Getting Started,
    Foundations, Type and Buttons, and `buildCampaignsPage`), using the section list for that page
    in documentation.md section 2. Don't come up with a new layout on each run: when the agent
    chooses the design, the docs come out looking different every time, and a page laid out on
@@ -936,7 +936,7 @@ Pages, in canonical order:
       single text node, the label's TEXT property on the component itself, no loose instances left
       on the page.
 - [ ] **Documentation design:** Getting Started, Foundations, Type and Buttons were built with
-      `doc-kit.js` from the section lists in documentation.md section 2, and every page passes
+      `doc-kit.md` from the section lists in documentation.md section 2, and every page passes
       documentation.md section 5. That means a full-height screenshot of each page was looked at,
       nothing is clipped or overlapping, and `missingTokens` came back empty, which includes a
       hairline token (`color/border/hairline`) created if the palette lacked one.
@@ -1178,8 +1178,8 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
 2. **POST to the worker** at `https://convert.emaillove.com`:
    - Headers: `Content-Type: application/json` and
      `User-Agent: emaillove-skills/1.9.0 (+https://github.com/email-love/claude-skills)`.
-     Send no `Authorization` header and no credentials: the worker serves anonymous
-     requests on the Free tier, so no license key or token is needed or used on this path.
+     Send those two headers and nothing else. The worker serves anonymous requests on
+     the Free tier.
    - Body: `{ "screenshot": "<raw base64 PNG, no data: prefix>", "screenshotMime":
      "image/png" }`. `layerTree` and `promptInputs` are optional plugin-sandbox extras;
      screenshot alone works and is the normal agent path.
@@ -1196,8 +1196,8 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    - **If the worker returns `403` with body `error code: 1010`, that is a Cloudflare
      check on the client's default User-Agent, not an auth failure.** Some HTTP clients'
      defaults are on Cloudflare's block list (Python's urllib is). Set the
-     `emaillove-skills` User-Agent above and retry. A `403` with a JSON error such as
-     `Invalid license key` means an `Authorization` header was sent: remove it.
+     `emaillove-skills` User-Agent above and retry. A `403` with a JSON error body means
+     the request carried a header other than the two above: remove it and retry.
 3. **Save the MJML JSON to disk per module** so the transcription and later re-verification
    work from a stable input.
 
@@ -1912,7 +1912,7 @@ instead of re-verifying or, worse, re-trusting.
 ### 7. Batch report and gate
 
 **Document the batch before you report it.** Rebuild every category page this batch touched with
-`buildModulePage` from `references/doc-kit.js`. Do the whole page in one call, with every module
+`buildModulePage` from `references/doc-kit.md`. Do the whole page in one call, with every module
 on the page and not only the new ones, so the page stays in inventory order. Write each spec card
 from what you just built and verified: its purpose, where to use it, the properties it actually
 has, the specs you read back, and the source node. Set each card's badge from the acceptance
@@ -2043,7 +2043,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.49.1 of this skill. If you have web access, check once per conversation
+This is version 1.49.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

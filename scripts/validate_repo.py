@@ -196,6 +196,38 @@ def check_skill(shim_name, shim_version):
             if not (d / "references" / ref).exists():
                 fail(f"{dirname}: SKILL.md references references/{ref} which does not exist")
 
+# The Anthropic plugin directory accepts only these file types from organizations that are
+# not Verified, and refuses any file that starts with "#!". One stray script blocks a release.
+PLUGIN_ROOT = ROOT / "plugins" / "email-love"
+ALLOWED_SUFFIXES = {".md", ".txt", ".json", ".yaml", ".yml",
+                    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico"}
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico"}
+ALLOWED_BARE_NAMES = {"LICENSE", "README", ".gitignore"}
+
+def check_plugin_file_types():
+    for f in sorted(PLUGIN_ROOT.rglob("*")):
+        if f.is_dir():
+            continue
+        rel = f.relative_to(ROOT)
+        if f.is_symlink():
+            fail(f"{rel}: symlink inside the plugin"); continue
+        suffix = f.suffix.lower()
+        if suffix not in ALLOWED_SUFFIXES and f.name not in ALLOWED_BARE_NAMES:
+            fail(f"{rel}: file type the plugin directory refuses (allowed: markdown, text, "
+                 f"JSON, YAML, PNG/JPEG/GIF/WebP/ICO images)")
+            continue
+        data = f.read_bytes()
+        if data.startswith(b"#!"):
+            fail(f"{rel}: starts with '#!', which the plugin directory refuses")
+        if suffix in IMAGE_SUFFIXES:
+            continue
+        if b"\x00" in data:
+            fail(f"{rel}: contains a NUL byte")
+        try:
+            data.decode("utf-8")
+        except UnicodeDecodeError:
+            fail(f"{rel}: is not UTF-8 text")
+
 def check_shipped_text():
     for f in SHIPPED_TEXT:
         if not f.exists(): continue
@@ -285,6 +317,7 @@ def main():
     for shim in SHIM_TO_DIR:
         if shim in shim_versions:
             check_skill(shim, shim_versions[shim])
+    check_plugin_file_types()
     check_shipped_text()
     check_readme_codex()
     check_build_completeness()
