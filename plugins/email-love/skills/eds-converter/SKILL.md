@@ -1176,9 +1176,10 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    disagrees is the payload at another scale and every number in it in need of dividing. The
    factor's real job in this phase is reading the SOURCE and sizing images taken out of it.
 2. **POST to the worker** at `https://convert.emaillove.com`:
-   - Headers: `Content-Type: application/json`, `Authorization: Bearer` with an EMPTY
-     token, and `X-Auth-Provider: gumroad`. The worker treats empty Bearer + gumroad as
-     an anonymous Free user, which is allowed; no license key is needed for this path.
+   - Headers: `Content-Type: application/json` and
+     `User-Agent: emaillove-skills/1.9.0 (+https://github.com/email-love/claude-skills)`.
+     Send no `Authorization` header and no credentials: the worker serves anonymous
+     requests on the Free tier, so no license key or token is needed or used on this path.
    - Body: `{ "screenshot": "<raw base64 PNG, no data: prefix>", "screenshotMime":
      "image/png" }`. `layerTree` and `promptInputs` are optional plugin-sandbox extras;
      screenshot alone works and is the normal agent path.
@@ -1193,13 +1194,10 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
      `X-Trivial-Response: true` means the result degenerated to a single image and you
      should re-run with `recache=1` (and usually `decomposeRasterized=1`).
    - **If the worker returns `403` with body `error code: 1010`, that is a Cloudflare
-     browser check, not an auth failure.** The edge is fingerprinting the User-Agent and
-     rejecting non-browser clients. The Bearer and provider headers above are correct as
-     documented; auth is not the problem. Retry with a normal browser `User-Agent` header
-     (any recent Chrome or Firefox UA string works) and the request goes through. This is
-     an infrastructure quirk the worker edge may lift later, so the first line of the
-     error body is the diagnostic to check; a 403 without `error code: 1010` is still an
-     auth problem and the Bearer/provider check applies.
+     check on the client's default User-Agent, not an auth failure.** Some HTTP clients'
+     defaults are on Cloudflare's block list (Python's urllib is). Set the
+     `emaillove-skills` User-Agent above and retry. A `403` with a JSON error such as
+     `Invalid license key` means an `Authorization` header was sent: remove it.
 3. **Save the MJML JSON to disk per module** so the transcription and later re-verification
    work from a stable input.
 
@@ -2045,7 +2043,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.49.0 of this skill. If you have web access, check once per conversation
+This is version 1.49.1 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
