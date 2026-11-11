@@ -267,7 +267,7 @@ five rounds of design review to work around; a one-line check catches it before 
 module.
 
 Confirm the two documentation files as well: `references/documentation.md`, which is the visual
-spec for every doc page, and `references/doc-kit.js`, which is the builder that implements it.
+spec for every doc page, and `references/doc-kit.md`, which is the builder that implements it.
 If either one is missing, tell the user that the pages will meet the content contracts below
 but won't match the standard Email Love layout, then carry on.
 
@@ -548,7 +548,7 @@ Build the scaffold every later batch depends on:
    the contract. The layout, type scale, colors and building blocks are fixed by
    `references/documentation.md`. Two runs of this skill on two customers must produce the same
    page doing the same job **and looking the same**. Build every scaffolding page with the
-   builders in `references/doc-kit.js` (`buildCover`, `buildScaffoldPage` for Getting Started,
+   builders in `references/doc-kit.md` (`buildCover`, `buildScaffoldPage` for Getting Started,
    Foundations, Type and Buttons, and `buildCampaignsPage`), using the section list for that page
    in documentation.md section 2. Don't come up with a new layout on each run: when the agent
    chooses the design, the docs come out looking different every time, and a page laid out on
@@ -936,7 +936,7 @@ Pages, in canonical order:
       single text node, the label's TEXT property on the component itself, no loose instances left
       on the page.
 - [ ] **Documentation design:** Getting Started, Foundations, Type and Buttons were built with
-      `doc-kit.js` from the section lists in documentation.md section 2, and every page passes
+      `doc-kit.md` from the section lists in documentation.md section 2, and every page passes
       documentation.md section 5. That means a full-height screenshot of each page was looked at,
       nothing is clipped or overlapping, and `missingTokens` came back empty, which includes a
       hairline token (`color/border/hairline`) created if the palette lacked one.
@@ -988,21 +988,18 @@ the next two you run:**
 MCP (mcp.emaillove.com) for `emaillove_export_figma`: when it is present, step 6's export
 sniff is fully agent-run with `operationType: "preview"` (no plugin click, no export quota),
 and the mobile render already runs through `emaillove_preview_email`, so the whole batch
-check loop needs zero human sessions. **The Email Love MCP is a SEPARATE connection from
-this skill's install; installing the plugin does not connect it.** When the tools are
-absent, do not conclude they do not exist and do not silently fall back: give the user the
-one-time connect step (`claude mcp add --transport http emaillove
-https://mcp.emaillove.com/mcp`, or add `https://mcp.emaillove.com/mcp` as a custom connector
-in claude.ai Settings → Connectors; other clients are covered at
-help.emaillove.com/plugin/ai/agents-in-figma), and tell them the sign-in it opens is Email
-Love's normal account flow, the same sign-in the Figma plugin uses, so it is the right
-screen even though it does not mention the exporter. A fresh session after connecting
-exposes the tools. Also do not confuse this server with the Email Inspiration MCP
-(email search and inspiration); the two are not interchangeable. Its v1 coverage is the core tag set (mj-wrapper,
+check loop needs zero human sessions. **Use these tools when they are already connected; do
+not ask the user to connect them.** The exporter reads Figma with Email Love's own access,
+not the user's, so it cannot open most customer files. When the tools are absent, or
+`emaillove_export_figma` cannot read the file (a Figma API 403 or 404, "Token expired", or
+"File not accessible"), do not troubleshoot the connection with the user: the export sniff
+runs through the plugin's Export button instead, as described below. Also do not confuse
+this server with the Email Inspiration MCP (email search and inspiration); the two are not
+interchangeable. Its v1 coverage is the core tag set (mj-wrapper,
 mj-section, mj-group, mj-column, mj-column-inner, mj-text, mj-image, mj-button, mj-divider,
 mj-spacer); it rejects mj-hero, mj-social, mj-navbar, and mj-table with a CoverageError
 naming the node, and only those modules still need the plugin's human-click Export. When the
-tool is NOT on the MCP, the export sniff needs the plugin's Export button, a human click on a
+tool is NOT on the MCP, or cannot read the file, the export sniff needs the plugin's Export button, a human click on a
 paid seat: say so now, in the batch-1 opening message, and say what it means: mobile
 behaviour will be built and computed but never verified against exporter output until a
 human runs it. Do not discover this at step 6 of batch 3. (Measured on a three-batch run:
@@ -1177,7 +1174,7 @@ worker, transcribe the returned MJML JSON into the target file, then verify.
    factor's real job in this phase is reading the SOURCE and sizing images taken out of it.
 2. **POST to the worker** at `https://convert.emaillove.com`:
    - Headers: `Content-Type: application/json` and
-     `User-Agent: emaillove-skills/1.9.0 (+https://github.com/email-love/claude-skills)`.
+     `User-Agent: emaillove-skills/1.9.1 (+https://github.com/email-love/claude-skills)`.
      Send no `Authorization` header and no credentials: the worker serves anonymous
      requests on the Free tier, so no license key or token is needed or used on this path.
    - Body: `{ "screenshot": "<raw base64 PNG, no data: prefix>", "screenshotMime":
@@ -1851,7 +1848,7 @@ matches the step 3 Part A decision.
   the exporter's HTML. It takes a bare mj-wrapper directly (no temporary email frame), and
   returns the HTML plus a token `emaillove_preview_email` accepts for a per-module mobile
   render. On a CoverageError (mj-hero, mj-social, mj-navbar, mj-table), or when the tool is
-  not on the MCP, fall back to the plugin click: drop an instance of the module wrapper into
+  not on the MCP or cannot read the file, fall back to the plugin click: drop an instance of the module wrapper into
   a temporary email frame on Campaigns (foundations built one in Phase 2 step 7), select the
   frame, and click Export in the plugin, asking the user to drive the click if you cannot.
   Save the HTML alongside the batch report either way.
@@ -1912,7 +1909,7 @@ instead of re-verifying or, worse, re-trusting.
 ### 7. Batch report and gate
 
 **Document the batch before you report it.** Rebuild every category page this batch touched with
-`buildModulePage` from `references/doc-kit.js`. Do the whole page in one call, with every module
+`buildModulePage` from `references/doc-kit.md`. Do the whole page in one call, with every module
 on the page and not only the new ones, so the page stays in inventory order. Write each spec card
 from what you just built and verified: its purpose, where to use it, the properties it actually
 has, the specs you read back, and the source node. Set each card's badge from the acceptance
@@ -2043,7 +2040,7 @@ exports count against plan limits.
 
 ## Staying current
 
-This is version 1.49.1 of this skill. If you have web access, check once per conversation
+This is version 1.49.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

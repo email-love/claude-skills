@@ -196,6 +196,22 @@ def check_skill(shim_name, shim_version):
             if not (d / "references" / ref).exists():
                 fail(f"{dirname}: SKILL.md references references/{ref} which does not exist")
 
+def check_plugin_file_types():
+    """The Claude directory refuses script and program files from organizations that are not
+    Verified. Keep every file in the plugin Markdown, text, JSON, YAML, or an image, and never
+    starting with a shebang. The LICENSE is the one extensionless file allowed."""
+    allowed = {".md", ".txt", ".json", ".yaml", ".yml", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico"}
+    plugin_root = ROOT / "plugins" / "email-love"
+    for f in sorted(plugin_root.rglob("*")):
+        if not f.is_file() or f.name == ".DS_Store":
+            continue
+        rel = f.relative_to(ROOT)
+        if f.suffix.lower() not in allowed and f.name != "LICENSE":
+            fail(f"{rel}: file type not accepted by the Claude directory; keep scripts outside plugins/")
+        with open(f, "rb") as handle:
+            if handle.read(2) == b"#!":
+                fail(f"{rel}: starts with a shebang, which the Claude directory refuses")
+
 def check_shipped_text():
     for f in SHIPPED_TEXT:
         if not f.exists(): continue
@@ -286,6 +302,7 @@ def main():
         if shim in shim_versions:
             check_skill(shim, shim_versions[shim])
     check_shipped_text()
+    check_plugin_file_types()
     check_readme_codex()
     check_build_completeness()
 

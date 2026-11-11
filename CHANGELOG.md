@@ -3,6 +3,27 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.9.1 (2026-11-11)
+
+- eds-converter 1.49.2, figma-builder 2.13.2 and template-repair 1.3.1: the skills no longer ask
+  you to connect `mcp.emaillove.com`. Its Figma export reads files with Email Love's own Figma
+  access, not yours, so it cannot open most customer files and failed with errors such as "Token
+  expired". The export check now runs in the Email Love Figma plugin: select the email frame and
+  click Preview or Export. The skills still use the export tools when they are already
+  connected, and fall back to the plugin, without troubleshooting, when the tool is absent or
+  cannot read the file.
+- READMEs: the optional Email Love MCP is `https://chat.emaillove.com/mcp`, for campaign research.
+- The plugin no longer ships script files, which the Claude directory refuses from organizations
+  that are not Verified.
+  - figma-quality-gates 1.2.0: the two Python validators are gone from the skill. Their rules are
+    now written out in `references/snapshot-rules.md` and Claude applies them by hand, including
+    the mobile width calculation. The icon perimeter check is now a visual check on a screenshot
+    of each icon, so it is less exact than the old pixel measurement.
+  - eds-converter: the documentation builder moved from `references/doc-kit.js` to
+    `references/doc-kit.md`, with the same code in a fenced block to paste into `use_figma`.
+  - The Python validators still live in `tests/quality-gates/` for this repository's CI. The repo
+    validator now fails if a script file or a shebang appears under `plugins/`.
+
 ## Repo: Email Love plugin 1.9.0 (2026-10-07)
 
 - plugin.json gains `termsOfServiceUrl` and `keywords` for the directory listing (PR #3).

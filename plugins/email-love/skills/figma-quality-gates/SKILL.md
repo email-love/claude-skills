@@ -63,35 +63,31 @@ Create one JSON snapshot using [snapshot-schema.md](references/snapshot-schema.m
 the actual nodes and component-property bindings; do not copy claims from a report. Include
 the selected mobile viewports and separate desktop and mobile exporter status.
 
-### 4. Run the structural and geometry validator
+### 4. Apply the structural and geometry rules
 
-```bash
-python3 scripts/validate_batch_snapshot.py path/to/audit-snapshot.json
-```
+Check the snapshot against every rule in [snapshot-rules.md](references/snapshot-rules.md),
+module by module, and write out the mobile width calculation for each group at each viewport.
 
-Treat every reported error as a failed gate. Warnings need a written disposition. The
-validator fails closed: missing inventories, an empty module list, a census mismatch, or a
-measurement that is not a finite number are all errors, never silent defaults. It is
-deliberately conservative about grouped icons: it subtracts both section and column padding
-before comparing the resolved mobile box to the asset's natural width. Documented
-render-contract exceptions (top-aligned multi-column axes, bordered-group headroom) are
-declared in the snapshot, not waived by the checker. A passing snapshot is snapshot
-validation only, never production acceptance.
+Treat every reported error as a failed gate. Warnings need a written disposition. The rules
+fail closed: missing inventories, an empty module list, a census mismatch, or a measurement
+that is not a finite number are all errors, never silent defaults. They are deliberately
+conservative about grouped icons: subtract both section and column padding before comparing
+the resolved mobile box to the asset's natural width. Documented render-contract exceptions
+(top-aligned multi-column axes, bordered-group headroom) are declared in the snapshot, not
+waived by the reviewer. A passing snapshot is snapshot validation only, never production
+acceptance.
 
 ### 5. Inspect icon and social assets
 
-Export each icon node at 2x as a PNG, then run:
+Take a screenshot of each icon node on its own and apply the perimeter check in
+[snapshot-rules.md](references/snapshot-rules.md).
 
-```bash
-python3 scripts/check_icon_perimeter.py path/to/icon.png path/to/social-icon.png
-```
-
-The check is a heuristic with four outcomes: `pass`, `needs-review` (alpha touches an edge
-or the inset is thin: compare the source crop and production render before approving),
-`not-applicable` (a fully opaque asset, where alpha proves nothing about the crop and a
-visual source comparison is still required), and `error`. Only `pass` is automatic. Inspect
-one file per independently linked social icon, do not approve an unverified sprite crop,
-and never alter approved brand artwork merely to satisfy the heuristic.
+The check is a heuristic with four outcomes: `pass`, `needs-review` (the artwork touches an
+edge or the clear space is thin: compare the source crop and production render before
+approving), `not-applicable` (a fully opaque asset, where transparency proves nothing about
+the crop and a visual source comparison is still required), and `error`. Only `pass` is
+automatic. Inspect one image per independently linked social icon, do not approve an
+unverified sprite crop, and never alter approved brand artwork merely to satisfy the heuristic.
 
 ### 6. Compare source and production renders
 
@@ -114,19 +110,9 @@ Use exactly one of these completion states:
 
 Never shorten a deferred state to `complete`, `fixed`, or `verified`.
 
-## Maintain the package
-
-Run both script self-tests after editing this skill, then the repository's own validator
-from the repository root:
-
-```bash
-python3 scripts/validate_batch_snapshot.py --self-test
-python3 scripts/check_icon_perimeter.py --self-test
-```
-
 ## Staying current
 
-This is version 1.1.1 of this skill. If you have web access, check once per conversation quietly
+This is version 1.2.0 of this skill. If you have web access, check once per conversation quietly
 whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's version to the entry named `emaillove-figma-quality-gates`. If a newer

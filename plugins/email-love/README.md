@@ -20,7 +20,7 @@ Each skill is a single Markdown file you can read before you install anything. T
 
 - The [official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559) connected to Claude, with access to your file. Required for any canvas work.
 - The Email Love Figma plugin, latest version, with a synced design system in the file. Without one, the builder takes the AI Import path and generates the structure first.
-- Optional: the Email Love MCP (`https://mcp.emaillove.com/mcp`), connected and authenticated by you, for AI Import conversion, headless export verification, and brand inspiration.
+- Optional: the Email Love MCP (`https://chat.emaillove.com/mcp`), connected and authenticated by you, for brand inspiration. Export runs in the Email Love Figma plugin; no extra connection is needed for it.
 
 Try it with: "Check whether Email Love is set up correctly. Don't change my Figma file." Claude reports which tools it can see and what is missing before it touches anything.
 

@@ -6,7 +6,7 @@
 - Batch fields
 - Module fields
 
-The validator accepts one JSON object with `batch` and `modules`. Keep measurements numeric
+The rules in [snapshot-rules.md](snapshot-rules.md) apply to one JSON object with `batch` and `modules`. Keep measurements numeric
 and in email pixels.
 
 ## Example
@@ -153,7 +153,7 @@ A proof batch has at most four modules. A `complete` claim requires desktop and 
   its census count, so an empty array cannot conceal real content. The `images`, `groups`,
   and `properties` arrays are REQUIRED even when audited empty; omitting one is absent
   evidence and fails validation. A measurement recorded as anything other than a finite
-  number (an "unknown" string, null, a negative) also fails; the validator never substitutes
+  number (an "unknown" string, null, a negative) also fails; the review never substitutes
   zero.
 - `images` contains one record per meaningful image, icon, or social mark.
 - `groups` contains every `mj-group` that must remain side by side on mobile.

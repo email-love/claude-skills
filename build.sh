@@ -43,8 +43,9 @@ for dir in "$SKILLS_ROOT"/*/; do
 
   staging="$(mktemp -d)"
   mkdir -p "$staging/$name"
-  # Explicit allowlist: SKILL.md, references/ (markdown, plus the .js builders a skill pastes
-  # into use_figma, such as eds-converter's doc-kit.js), and the LICENSE.
+  # Explicit allowlist: SKILL.md, references/ (markdown only), and the LICENSE. The plugin ships
+  # no script or program files: the Claude directory refuses them from organizations that are
+  # not Verified. Code a skill pastes into use_figma lives in a fenced block inside a .md file.
   install -m 0644 "$dir/SKILL.md" "$staging/$name/SKILL.md"
   install -m 0644 LICENSE "$staging/$name/LICENSE"
 
@@ -71,14 +72,14 @@ for dir in "$SKILLS_ROOT"/*/; do
       ;;
   esac
   if [ -d "$dir/references" ]; then
-    ( cd "$dir" && find references -type f \( -name '*.md' -o -name '*.js' \) -print0 ) \
+    ( cd "$dir" && find references -type f -name '*.md' -print0 ) \
       | while IFS= read -r -d '' f; do
           mkdir -p "$staging/$name/$(dirname "$f")"
           install -m 0644 "$dir/$f" "$staging/$name/$f"
         done
     # Anything under references/ that the allowlist would drop is an error,
     # not a silent omission.
-    unshipped="$(cd "$dir" && find references -type f ! -name '*.md' ! -name '*.js' 2>/dev/null || true)"
+    unshipped="$(cd "$dir" && find references -type f ! -name '*.md' 2>/dev/null || true)"
     if [ -n "$unshipped" ]; then
       echo "refusing to build $name: files present that the allowlist would drop:" >&2
       echo "$unshipped" >&2
@@ -86,21 +87,10 @@ for dir in "$SKILLS_ROOT"/*/; do
     fi
   fi
 
-  # Runtime scripts (Python only): shipped so the standalone bundle can run the
-  # validators its SKILL.md documents. Non-.py files under scripts/ refuse the
-  # build rather than vanish silently.
+  # No runtime scripts: a skill that carries a scripts/ directory refuses the build.
   if [ -d "$dir/scripts" ]; then
-    ( cd "$dir" && find scripts -type f -name '*.py' -print0 ) \
-      | while IFS= read -r -d '' f; do
-          mkdir -p "$staging/$name/$(dirname "$f")"
-          install -m 0644 "$dir/$f" "$staging/$name/$f"
-        done
-    unshipped="$(cd "$dir" && find scripts -type f ! -name '*.py' 2>/dev/null || true)"
-    if [ -n "$unshipped" ]; then
-      echo "refusing to build $name: files present that the allowlist would drop:" >&2
-      echo "$unshipped" >&2
-      exit 1
-    fi
+    echo "refusing to build $name: skills must not ship a scripts/ directory" >&2
+    exit 1
   fi
 
   # Deterministic: fixed mtime, sorted entry order, no extra attributes.
