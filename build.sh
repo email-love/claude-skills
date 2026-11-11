@@ -43,7 +43,8 @@ for dir in "$SKILLS_ROOT"/*/; do
 
   staging="$(mktemp -d)"
   mkdir -p "$staging/$name"
-  # Explicit allowlist: SKILL.md, references/ (markdown only), and the LICENSE.
+  # Explicit allowlist: SKILL.md, references/ (markdown, plus the .js builders a skill pastes
+  # into use_figma, such as eds-converter's doc-kit.js), and the LICENSE.
   install -m 0644 "$dir/SKILL.md" "$staging/$name/SKILL.md"
   install -m 0644 LICENSE "$staging/$name/LICENSE"
 
@@ -70,14 +71,14 @@ for dir in "$SKILLS_ROOT"/*/; do
       ;;
   esac
   if [ -d "$dir/references" ]; then
-    ( cd "$dir" && find references -type f -name '*.md' -print0 ) \
+    ( cd "$dir" && find references -type f \( -name '*.md' -o -name '*.js' \) -print0 ) \
       | while IFS= read -r -d '' f; do
           mkdir -p "$staging/$name/$(dirname "$f")"
           install -m 0644 "$dir/$f" "$staging/$name/$f"
         done
     # Anything under references/ that the allowlist would drop is an error,
     # not a silent omission.
-    unshipped="$(cd "$dir" && find references -type f ! -name '*.md' 2>/dev/null || true)"
+    unshipped="$(cd "$dir" && find references -type f ! -name '*.md' ! -name '*.js' 2>/dev/null || true)"
     if [ -n "$unshipped" ]; then
       echo "refusing to build $name: files present that the allowlist would drop:" >&2
       echo "$unshipped" >&2

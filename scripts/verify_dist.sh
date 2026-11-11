@@ -60,7 +60,7 @@ for a in "${archives[@]}"; do
       echo "$a: SKILL.md names $ref but the bundle does not contain it" >&2
       exit 1
     }
-  done < <(grep -oE '\(references/[A-Za-z0-9._/-]+\.md\)' "$src/SKILL.md" \
+  done < <(grep -oE '\(references/[A-Za-z0-9._/-]+\.(md|js)\)' "$src/SKILL.md" \
              | tr -d '()' | LC_ALL=C sort -u)
 
   # Same containment for runtime scripts the SKILL.md tells the agent to run.
@@ -110,7 +110,7 @@ references/structure.md=$SKILLS_ROOT/eds-converter/references/structure.md" ;;
     grep -qxF "$name/$rel" <<<"$listing" || {
       echo "$a is missing source file $rel" >&2; exit 1; }
   done < <(find "$src" -maxdepth 1 -name SKILL.md -print0; \
-           if [ -d "$src/references" ]; then find "$src/references" -type f -name '*.md' -print0; fi; \
+           if [ -d "$src/references" ]; then find "$src/references" -type f \( -name '*.md' -o -name '*.js' \) -print0; fi; \
            if [ -d "$src/scripts" ]; then find "$src/scripts" -type f -name '*.py' -print0; fi)
   while IFS= read -r entry; do
     case "$entry" in
