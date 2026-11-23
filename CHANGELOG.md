@@ -3,6 +3,12 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.10.2 (2026-11-23)
+
+- The Email Love MCP no longer promotes Email Love's own plans or Builder in its replies
+  (email-love/emaillove-public-mcp#34, live on chat.emaillove.com), so the promotion notice added
+  in 1.10.1 is removed from the description and README.
+
 ## Repo: Email Love plugin 1.10.1 (2026-11-23)
 
 - Sharper plugin icon. `icon.png` is now drawn from a vector (`distribution/icon-source.svg`)
