@@ -3,6 +3,15 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.10.0 (2026-11-23)
+
+- The plugin now includes the Email Love MCP (`https://chat.emaillove.com/mcp`) in
+  `plugins/email-love/.mcp.json`. Installing the plugin adds the connection; Claude asks you to
+  sign in to Email Love the first time it uses one of its tools. It gives inspiration search
+  (emails, brands, journeys, collections) and, once your account is linked, the Email Love
+  Builder tools.
+- Plugin README: the data section now names `chat.emaillove.com`, not `mcp.emaillove.com`.
+
 ## Repo: Email Love plugin 1.9.1 (2026-11-11)
 
 - eds-converter 1.49.2, figma-builder 2.13.2 and template-repair 1.3.1: the skills no longer ask

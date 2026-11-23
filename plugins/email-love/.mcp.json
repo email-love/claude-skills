@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "emaillove": {
+      "type": "http",
+      "url": "https://chat.emaillove.com/mcp"
+    }
+  }
+}
