@@ -20,7 +20,7 @@ Each skill is a single Markdown file you can read before you install anything. T
 
 - The [official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559) connected to Claude, with access to your file. Required for any canvas work.
 - The Email Love Figma plugin, latest version, with a synced design system in the file. Without one, the builder takes the AI Import path and generates the structure first.
-- Optional: the Email Love MCP (`https://chat.emaillove.com/mcp`), connected and authenticated by you, for brand inspiration. Export runs in the Email Love Figma plugin; no extra connection is needed for it.
+- The Email Love MCP (`https://chat.emaillove.com/mcp`) comes with this plugin, for brand inspiration and your Email Love Builder. Claude asks you to sign in to Email Love the first time it uses it. Export runs in the Email Love Figma plugin; no extra connection is needed for it.
 
 Try it with: "Check whether Email Love is set up correctly. Don't change my Figma file." Claude reports which tools it can see and what is missing before it touches anything.
 
@@ -29,7 +29,7 @@ Try it with: "Check whether Email Love is set up correctly. Don't change my Figm
 Nothing runs in the background. Every route below fires only while a skill is working on your request.
 
 - **Figma** (`mcp.figma.com`): reads and writes your Figma file through the official Figma MCP, under your Figma account.
-- **Email Love MCP** (`mcp.emaillove.com`), only if you connect it: design conversion, export preview, and inspiration search, under your Email Love account.
+- **Email Love MCP** (`chat.emaillove.com`), included with this plugin and used only after you sign in: inspiration search and your Email Love Builder, under your Email Love account.
 - **Email Love design converter** (`convert.emaillove.com`), fallback when the MCP is not connected: a PNG or JPEG render of the design region plus its text content and dimensions, sent anonymously, so Claude can transcribe a design into Email Love frames.
 - **Version check** (`raw.githubusercontent.com/email-love/claude-skills`): once per conversation, each skill may fetch this plugin's public `marketplace.json` to tell you when a newer version exists. Nothing about you is sent.
 - **Your own ESP or file store, during a migration audit only**: the `migration-audit` skill can read templates from a source you choose (a local folder, Google Drive, SharePoint, Klaviyo, Marketo, Customer.io, Brevo, Kit, ActiveCampaign, Iterable, Omnisend, or HubSpot) through the MCP, CLI, or API you connect and authenticate yourself. The skill never reads credentials from your environment or files; where a value is needed, it asks you in the session.
