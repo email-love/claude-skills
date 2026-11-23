@@ -12,7 +12,7 @@ is. It also settles a question that reframes all of those: whether the source's 
 specification to preserve or only a reference to take brand and structure from. That is Step 3,
 and it decides how much of the rest of the audit even applies.
 Phase 2 is the conversion, and the report is its input: the eds-converter skill
-runs it, or Email Love's team runs it for the customer as part of Enterprise onboarding. Step 8
+runs it. Step 8
 is the hand-off, and it is part of the job, not an afterthought.
 
 **This skill is strictly read-only.** Never create, modify, rename, or delete anything in the
@@ -1101,7 +1101,7 @@ after the first converted batch.]
 ## Recommended next step
 [The batch plan, naming modules by their Module inventory row names: foundations first, then
 Batch 1 of about five of the highest-reuse modules, then the later batches, with a design review
-between batches. Then point at Step 8's two routes.]
+between batches. Then point at Step 8's hand-off.]
 
 Numbers in the report come from your actual reads, never estimates presented as counts. Where
 you sampled instead of walking everything, say so.
@@ -1110,10 +1110,10 @@ you sampled instead of walking everything, say so.
 
 Deliver the report as a file or artifact the user can share internally. Then close the loop,
 because an audit that ends without naming what happens next leaves the customer thinking the
-migration is somebody's private process. There are two routes, and the report is the input to
-both:
+migration is somebody's private process. The report is the input to
+the conversion:
 
-1. **Self-serve.** The **eds-converter** skill runs Phase 2 from this report:
+- The **eds-converter** skill runs Phase 2 from this report:
    foundations once, then modules in batches with a designer review between batches. It builds
    in a NEW target file and keeps this source file read-only. What it reads out of this report,
    by section name: **Source fidelity** (which tells it whether to preserve the source's geometry,
@@ -1132,10 +1132,8 @@ both:
    the content margin percentage with the content width it converts to, which is where foundations
    gets its one library-wide content width),
    and the **Flags**.
-2. **Done for you.** Email Love's team runs the same process, design review included, as part
-   of Enterprise onboarding: hello@emaillove.com.
 
-Two things need a human "yes" before either route starts, three when the fidelity call was a
+Two things need a human "yes" before the conversion starts, three when the fidelity call was a
 judgement between tiers, and all of them are in Flags: **the source fidelity tier whenever Flags
 carries it**, the scale
 factor, and each named concession. They change what gets built, so getting them agreed now is
@@ -1934,7 +1932,7 @@ migration verbatim; they'd rebuild that logic in the target ESP.
 
 ## Staying current
 
-This is version 1.25.1 of this skill. If you have web access, check once per conversation
+This is version 1.25.2 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-migration-audit` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current

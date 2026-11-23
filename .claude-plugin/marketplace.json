@@ -12,7 +12,7 @@
       "source": "./plugins/email-love",
       "displayName": "Email Love",
       "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-      "version": "1.10.2",
+      "version": "1.10.3",
       "author": {
         "name": "Email Love",
         "email": "hello@emaillove.com",
@@ -90,7 +90,7 @@
         "./"
       ],
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, figma-builder, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.49.2",
+      "version": "1.49.3",
       "author": {
         "name": "Email Love"
       }
@@ -103,7 +103,7 @@
         "./"
       ],
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with eds-converter, figma-builder, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "1.25.1",
+      "version": "1.25.2",
       "author": {
         "name": "Email Love"
       }
@@ -116,7 +116,7 @@
         "./"
       ],
       "description": "DEPRECATED: install the 'email-love' plugin instead; it bundles this skill with migration-audit, eds-converter, and template-repair. This entry remains so existing installs keep resolving and updating.",
-      "version": "2.13.2",
+      "version": "2.13.3",
       "author": {
         "name": "Email Love"
       }

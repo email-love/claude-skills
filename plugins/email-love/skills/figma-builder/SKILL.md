@@ -626,9 +626,9 @@ Then, either way:
   **module** goes in through the **Assets sidebar**: pick the design system, open the section it
   belongs to (Header, Heroes, Single Column, Footer, and so on), select the `mj-wrapper`
   component on the canvas, click **Upload**, confirm. Selecting several wrappers at once uploads
-  them as a single batch. **That Upload button only renders for a user on a paid plan**
-  (`AssetsComponent.tsx` gates the whole Assets header on the subscribed state), so a Free user
-  will not find it; say so rather than sending them hunting. Custom Templates refuses a module
+  them as a single batch. **That Upload button does not appear on every plan**
+  (`AssetsComponent.tsx` gates the whole Assets header on the account's plan), so if the user
+  does not see it, say so rather than sending them hunting. Custom Templates refuses a module
   with "Please select valid email template", because that path requires the `mainFrame` marker a
   module must not carry.
 - Do not write `saveCategory` or `saveName` plugin data. The plugin reads neither key today.
@@ -902,8 +902,8 @@ the work, everything left as a placeholder, and what was verified versus what re
 2. Select a finished frame, open the Email Love plugin, and set subject line and preheader in the
    settings panel. Propose copy for both: subject under 45 characters, preheader that extends it
    rather than repeating it.
-3. Export through the plugin to their ESP. Building on the canvas is free; exports count against
-   the Free plan (5 per month, unlimited on paid plans).
+3. Export through the plugin to their ESP. Exports count toward the
+   account's plan limit.
 
 If the plugin says "Please select valid email template" on a frame you built, the root frame is
 missing its marker (see "Root frame") or the plugin version predates shared-marker support: ask
@@ -947,7 +947,7 @@ use it in every section. Every other rule applies to this skill unchanged.
 
 ## Staying current
 
-This is version 2.13.2 of this skill. If you have web access, check once per conversation
+This is version 2.13.3 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-figma-builder` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
