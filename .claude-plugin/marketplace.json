@@ -11,8 +11,8 @@
       "name": "email-love",
       "source": "./plugins/email-love",
       "displayName": "Email Love",
-      "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure.",
-      "version": "1.10.0",
+      "description": "Design and repair production-ready emails in Figma, export clean HTML to any ESP, and audit or migrate existing design systems into the Email Love structure. Includes the Email Love MCP, whose replies can promote Email Love's own products: Builder tools link to sign up for Email Love Builder, and plan-limit messages link to Email Love's paid plans.",
+      "version": "1.10.1",
       "author": {
         "name": "Email Love",
         "email": "hello@emaillove.com",

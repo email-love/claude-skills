@@ -3,6 +3,14 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.10.1 (2026-11-23)
+
+- Sharper plugin icon. `icon.png` is now drawn from a vector (`distribution/icon-source.svg`)
+  instead of an enlarged small image. Same heart, colors and position.
+- The listing description and plugin README now say that Email Love MCP replies can promote
+  Email Love's own products (Builder sign-up links and paid-plan links in limit messages), as
+  the Claude directory policy requires.
+
 ## Repo: Email Love plugin 1.10.0 (2026-11-23)
 
 - The plugin now includes the Email Love MCP (`https://chat.emaillove.com/mcp`) in
