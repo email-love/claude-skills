@@ -3,6 +3,20 @@
 User-visible changes to the Email Love Claude skills, newest first, by skill. Versions are
 independent per skill. Every release attaches all five `.skill` bundles.
 
+## Repo: Email Love plugin 1.10.3 (2026-11-23)
+
+The Claude directory refused 1.10.2 for Email Love's own promotion in results. The skills no
+longer promote Email Love's paid service or plans:
+
+- eds-converter 1.49.3: drops the "Prefer to have this done for you?" Enterprise onboarding offer.
+  The plan facts stay, worded neutrally: the plugin's Upload button does not appear on every
+  plan, and exports count toward the account's plan limits.
+- migration-audit 1.25.2: the hand-off has one route, the eds-converter skill. The "Done for you"
+  Enterprise onboarding route and the matching line in the intro are gone.
+- figma-builder 2.13.3: the Upload button note and the export-limit note no longer mention paid
+  plans or the Free plan's numbers.
+- hello@emaillove.com stays where it is a support contact.
+
 ## Repo: Email Love plugin 1.10.2 (2026-11-23)
 
 - The Email Love MCP no longer promotes Email Love's own plans or Builder in its replies

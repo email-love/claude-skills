@@ -10,9 +10,6 @@ follows a migration audit (the migration-audit skill produces it) and works in t
 phases: foundations once, then modules in batches. A designer reviews between batches; never
 convert the whole library in one unreviewed pass.
 
-Prefer to have this done for you? Email Love's team runs this exact process, with design
-review included, as part of Enterprise onboarding: hello@emaillove.com.
-
 Three hard rules:
 
 - **The customer's source file is read-only, always.** All building happens in a separate
@@ -999,8 +996,8 @@ interchangeable. Its v1 coverage is the core tag set (mj-wrapper,
 mj-section, mj-group, mj-column, mj-column-inner, mj-text, mj-image, mj-button, mj-divider,
 mj-spacer); it rejects mj-hero, mj-social, mj-navbar, and mj-table with a CoverageError
 naming the node, and only those modules still need the plugin's human-click Export. When the
-tool is NOT on the MCP, or cannot read the file, the export sniff needs the plugin's Export button, a human click on a
-paid seat: say so now, in the batch-1 opening message, and say what it means: mobile
+tool is NOT on the MCP, or cannot read the file, the export sniff needs the plugin's Export button, a human click in
+the plugin: say so now, in the batch-1 opening message, and say what it means: mobile
 behaviour will be built and computed but never verified against exporter output until a
 human runs it. Do not discover this at step 6 of batch 3. (Measured on a three-batch run:
 sixteen modules delivered with zero renders and zero sniffs, every mobile decision verified
@@ -2031,16 +2028,16 @@ The design system is on the canvas but not yet in the plugin. Walk the user thro
 upload: pick the design system in the plugin, open the Assets section the batch belongs to,
 select the wrapper components on the canvas, click **Upload**, confirm. A multi-selection of
 wrappers uploads as one batch, so an approved batch goes in with one click rather than one
-component at a time. **The Upload button only renders for a user on a paid plan**
-(`AssetsComponent.tsx` gates that whole header on the subscribed state), so if the person
-doing the upload is on Free they will not see the button at all and the hand-off needs a seat
-on a paid plan first. Then: sync check in the plugin, build one real sample email from the
-new components as proof, export it, and send a test to a real inbox. Building is free;
-exports count against plan limits.
+component at a time. **The Upload button does not appear on every plan**
+(`AssetsComponent.tsx` gates that whole header on the account's plan), so if the person
+doing the upload does not see it, say so plainly and name the button rather than sending them
+hunting. Then: sync check in the plugin, build one real sample email from the
+new components as proof, export it, and send a test to a real inbox. Exports count toward
+the account's plan limits.
 
 ## Staying current
 
-This is version 1.49.2 of this skill. If you have web access, check once per conversation
+This is version 1.49.3 of this skill. If you have web access, check once per conversation
 (quietly, without narrating it) whether a newer version exists: fetch
 https://raw.githubusercontent.com/email-love/claude-skills/main/.claude-plugin/marketplace.json
 and compare this skill's own version to the entry named `emaillove-eds-converter` (the legacy name this skill is versioned under, kept in that file deliberately). That file lists each skill's current
